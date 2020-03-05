@@ -17,7 +17,7 @@ import gov.nasa.worldwind.avlist.AVKey;
 
 public class Earth extends EllipsoidalGlobe
 {
-    public static final double WGS84_EQUATORIAL_RADIUS = 6378137.0; // ellipsoid equatorial getRadius, in meters
+    public static final double WGS84_EQUATORIAL_RADIUS = 6356752.3; // ellipsoid equatorial getRadius, in meters
     public static final double WGS84_POLAR_RADIUS = 6356752.3; // ellipsoid polar getRadius, in meters
     public static final double WGS84_ES = 0.00669437999013; // eccentricity squared, semi-major axis
 
