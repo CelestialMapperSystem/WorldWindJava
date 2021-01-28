@@ -11,6 +11,7 @@ import gov.nasa.cms.features.CMSProfile;
 import gov.nasa.cms.features.LayerManagerLayer;
 import gov.nasa.cms.features.MeasureDialog;
 import gov.nasa.cms.features.MoonElevationModel;
+import gov.nasa.cms.features.WMSLayerManager;
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 import gov.nasa.worldwind.layers.*;
@@ -49,9 +50,8 @@ public class CelestialMapper extends AppFrame
     private CMSProfile profile;
     private MeasureDialog measureDialog;
     private MeasureTool measureTool;
-    //private SatelliteObject orbitalSatellite;
     private CMSLineOfSight lineOfSight;
-    
+    private WMSLayerManager wmsLayerManager;
     private boolean stereo;
     private boolean flat;
     private boolean isMeasureDialogOpen;
@@ -61,6 +61,7 @@ public class CelestialMapper extends AppFrame
     private JCheckBoxMenuItem stereoCheckBox;
     private JCheckBoxMenuItem flatGlobe;
     private JCheckBoxMenuItem measurementCheckBox;
+    private JCheckBoxMenuItem wmsCheckBox;
     private JMenuItem reset;
 
     public void restart()
@@ -243,6 +244,23 @@ public class CelestialMapper extends AppFrame
                 } 
             });
             view.add(reset);
+            
+            //======== "WMS Layer Manager" =========           
+            wmsCheckBox = new JCheckBoxMenuItem("WMS Layer Panel");
+            wmsCheckBox.setSelected(isMeasureDialogOpen);
+            wmsCheckBox.addActionListener((ActionEvent event) ->
+            {
+                isMeasureDialogOpen = !isMeasureDialogOpen;
+                if (isMeasureDialogOpen)
+                {
+                    // Only open if the MeasureDialog has never been opened
+                    if (measureDialog == null)
+                    {
+                        wmsLayerManager = new WMSLayerManager(getWwd(), this);
+                    }
+                }
+            });
+            view.add(wmsCheckBox);
         }
         menuBar.add(view);
         
