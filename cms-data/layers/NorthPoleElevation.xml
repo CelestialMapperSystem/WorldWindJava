@@ -5,18 +5,18 @@
   ~ All Rights Reserved.
   -->
 
-<!--$Id: South Pole Elevation sample data from LRO 118m/px dataset $-->
+<!--$Id: North Pole Elevation sample data from LRO 118m/px dataset$-->
 <ElevationModel version="1">
     <ElevationModel version="1">
-        <DisplayName>South Pole Elevation</DisplayName>
+        <DisplayName>North Pole Elevation</DisplayName>
         <Service serviceName="OGC:WMS" version="1.3">
-            <GetCapabilitiesURL>https://celestial.arc.nasa.gov/cgi-bin/mapserv?map=/elev/southpole-elev.map</GetCapabilitiesURL>
-            <GetMapURL>https://celestial.arc.nasa.gov/cgi-bin/mapserv?map=/elev/southpole-elev.map</GetMapURL>
-            <LayerNames>southpole_elevations_layer</LayerNames>
+            <GetCapabilitiesURL>https://celestial.arc.nasa.gov/cgi-bin/mapserv?map=/elev/northpole-elev.map</GetCapabilitiesURL>
+            <GetMapURL>https://celestial.arc.nasa.gov/cgi-bin/mapserv?map=/elev/northpole-elev.map</GetMapURL>
+            <LayerNames>northpole_elevations_layer</LayerNames>
         </Service>
         <RetrievePropertiesFromService>true</RetrievePropertiesFromService>
         <LastUpdate>16 01 2014 20:00:00 GMT</LastUpdate>
-        <DataCacheName>Moon/SouthPoleDEM</DataCacheName>
+        <DataCacheName>Moon/NorthPoleDEM</DataCacheName>
         <ImageFormat>application/bil16</ImageFormat>
         <DataType type="Int16" byteOrder="LittleEndian"/>
         <DataDetailHint>0.20</DataDetailHint>
@@ -33,10 +33,10 @@
         </TileSize>
         <Sector>
             <SouthWest>
-                <LatLon units="degrees" latitude="-90" longitude="-180"/>
+                <LatLon units="degrees" latitude="60" longitude="-180"/>
             </SouthWest>
             <NorthEast>
-                <LatLon units="degrees" latitude="-60" longitude="180"/>
+                <LatLon units="degrees" latitude="90" longitude="180"/>
             </NorthEast>
         </Sector>
     </ElevationModel>
