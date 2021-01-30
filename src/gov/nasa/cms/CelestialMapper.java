@@ -55,6 +55,7 @@ public class CelestialMapper extends AppFrame
     private boolean stereo;
     private boolean flat;
     private boolean isMeasureDialogOpen;
+    private boolean isWMSManagerOpen;
     private boolean resetWindow;
     private boolean sight;
 
@@ -133,6 +134,32 @@ public class CelestialMapper extends AppFrame
     {
         JMenuBar menuBar = new JMenuBar();
 
+        //========"File"=========
+        JMenu file = new JMenu("File");
+        {
+            // WMS Layer Manager
+            wmsCheckBox = new JCheckBoxMenuItem("WMS Layer Panel");
+            wmsCheckBox.setSelected(isWMSManagerOpen);
+            wmsCheckBox.addActionListener((ActionEvent event) ->
+            {
+                isWMSManagerOpen = !isWMSManagerOpen;
+                if (isWMSManagerOpen)
+                {
+                    if (measureDialog == null)
+                    {
+                        wmsLayerManager = new WMSLayerManager(getWwd(), this);
+                    }
+                    wmsLayerManager.setVisible(true);
+                }
+                else
+                {
+                    wmsLayerManager.setVisible(false);
+                }
+            });
+            file.add(wmsCheckBox);
+        }
+        menuBar.add(file);
+        
         //======== "CMS Place Names" ========          
         cmsPlaceNamesMenu = new CMSPlaceNamesMenu(this, this.getWwd());
         menuBar.add(cmsPlaceNamesMenu);
@@ -244,23 +271,6 @@ public class CelestialMapper extends AppFrame
                 } 
             });
             view.add(reset);
-            
-            //======== "WMS Layer Manager" =========           
-            wmsCheckBox = new JCheckBoxMenuItem("WMS Layer Panel");
-            wmsCheckBox.setSelected(isMeasureDialogOpen);
-            wmsCheckBox.addActionListener((ActionEvent event) ->
-            {
-                isMeasureDialogOpen = !isMeasureDialogOpen;
-                if (isMeasureDialogOpen)
-                {
-                    // Only open if the MeasureDialog has never been opened
-                    if (measureDialog == null)
-                    {
-                        wmsLayerManager = new WMSLayerManager(getWwd(), this);
-                    }
-                }
-            });
-            view.add(wmsCheckBox);
         }
         menuBar.add(view);
         
