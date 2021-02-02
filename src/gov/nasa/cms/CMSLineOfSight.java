@@ -5,6 +5,7 @@
  */
 package gov.nasa.cms;
 
+import gov.nasa.cms.features.CMSLineOfSightPanel;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
@@ -22,9 +23,12 @@ import gov.nasa.worldwind.render.PointPlacemark;
 import gov.nasa.worldwind.render.PointPlacemarkAttributes;
 import gov.nasa.worldwind.render.ShapeAttributes;
 import gov.nasa.worldwind.terrain.HighResolutionTerrain;
+import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
+import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -32,7 +36,10 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import javax.swing.Box;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
@@ -82,7 +89,7 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
     protected RenderableLayer sightLinesLayer;
     protected RenderableLayer tilesLayer;
     protected Thread calculationDispatchThread;
-    protected JProgressBar progressBar;
+//    protected JProgressBar progressBar;
     protected ThreadPoolExecutor threadPool;
     protected List<Position> grid;
     protected int numGridPoints; // used to monitor percentage progress
@@ -90,12 +97,18 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
     protected Position previousCurrentPosition;
     private WorldWindow wwd;
     private boolean isItemEnabled;
+    private LayerPanel layerPanel;
+    private AppFrame cms;
+    private CMSLineOfSightPanel controlPanel;
+    private JFrame frame;
     
     
     public CMSLineOfSight(AppFrame cms, WorldWindow Wwd)
     {
         super("Sight Lines");
         setWwd(Wwd); //sets Wwd to Wwd parameter from CelestialMapper
+        setCms(cms); 
+        
         this.addActionListener((ActionEvent event) -> {
             isItemEnabled = ((JCheckBoxMenuItem) event.getSource()).getState();
             
@@ -105,6 +118,7 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
                 
             } else
             {
+                // TODO - separate all points from lines in all layers
                 String[] SightLineLayers = {"Grid", "Intersections", "Sight Lines"};
                 
                 for (String layer : SightLineLayers)
@@ -117,19 +131,45 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
         });
     }
     
+     private void createAndShowGui() {
+      this.controlPanel = new CMSLineOfSightPanel(this.getWwd());
+      this.controlPanel.getGridLines().addItemListener(((e) -> {
+          if (e.getStateChange() == ItemEvent.SELECTED){
+                    this.showGrid(grid, referencePosition);
+                }
+                else{
+                    this.gridLayer.removeAllRenderables();
+                    // Apparently have to call .redraw() to "remove" gridlayer
+                    // from the view
+                    
+                    this.getWwd().redraw();
+                }
+      }));
+        
+      this.frame = new JFrame("JFrame");
+//      frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      frame.getContentPane().add(Box.createRigidArea(new Dimension(400, 300)));
+      frame.add(this.controlPanel);
+      frame.pack();
+      frame.setLocationByPlatform(true);
+      frame.setVisible(true);
+      
+      // TODO - add a checkbox to enable / disable always on top 
+      frame.setAlwaysOnTop(true);
+   }
+    
     public void setSightLineProperties()
     {
         // Create a thread pool.
         this.threadPool = new ThreadPoolExecutor(NUM_THREADS, NUM_THREADS, 200, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>());
-
-        // Display a progress bar.
-        this.progressBar = new JProgressBar(0, 100);
-        this.progressBar.setBorder(new EmptyBorder(0, 10, 0, 10));
-        this.progressBar.setBorderPainted(false);
-        this.progressBar.setStringPainted(true);
-        //this.layerPanel.add(this.progressBar, BorderLayout.SOUTH);  //this line causes an error due to different CMS layer panel - twchoi
-                       
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+               createAndShowGui();
+            }
+        });
+       
         // Be sure to re-use the Terrain object to take advantage of its caching.
         this.terrain = new HighResolutionTerrain(getWwd().getModel().getGlobe(), TARGET_RESOLUTION);
 
@@ -243,11 +283,11 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
         // On the EDT, update the progress bar and if calculations are complete, update the WorldWindow.
         SwingUtilities.invokeLater(() -> {
             int progress = (int) (100d * getSightlinesSize() / (double) numGridPoints);
-            progressBar.setValue(progress);
+            this.controlPanel.updateProgressBar(progress);
 
             if (progress >= 100) {
                 setCursor(Cursor.getDefaultCursor());
-                progressBar.setString((endTime - startTime) + " ms");
+                this.controlPanel.updateProgressBar((endTime - startTime) + " ms");
                 showResults();
                 System.out.printf("Calculation time %d milliseconds\n", endTime - startTime);
             }
@@ -258,19 +298,31 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
      * Updates the WorldWind model with the new intersection locations and sight lines.
      */
     protected void showResults() {
+        this.showGrid(grid, referencePosition);
         this.showIntersections(firstIntersectionPositions);
         this.showSightLines(sightLines);
 //            this.showIntersectingTiles(this.grid, this.referencePosition);
         this.getWwd().redraw();
     }
+    
+    
 
     protected void performIntersectionTests(final Position curPos) throws InterruptedException {
         // Clear the results lists when the user selects a new location.
         this.firstIntersectionPositions.clear();
         this.sightLines.clear();
 
+        // Updated so that the grid shows the altitude of the selected point
+        // instead of showing the arbitrary number "5" as originally shown below.
+//        final double height = curPos.getAltitude();
+
+//        double curAltitude = curPos.getAltitude();
+        
         // Raise the selected location and the grid points a little above ground just to show we can.
         final double height = 5; // meters
+//        final double height = curAltitude + 5; // meters
+
+        System.out.println("height at curPos is: " + height);
 
         // Form the grid.
         double gridRadius = GRID_RADIUS.degrees;
@@ -291,9 +343,10 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
 //            this.preCache(grid, this.referencePosition);
         // On the EDT, show the grid.
         SwingUtilities.invokeLater(() -> {
-            progressBar.setValue(0);
-            progressBar.setString(null);
+            this.controlPanel.updateProgressBar(0);
+            this.controlPanel.updateProgressBar(null);
             clearLayers();
+            // TODO Remove call to showGrid here unless the actionlistener for the checkbox has been enabled
             showGrid(grid, referencePosition);
             getWwd().redraw();
         });
@@ -403,13 +456,13 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
             terrain.cacheIntersectingTiles(centerPosition, gridPos);
 
             SwingUtilities.invokeLater(() -> {
-                progressBar.setValue((int) progress);
-                progressBar.setString(null);
+                this.controlPanel.updateProgressBar((int) progress);
+                this.controlPanel.updateProgressBar(null);
             });
         }
 
         SwingUtilities.invokeLater(() -> {
-            progressBar.setValue(100);
+            this.controlPanel.updateProgressBar(100);
         });
 
         long end = System.currentTimeMillis();
@@ -524,6 +577,7 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
         pm.setValue(AVKey.DISPLAY_NAME, cPos.toString());
         pm.setLineEnabled(true);
         this.gridLayer.addRenderable(pm);
+        System.out.println(pm.getAttributes());
     }
 
 
@@ -536,6 +590,16 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
     {
         this.wwd = wwd;
     }
+
+    public AppFrame getCms() {
+        return cms;
+    }
+
+    public final void setCms(AppFrame cms) {
+        this.cms = cms;
+    }
+    
+    
 
 
 }
