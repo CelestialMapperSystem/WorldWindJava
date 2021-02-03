@@ -101,6 +101,7 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
     private AppFrame cms;
     private CMSLineOfSightPanel controlPanel;
     private JFrame frame;
+    private JDialog dialog;
     
     
     public CMSLineOfSight(AppFrame cms, WorldWindow Wwd)
@@ -147,15 +148,19 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
       }));
         
       this.frame = new JFrame("JFrame");
+      this.dialog = new JDialog(this.frame);
 //      frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      frame.getContentPane().add(Box.createRigidArea(new Dimension(400, 300)));
-      frame.add(this.controlPanel);
-      frame.pack();
-      frame.setLocationByPlatform(true);
-      frame.setVisible(true);
+      this.frame.getContentPane().add(Box.createRigidArea(new Dimension(400, 300)));
+      this.dialog.add(this.controlPanel);
+//      this.dialog.setVisible(true);
+//      frame.add(this.controlPanel);
+//      this.frame.add(this.dialog);
+      this.frame.pack();
+      this.frame.setLocationByPlatform(true);
+      this.frame.setVisible(true);
       
       // TODO - add a checkbox to enable / disable always on top 
-      frame.setAlwaysOnTop(true);
+//      this.frame.setAlwaysOnTop(true);
    }
     
     public void setSightLineProperties()
