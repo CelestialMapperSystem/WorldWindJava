@@ -5,6 +5,8 @@
  */
 package gov.nasa.cms;
 
+import gov.nasa.cms.core.LayerManagerDialog;
+import gov.nasa.cms.core.LayerManagerPanel;
 import gov.nasa.cms.features.CMSPlaceNamesMenu;
 import gov.nasa.cms.features.ApolloMenu;
 import gov.nasa.cms.features.CMSProfile;
@@ -49,8 +51,8 @@ public class CelestialMapper extends AppFrame
     private CMSProfile profile;
     private MeasureDialog measureDialog;
     private MeasureTool measureTool;
-    //private SatelliteObject orbitalSatellite;
     private CMSLineOfSight lineOfSight;
+    private LayerManagerDialog layerManager;
     
     private boolean stereo;
     private boolean flat;
@@ -81,6 +83,8 @@ public class CelestialMapper extends AppFrame
 
         // Import the lunar elevation data
         elevationModel = new MoonElevationModel(this.getWwd());
+        
+        layerManager = new LayerManagerDialog(this.getWwd(), this);
         
         // Display the ScreenImage CMS logo as a RenderableLayer
         this.renderLogo();
