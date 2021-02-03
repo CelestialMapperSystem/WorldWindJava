@@ -45,5 +45,9 @@ public class MoonShadingDialog
           
           
      }
+      public void setVisible(boolean visible)
+    {
+        dialog.setVisible(visible);
+    }
     
 }

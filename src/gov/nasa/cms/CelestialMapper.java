@@ -13,6 +13,7 @@ import gov.nasa.cms.features.MeasureDialog;
 import gov.nasa.cms.features.MoonElevationModel;
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.util.measure.MeasureTool;
+import gov.nasa.worldwindx.examples.sunlight.MoonShadingDialog;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
@@ -48,6 +49,7 @@ public class CelestialMapper extends AppFrame
     private MoonElevationModel elevationModel;
     private CMSProfile profile;
     private MeasureDialog measureDialog;
+    private MoonShadingDialog moonShadingDialog;
     private MeasureTool measureTool;
     //private SatelliteObject orbitalSatellite;
     private CMSLineOfSight lineOfSight;
@@ -55,12 +57,14 @@ public class CelestialMapper extends AppFrame
     private boolean stereo;
     private boolean flat;
     private boolean isMeasureDialogOpen;
+    private boolean isSunShadingDialogOpen;
     private boolean resetWindow;
     private boolean sight;
 
     private JCheckBoxMenuItem stereoCheckBox;
     private JCheckBoxMenuItem flatGlobe;
     private JCheckBoxMenuItem measurementCheckBox;
+    private JCheckBoxMenuItem sunShadingCheckBox;
     private JMenuItem reset;
 
     public void restart()
@@ -166,6 +170,31 @@ public class CelestialMapper extends AppFrame
                 }
             });
             tools.add(measurementCheckBox);
+            
+             //======== "SunShading" =========
+            sunShadingCheckBox = new JCheckBoxMenuItem("Sun Shading");
+            sunShadingCheckBox.setSelected(isSunShadingDialogOpen);
+            sunShadingCheckBox.addActionListener((ActionEvent event) ->
+            {
+                isSunShadingDialogOpen = !isSunShadingDialogOpen;
+                if (isSunShadingDialogOpen)
+                {
+                    // Only open if the sunShadingDialog has never been opened
+                    if (moonShadingDialog == null)
+                    {
+                        // Create the dialog from the WorldWindow and AppFrame
+                        MoonShadingDialog moonShadingDialog = new MoonShadingDialog(getWwd(), this);
+                    }
+                    // Display on screen
+                    moonShadingDialog.setVisible(true);
+                } else // Hide the dialog
+                {
+                    moonShadingDialog.setVisible(false);
+                }
+            });
+            tools.add(sunShadingCheckBox);
+           
+            
         }
         menuBar.add(tools);
 
@@ -229,6 +258,7 @@ public class CelestialMapper extends AppFrame
             //======== "Line of Sight" =========
             lineOfSight = new CMSLineOfSight(this, this.getWwd());
             view.add(lineOfSight);
+                       
             
             
             //======== "Reset" =========
