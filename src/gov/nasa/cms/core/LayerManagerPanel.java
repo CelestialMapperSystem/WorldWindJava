@@ -134,21 +134,15 @@ public class LayerManagerPanel extends JPanel implements TreeModelListener
 
     @Override
     public void treeNodesInserted(TreeModelEvent arg0)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    {}
 
     @Override
     public void treeNodesRemoved(TreeModelEvent arg0)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    {}
 
     @Override
     public void treeStructureChanged(TreeModelEvent arg0)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    {}
     
     // METHODS REQUIRED TO MODIFY NODES IN THE TREE
     protected void handleGroupSelection(LayerTreeNode group, LayerList layerList)
