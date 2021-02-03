@@ -378,16 +378,16 @@ public class CMSMeasurePanel extends JPanel
         endButton.setEnabled(false);
 
         // In process feature
-//        deleteButton = new JButton("Clear");
-//        deleteButton.addActionListener((ActionEvent actionEvent) ->
-//        {
-//            // Remove all shapes and control points from the AppFrame
-//            measureTool.clear();
-//            // Remove Measure Tool layers from the WorldWindow
-//           // deletePanel();
-//        });
-//        buttonPanel.add(deleteButton);
-//        deleteButton.setEnabled(true);
+        deleteButton = new JButton("Clear");
+        deleteButton.addActionListener((ActionEvent actionEvent) ->
+        {
+            // Remove all shapes and control points from the AppFrame
+            measureTool.clear();
+            // Remove Measure Tool layers from the WorldWindow
+            deletePanel();
+        });
+        buttonPanel.add(deleteButton);
+        deleteButton.setEnabled(true);
 
         //======== Point Labels ========   
         JPanel pointPanel = new JPanel();
