@@ -23,13 +23,17 @@ public class LayerManagerDialog
     
     public LayerManagerDialog(WorldWindow wwd, Component component)
     {
-        dialog = new JDialog((Frame) component);   
+        layerPanel = new LayerManagerPanel(wwd); 
+        
+        dialog = new JDialog((Frame) component);  
         this.dialog.setPreferredSize(new Dimension(350, 700));
         this.dialog.getContentPane().setLayout(new BorderLayout());
         this.dialog.setResizable(true);
         this.dialog.setModal(false);
         this.dialog.setTitle("Layer Manager");
         dialog.getContentPane().add(layerPanel, BorderLayout.CENTER);
+        dialog.setVisible(true);
+        
         dialog.pack();
     }
     
