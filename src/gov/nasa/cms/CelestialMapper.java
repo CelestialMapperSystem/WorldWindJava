@@ -9,6 +9,7 @@ import gov.nasa.cms.features.CMSPlaceNamesMenu;
 import gov.nasa.cms.features.ApolloMenu;
 import gov.nasa.cms.features.CMSProfile;
 import gov.nasa.cms.features.LayerManagerLayer;
+import gov.nasa.cms.features.LineOfSightController;
 import gov.nasa.cms.features.MeasureDialog;
 import gov.nasa.cms.features.MoonElevationModel;
 import gov.nasa.worldwind.Configuration;
@@ -51,6 +52,7 @@ public class CelestialMapper extends AppFrame
     private MeasureTool measureTool;
     //private SatelliteObject orbitalSatellite;
     private CMSLineOfSight lineOfSight;
+    private LineOfSightController lineOfSightDialog;
     
     private boolean stereo;
     private boolean flat;
@@ -61,6 +63,7 @@ public class CelestialMapper extends AppFrame
     private JCheckBoxMenuItem stereoCheckBox;
     private JCheckBoxMenuItem flatGlobe;
     private JCheckBoxMenuItem measurementCheckBox;
+    private JCheckBoxMenuItem lineOfSightBox;
     private JMenuItem reset;
 
     public void restart()
@@ -227,8 +230,30 @@ public class CelestialMapper extends AppFrame
             view.add(flatGlobe);    
             
             //======== "Line of Sight" =========
-            lineOfSight = new CMSLineOfSight(this, this.getWwd());
-            view.add(lineOfSight);
+            this.lineOfSightBox = new JCheckBoxMenuItem("Line of Sight");
+//            this.lineOfSight = new CMSLineOfSight(this, this.getWwd());
+
+            this.lineOfSightBox.addActionListener((ActionEvent event) -> {
+                this.sight = ((JCheckBoxMenuItem) event.getSource()).getState();
+                if (sight) {
+                    if(lineOfSightDialog == null){
+                        lineOfSightDialog = new LineOfSightController(this, getWwd());
+                        SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            lineOfSightDialog.setVisible(sight);
+                        }});
+                    }
+//                    this.lineOfSight.activate();
+                } else {
+//                    this.lineOfSight.deactivate();
+                    lineOfSightDialog.setVisible(sight);
+                }
+                
+                
+            });
+            
+//            lineOfSightDialog = new LineOfSightController(this,this.getWwd());
+            view.add(lineOfSightBox);
             
             
             //======== "Reset" =========

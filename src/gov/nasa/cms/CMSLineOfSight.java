@@ -6,6 +6,7 @@
 package gov.nasa.cms;
 
 import gov.nasa.cms.features.CMSLineOfSightPanel;
+import gov.nasa.cms.features.LineOfSightController;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
@@ -102,66 +103,28 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
     private CMSLineOfSightPanel controlPanel;
     private JFrame frame;
     private JDialog dialog;
-    
-    
-    public CMSLineOfSight(AppFrame cms, WorldWindow Wwd)
-    {
-        super("Sight Lines");
-        setWwd(Wwd); //sets Wwd to Wwd parameter from CelestialMapper
+    private boolean layersNotNull;
+    private LineOfSightController lineOfSightController;
+
+    public CMSLineOfSight(CelestialMapper cms, WorldWindow wwd, LineOfSightController aThis) {
+        setWwd(wwd); //sets Wwd to Wwd parameter from CelestialMapper
         setCms(cms); 
-        
-        this.addActionListener((ActionEvent event) -> {
-            isItemEnabled = ((JCheckBoxMenuItem) event.getSource()).getState();
-            
-            if (isItemEnabled)
-            {
-                setSightLineProperties();
-                
-            } else
-            {
-                // TODO - separate all points from lines in all layers
-                String[] SightLineLayers = {"Grid", "Intersections", "Sight Lines"};
-                
-                for (String layer : SightLineLayers)
-                {
-                    Layer selectedLayer = this.wwd.getModel().getLayers().getLayerByName(layer);
-                    this.wwd.getModel().getLayers().remove(selectedLayer);
-                }
-                
-            }
-        });
+        this.layersNotNull = false;
+        this.lineOfSightController = aThis;
     }
     
-     private void createAndShowGui() {
-      this.controlPanel = new CMSLineOfSightPanel(this.getWwd());
-      this.controlPanel.getGridLines().addItemListener(((e) -> {
-          if (e.getStateChange() == ItemEvent.SELECTED){
-                    this.showGrid(grid, referencePosition);
-                }
-                else{
-                    this.gridLayer.removeAllRenderables();
-                    // Apparently have to call .redraw() to "remove" gridlayer
-                    // from the view
-                    
-                    this.getWwd().redraw();
-                }
-      }));
-        
-      this.frame = new JFrame("JFrame");
-      this.dialog = new JDialog(this.frame);
-//      frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      this.frame.getContentPane().add(Box.createRigidArea(new Dimension(400, 300)));
-      this.dialog.add(this.controlPanel);
-//      this.dialog.setVisible(true);
-//      frame.add(this.controlPanel);
-//      this.frame.add(this.dialog);
-      this.frame.pack();
-      this.frame.setLocationByPlatform(true);
-      this.frame.setVisible(true);
-      
-      // TODO - add a checkbox to enable / disable always on top 
-//      this.frame.setAlwaysOnTop(true);
-   }
+    public void activate(){
+        setSightLineProperties();
+    }
+    
+    public void deactivate(){
+        String[] SightLineLayers = {"Grid", "Intersections", "Sight Lines"};
+
+        for (String layer : SightLineLayers) {
+            Layer selectedLayer = this.wwd.getModel().getLayers().getLayerByName(layer);
+            this.wwd.getModel().getLayers().remove(selectedLayer);
+        }
+    }
     
     public void setSightLineProperties()
     {
@@ -169,11 +132,11 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
         this.threadPool = new ThreadPoolExecutor(NUM_THREADS, NUM_THREADS, 200, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>());
         
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-               createAndShowGui();
-            }
-        });
+//        SwingUtilities.invokeLater(new Runnable() {
+//            public void run() {
+//               createAndShowGui();
+//            }
+//        });
        
         // Be sure to re-use the Terrain object to take advantage of its caching.
         this.terrain = new HighResolutionTerrain(getWwd().getModel().getGlobe(), TARGET_RESOLUTION);
@@ -271,6 +234,16 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
         return this.sightLines.size();
     }
 
+    public boolean isLayersNotNull() {
+        return layersNotNull;
+    }
+
+    public void setLayersNotNull(boolean layersNotNull) {
+        this.layersNotNull = layersNotNull;
+    }
+    
+    
+
     private long lastTime = System.currentTimeMillis();
 
     /**
@@ -288,11 +261,11 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
         // On the EDT, update the progress bar and if calculations are complete, update the WorldWindow.
         SwingUtilities.invokeLater(() -> {
             int progress = (int) (100d * getSightlinesSize() / (double) numGridPoints);
-            this.controlPanel.updateProgressBar(progress);
+            this.lineOfSightController.updateProgressBar(progress);
 
             if (progress >= 100) {
                 setCursor(Cursor.getDefaultCursor());
-                this.controlPanel.updateProgressBar((endTime - startTime) + " ms");
+                this.lineOfSightController.updateProgressBar((endTime - startTime) + " ms");
                 showResults();
                 System.out.printf("Calculation time %d milliseconds\n", endTime - startTime);
             }
@@ -307,6 +280,7 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
         this.showIntersections(firstIntersectionPositions);
         this.showSightLines(sightLines);
 //            this.showIntersectingTiles(this.grid, this.referencePosition);
+        setLayersNotNull(true);
         this.getWwd().redraw();
     }
     
@@ -348,8 +322,8 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
 //            this.preCache(grid, this.referencePosition);
         // On the EDT, show the grid.
         SwingUtilities.invokeLater(() -> {
-            this.controlPanel.updateProgressBar(0);
-            this.controlPanel.updateProgressBar(null);
+            this.lineOfSightController.updateProgressBar(0);
+            this.lineOfSightController.updateProgressBar(null);
             clearLayers();
             // TODO Remove call to showGrid here unless the actionlistener for the checkbox has been enabled
             showGrid(grid, referencePosition);
@@ -461,13 +435,13 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
             terrain.cacheIntersectingTiles(centerPosition, gridPos);
 
             SwingUtilities.invokeLater(() -> {
-                this.controlPanel.updateProgressBar((int) progress);
-                this.controlPanel.updateProgressBar(null);
+                this.lineOfSightController.updateProgressBar((int) progress);
+                this.lineOfSightController.updateProgressBar(null);
             });
         }
 
         SwingUtilities.invokeLater(() -> {
-            this.controlPanel.updateProgressBar(100);
+            this.lineOfSightController.updateProgressBar(100);
         });
 
         long end = System.currentTimeMillis();
@@ -545,9 +519,11 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
             this.sightLinesLayer.addRenderable(path);
         }
     }
-
+    
     protected void showGrid(List<Position> grid, Position cPos) {
-        this.gridLayer.removeAllRenderables();
+        if(this.gridLayer != null){
+            this.gridLayer.removeAllRenderables();
+        }
 
         // Display the grid points in yellow.
         PointPlacemarkAttributes gridPointAttributes;
@@ -585,6 +561,34 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
         System.out.println(pm.getAttributes());
     }
 
+    public void toggleGrid(boolean toggle) {
+        if (toggle) {
+//            this.showGrid(grid, referencePosition);
+            this.gridLayer.setOpacity(0);
+        } else {
+//            this.gridLayer.removeAllRenderables();
+//            this.getWwd().redraw();
+            this.gridLayer.setOpacity(1);
+        }
+    }
+    
+    public void togglesIntersections(boolean toggle) {
+        if (toggle) {
+            this.showIntersections(firstIntersectionPositions);
+        } else {
+            this.intersectionsLayer.removeAllRenderables();
+            this.getWwd().redraw();
+        }
+    }
+    
+    public void togglesightLines(boolean toggle) {
+        if (toggle) {
+            this.showSightLines(sightLines);
+        } else {
+            this.sightLinesLayer.removeAllRenderables();
+            this.getWwd().redraw();
+        }
+    }
 
     public WorldWindow getWwd()
     {
