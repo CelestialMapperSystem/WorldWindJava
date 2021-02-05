@@ -34,12 +34,10 @@ import javax.swing.SwingUtilities;
 public class LineOfSightController {
     
     private JDialog dialog;
-    private JTabbedPane tabbedPane = new JTabbedPane();
-    private int lastTabIndex = -1;
     private CMSLineOfSightPanel lineOfSightPanel;
     private CMSLineOfSight lineOfSightObject;
-    private WorldWindow wwd;
-    private CelestialMapper cms;
+    private final WorldWindow wwd;
+    private final CelestialMapper cms;
 
     public LineOfSightController(AppFrame cms, WorldWindow wwd) {
         
@@ -50,11 +48,9 @@ public class LineOfSightController {
         
         createAndShowGui();
         
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-//               createAndShowGui();
-                lineOfSightObject.activate();
-            }
+        SwingUtilities.invokeLater(() -> {
+            //               createAndShowGui();
+            lineOfSightObject.activate();
         });
     }
     
@@ -70,10 +66,11 @@ public class LineOfSightController {
         Rectangle bounds = this.cms.getBounds();
         dialog.getContentPane().setLayout(new BorderLayout());
         dialog.setTitle("Line of Sight Tool");
+        dialog.getContentPane().add(lineOfSightPanel, BorderLayout.CENTER);
+        
         // Set the location and resizable to true
         dialog.setLocation(bounds.x, bounds.y + 60);
         dialog.setResizable(true);
-        dialog.getContentPane().add(lineOfSightPanel, BorderLayout.CENTER);
         dialog.pack();
     }
 
@@ -84,6 +81,40 @@ public class LineOfSightController {
     public void updateProgressBar(String progress) {
         this.lineOfSightPanel.updateProgressBar(progress);
     }
+
+    boolean layersNotNull() {
+        return this.lineOfSightObject.isLayersNotNull();
+    }
+
+    void toggleOrigin(boolean selected) {
+        this.lineOfSightObject.toggleGrid(selected);
+    }
+
+    void toggleGridLines(boolean selected) {
+        this.lineOfSightObject.togglesightLines(selected);
+    }
+
+    void toggleGridPoints(boolean selected) {
+        this.lineOfSightObject.toggleGrid(selected);
+    }
+
+    void toggleIntersectionPoints(boolean selected) {
+        this.lineOfSightObject.togglesIntersections(selected);
+    }
+    
+    void toggleIntersectionLines(boolean selected) {
+        this.lineOfSightObject.togglesightLines(selected);
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     

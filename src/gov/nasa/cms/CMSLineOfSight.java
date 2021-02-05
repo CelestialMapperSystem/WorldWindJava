@@ -562,32 +562,36 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
     }
 
     public void toggleGrid(boolean toggle) {
-        if (toggle) {
-//            this.showGrid(grid, referencePosition);
-            this.gridLayer.setOpacity(0);
-        } else {
-//            this.gridLayer.removeAllRenderables();
-//            this.getWwd().redraw();
-            this.gridLayer.setOpacity(1);
-        }
+        this.gridLayer.setEnabled(toggle);
+//        if (toggle) {
+////            this.showGrid(grid, referencePosition);
+////            this.gridLayer.setOpacity(0);
+//            this.gridLayer.setEnabled(toggle);
+//        } else {
+////            this.gridLayer.removeAllRenderables();
+////            this.getWwd().redraw();
+////            this.gridLayer.setOpacity(1);
+//        }
     }
     
     public void togglesIntersections(boolean toggle) {
-        if (toggle) {
-            this.showIntersections(firstIntersectionPositions);
-        } else {
-            this.intersectionsLayer.removeAllRenderables();
-            this.getWwd().redraw();
-        }
+        this.intersectionsLayer.setEnabled(toggle);
+//        if (toggle) {
+//            this.showIntersections(firstIntersectionPositions);
+//        } else {
+//            this.intersectionsLayer.removeAllRenderables();
+//            this.getWwd().redraw();
+//        }
     }
     
     public void togglesightLines(boolean toggle) {
-        if (toggle) {
-            this.showSightLines(sightLines);
-        } else {
-            this.sightLinesLayer.removeAllRenderables();
-            this.getWwd().redraw();
-        }
+        this.sightLinesLayer.setEnabled(toggle);
+//        if (toggle) {
+//            this.showSightLines(sightLines);
+//        } else {
+//            this.sightLinesLayer.removeAllRenderables();
+//            this.getWwd().redraw();
+//        }
     }
 
     public WorldWindow getWwd()

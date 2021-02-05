@@ -41,7 +41,7 @@ public class CMSLineOfSightPanel extends JPanel {
     private WorldWindow wwd;
     private JDialog dialog;
     private JPanel mainPanel;
-    private JComboBox<String> shapeCombo;
+//    private JComboBox<String> shapeCombo;
     private JCheckBox gridLines, gridPoints, intersectionPoints, intersectionLines,
             originPoint;
     protected JProgressBar progressBar;
@@ -70,9 +70,9 @@ public class CMSLineOfSightPanel extends JPanel {
 
     private void makePanel(JPanel mainPanel) {
         //======== Inner Panel ======== 
-        JPanel shapePanel = new JPanel(new GridLayout(6, 1, 5, 5));
+        JPanel shapePanel = new JPanel(new GridLayout(7, 1, 5, 5));
         shapePanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        shapePanel.add(new JLabel("Show / Hide LOS Components"));
+        shapePanel.add(new JLabel("Show / Hide Visual Components"));
         this.originPoint = new JCheckBox("Origin Point");
         this.gridLines = new JCheckBox("Grid Lines");
         this.gridPoints = new JCheckBox("Grid Points");
@@ -86,56 +86,81 @@ public class CMSLineOfSightPanel extends JPanel {
         this.progressBar.setStringPainted(true);
         // this.layerPanel.add(this.progressBar, BorderLayout.SOUTH);  //this line causes an error due to different CMS layer panel - twchoi
 
-        SwingUtilities.invokeLater(() -> {
-            shapePanel.add(originPoint);
-            shapePanel.add(gridLines);
-            shapePanel.add(gridPoints);
-            shapePanel.add(intersectionPoints);
-            shapePanel.add(intersectionLines);
-            this.add(progressBar, BorderLayout.SOUTH); // 
-        });
-
-        SwingUtilities.invokeLater(() -> {
-            addLosListener(originPoint, "toggleGrid");
-            addLosListener(gridLines, "togglesightLines");
-            addLosListener(gridPoints, "toggleGrid");
-            addLosListener(intersectionPoints, "togglesIntersections");
-            addLosListener(intersectionLines, "togglesIntersections");
-        });
-
+        shapePanel.add(originPoint);
+        shapePanel.add(gridLines);
+        shapePanel.add(gridPoints);
+        shapePanel.add(intersectionPoints);
+        shapePanel.add(intersectionLines);
+        shapePanel.add(progressBar, BorderLayout.SOUTH); // 
+        
         // Iterate through all components in shapePanel to set the checkboxes
         // to selected by default
+        
         for (Component checkbox : shapePanel.getComponents()) {
             if (checkbox instanceof JCheckBox) {
                 ((JCheckBox) checkbox).setSelected(true);
             }
-        } 
+        }
+        
+        // Scheduling this for "later" so that the actionlisteners don't fire
+        // before the grid is actually shown
+        setCheckboxListeners();
+        
 
         //======== Outer Panel ======== 
-        JPanel outerPanel = new JPanel();
+//        JPanel outerPanel = new JPanel();
+        JPanel outerPanel = mainPanel;
         outerPanel.setLayout(new BoxLayout(outerPanel, BoxLayout.Y_AXIS));
         // Add the border padding in the dialog
-        outerPanel.setBorder(new CompoundBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10), new TitledBorder("Measure")));
-        outerPanel.setToolTipText("Measure tool control and info");
+        outerPanel.setBorder(new CompoundBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10), new TitledBorder("Line of Sight")));
+        outerPanel.setToolTipText("Control Panel for Line of Sight Analysis");
         outerPanel.add(shapePanel);
         this.add(outerPanel, BorderLayout.NORTH);
 
     } // end makePanel();
-
-    //     private void createAndShowGui() {
-//      this.controlPanel = new CMSLineOfSightPanel(this.getWwd());
-//      this.controlPanel.getGridLines().addItemListener(((e) -> {
-//          if (e.getStateChange() == ItemEvent.SELECTED){
-//                    this.showGrid(grid, referencePosition);
-//                }
-//                else{
-//                    this.gridLayer.removeAllRenderables();
-//                    // Apparently have to call .redraw() to "remove" gridlayer
-//                    // from the view
-//                    
-//                    this.getWwd().redraw();
-//                }
-//      }));
+    
+    private void setCheckboxListeners(){
+        SwingUtilities.invokeLater(() -> {
+//            if(lineOfSightController.layersNotNull()){ 
+//            }
+            this.originPoint.addActionListener((e) -> {
+                if(lineOfSightController.layersNotNull()){ 
+                    lineOfSightController.toggleOrigin(((JCheckBox) e.getSource()).isSelected());
+                }
+            });
+            this.gridLines.addActionListener((e) -> {
+                if(lineOfSightController.layersNotNull()){ 
+                    lineOfSightController.toggleGridLines(((JCheckBox) e.getSource()).isSelected());
+                }
+            });
+            this.gridPoints.addActionListener((e) -> {
+                if(lineOfSightController.layersNotNull()){ 
+                    lineOfSightController.toggleGridPoints(((JCheckBox) e.getSource()).isSelected());
+                }
+            });
+            this.intersectionPoints.addActionListener((e) -> {
+                if(lineOfSightController.layersNotNull()){ 
+                    lineOfSightController.toggleIntersectionPoints(((JCheckBox) e.getSource()).isSelected());
+                }
+            });
+            this.intersectionLines.addActionListener((e) -> {
+                if(lineOfSightController.layersNotNull()){ 
+                    lineOfSightController.toggleIntersectionLines(((JCheckBox) e.getSource()).isSelected());
+                }
+            });
+        });
+        
+        
+        // OLD version
+//        SwingUtilities.invokeLater(() -> {
+//            addLosListener(originPoint, "toggleGrid");
+//            addLosListener(gridLines, "togglesightLines");
+//            addLosListener(gridPoints, "toggleGrid");
+//            addLosListener(intersectionPoints, "togglesIntersections");
+//            addLosListener(intersectionLines, "togglesIntersections");
+//        });
+    }
+    
 //        
     // Attempting use of Reflection to avoid naming each and every single
     // actionlistener that needs to be added to the checkboxes
@@ -212,14 +237,6 @@ public class CMSLineOfSightPanel extends JPanel {
 
     public void setMainPanel(JPanel mainPanel) {
         this.mainPanel = mainPanel;
-    }
-
-    public JComboBox<String> getShapeCombo() {
-        return shapeCombo;
-    }
-
-    public void setShapeCombo(JComboBox<String> shapeCombo) {
-        this.shapeCombo = shapeCombo;
     }
 
     public JCheckBox getGridLines() {
