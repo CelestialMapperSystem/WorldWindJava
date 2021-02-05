@@ -1,11 +1,17 @@
 package gov.nasa.worldwindx.examples.sunlight; 
 
 import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.event.PositionEvent;
+import gov.nasa.worldwind.event.PositionListener;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Matrix;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec4;
+import gov.nasa.worldwind.layers.Earth.USGSTopoHighRes;
+import gov.nasa.worldwind.layers.Layer;
+import gov.nasa.worldwind.layers.SkyGradientLayer;
+import static gov.nasa.worldwindx.examples.ApplicationTemplate.insertBeforePlacenames;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
@@ -21,6 +27,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
+import javax.swing.Timer;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
@@ -33,6 +40,8 @@ import javax.swing.event.ChangeListener;
 // Creates the JPanel to be added to the dialog
 public class MoonShadingPanel extends JPanel
 {
+    
+    
 
      WorldWindow wwd;
      private JCheckBox enableCheckBox;
@@ -55,10 +64,53 @@ public class MoonShadingPanel extends JPanel
           JPanel mainPanel = new JPanel(); // Create the panel
           mainPanel.setOpaque(false);
           this.makeControlPanel(mainPanel); // Create the moon shading panels and add to mainPanel
+          
+            
      }
      
      private void makeControlPanel(JPanel panel)
      {
+         // Add USGS Topo maps
+            insertBeforePlacenames(getWwd(), new USGSTopoHighRes());
+
+            // Replace sky gradient with atmosphere layer
+            this.atmosphereLayer = new AtmosphereLayer();
+            for (int i = 0; i < this.getWwd().getModel().getLayers().size(); i++) {
+                Layer l = this.getWwd().getModel().getLayers().get(i);
+                if (l instanceof SkyGradientLayer) {
+                    this.getWwd().getModel().getLayers().set(i, this.atmosphereLayer);
+                }
+            }
+
+            // Add lens flare layer
+            this.lensFlareLayer = LensFlareLayer.getPresetInstance(LensFlareLayer.PRESET_BOLD);
+            this.getWwd().getModel().getLayers().add(this.lensFlareLayer);
+            
+            // Get tessellator
+            this.tessellator = (RectangularNormalTessellator) getWwd().getModel().getGlobe().getTessellator();
+
+            // Add position listener to update light direction relative to the eye
+            getWwd().addPositionListener(new PositionListener() {
+                Vec4 eyePoint;
+
+                public void moved(PositionEvent event) {
+                    if (eyePoint == null || eyePoint.distanceTo3(getWwd().getView().getEyePoint()) > 1000) {
+                        update();
+                        eyePoint = getWwd().getView().getEyePoint();
+                    }
+                }
+            });
+
+            // Add one minute update timer
+            Timer updateTimer = new Timer(60000, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    update();
+                }
+            });
+            updateTimer.start();
+
+            update();
+            
           JPanel controlPanel = new JPanel();
           controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.Y_AXIS));
           controlPanel.setBorder(new CompoundBorder(BorderFactory.createEmptyBorder(9, 9, 9, 9), new TitledBorder("Sun Light")));
@@ -252,4 +304,6 @@ public class MoonShadingPanel extends JPanel
      {
           this.wwd = Wwd;
      }
+     
+     
 }

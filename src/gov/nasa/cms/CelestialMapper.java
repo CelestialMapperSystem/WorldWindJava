@@ -57,15 +57,16 @@ public class CelestialMapper extends AppFrame
     private boolean stereo;
     private boolean flat;
     private boolean isMeasureDialogOpen;
-    private boolean isSunShadingDialogOpen;
+    private boolean isMoonShadingDialogOpen;
     private boolean resetWindow;
     private boolean sight;
 
     private JCheckBoxMenuItem stereoCheckBox;
     private JCheckBoxMenuItem flatGlobe;
     private JCheckBoxMenuItem measurementCheckBox;
-    private JCheckBoxMenuItem sunShadingCheckBox;
+    private JCheckBoxMenuItem moonShadingCheckBox;
     private JMenuItem reset;
+    
 
     public void restart()
     {
@@ -171,13 +172,13 @@ public class CelestialMapper extends AppFrame
             });
             tools.add(measurementCheckBox);
             
-             //======== "SunShading" =========
-            sunShadingCheckBox = new JCheckBoxMenuItem("Sun Shading");
-            sunShadingCheckBox.setSelected(isSunShadingDialogOpen);
-            sunShadingCheckBox.addActionListener((ActionEvent event) ->
+             //======== "MoonShading" =========
+            moonShadingCheckBox = new JCheckBoxMenuItem("Moon Shading");
+            moonShadingCheckBox.setSelected(isMoonShadingDialogOpen);
+            moonShadingCheckBox.addActionListener((ActionEvent event) ->
             {
-                isSunShadingDialogOpen = !isSunShadingDialogOpen;
-                if (isSunShadingDialogOpen)
+                isMoonShadingDialogOpen = !isMoonShadingDialogOpen;
+                if (isMoonShadingDialogOpen)
                 {
                     // Only open if the sunShadingDialog has never been opened
                     if (moonShadingDialog == null)
@@ -192,7 +193,7 @@ public class CelestialMapper extends AppFrame
                     moonShadingDialog.setVisible(false);
                 }
             });
-            tools.add(sunShadingCheckBox);
+            tools.add(moonShadingCheckBox);
            
             
         }
