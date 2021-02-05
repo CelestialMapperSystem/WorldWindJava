@@ -180,14 +180,16 @@ public class CelestialMapper extends AppFrame
                 isMoonShadingDialogOpen = !isMoonShadingDialogOpen;
                 if (isMoonShadingDialogOpen)
                 {
+                    
                     // Only open if the sunShadingDialog has never been opened
                     if (moonShadingDialog == null)
                     {
                         // Create the dialog from the WorldWindow and AppFrame
                         MoonShadingDialog moonShadingDialog = new MoonShadingDialog(getWwd(), this);
-                    }
+                    } else {
                     // Display on screen
                     moonShadingDialog.setVisible(true);
+                    }
                 } else // Hide the dialog
                 {
                     moonShadingDialog.setVisible(false);
