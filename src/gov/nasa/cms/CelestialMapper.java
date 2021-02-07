@@ -186,11 +186,11 @@ public class CelestialMapper extends AppFrame
                     {
                         // Create the dialog from the WorldWindow and AppFrame
                         this.moonShadingDialog = new MoonShadingDialog(getWwd(), this);
-                    } else {
+                    }
                     // Display on screen
                     moonShadingDialog.setVisible(true);
-                    }
-                } else // Hide the dialog
+                }
+                 else // Hide the dialog
                 {
                     moonShadingDialog.setVisible(false);
                 }

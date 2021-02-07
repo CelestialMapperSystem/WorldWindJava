@@ -1,6 +1,8 @@
 package gov.nasa.cms;
 
 import gov.nasa.worldwind.Configuration;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwindx.examples.sunlight.RectangularNormalTessellator;
 import javax.swing.JFrame;
 
 /**
@@ -15,7 +17,7 @@ public class CelestialMappingSystem
     {  
         // Set the WorldWind Configuration document to be overriden by CMS properties
         System.setProperty("gov.nasa.worldwind.app.config.document", "gov/nasa/cms/config/cmsConfiguration.xml");    
-       
+        Configuration.setValue(AVKey.TESSELLATOR_CLASS_NAME, RectangularNormalTessellator.class.getName());
         if (Configuration.isMacOS()) {
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", APP_NAME);
         }

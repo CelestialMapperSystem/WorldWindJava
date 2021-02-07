@@ -69,7 +69,7 @@ public class MoonShadingPanel extends JPanel {
 
     private void makeControlPanel(JPanel panel) {
         // Add USGS Topo maps
-        insertBeforePlacenames(getWwd(), new USGSTopoHighRes());
+        //insertBeforePlacenames(getWwd(), new USGSTopoHighRes());
 
         // Replace sky gradient with atmosphere layer
         this.atmosphereLayer = new AtmosphereLayer();
