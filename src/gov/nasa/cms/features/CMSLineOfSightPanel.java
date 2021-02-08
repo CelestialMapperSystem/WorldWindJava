@@ -145,7 +145,7 @@ public class CMSLineOfSightPanel extends JPanel {
             });
             this.intersectionLines.addActionListener((e) -> {
                 if(lineOfSightController.layersNotNull()){ 
-                    lineOfSightController.toggleIntersectionLines(((JCheckBox) e.getSource()).isSelected());
+                    lineOfSightController.toggleIntersectionSightLines(((JCheckBox) e.getSource()).isSelected());
                 }
             });
         });
@@ -153,9 +153,9 @@ public class CMSLineOfSightPanel extends JPanel {
         
         // OLD version
 //        SwingUtilities.invokeLater(() -> {
-//            addLosListener(originPoint, "toggleGrid");
-//            addLosListener(gridLines, "togglesightLines");
-//            addLosListener(gridPoints, "toggleGrid");
+//            addLosListener(originPoint, "toggleGridLines");
+//            addLosListener(gridLines, "toggleIntersectionSightLines");
+//            addLosListener(gridPoints, "toggleGridLines");
 //            addLosListener(intersectionPoints, "togglesIntersections");
 //            addLosListener(intersectionLines, "togglesIntersections");
 //        });

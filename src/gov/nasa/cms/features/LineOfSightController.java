@@ -87,23 +87,23 @@ public class LineOfSightController {
     }
 
     void toggleOrigin(boolean selected) {
-        this.lineOfSightObject.toggleGrid(selected);
+        this.lineOfSightObject.toggleGridOrigin(selected);
     }
 
     void toggleGridLines(boolean selected) {
-        this.lineOfSightObject.togglesightLines(selected);
+        this.lineOfSightObject.toggleGridLines(selected);
     }
 
     void toggleGridPoints(boolean selected) {
-        this.lineOfSightObject.toggleGrid(selected);
+        this.lineOfSightObject.toggleGridPoints(selected);
     }
 
     void toggleIntersectionPoints(boolean selected) {
-        this.lineOfSightObject.togglesIntersections(selected);
+        this.lineOfSightObject.toggleIntersectionPoints(selected);
     }
     
-    void toggleIntersectionLines(boolean selected) {
-        this.lineOfSightObject.togglesightLines(selected);
+    void toggleIntersectionSightLines(boolean selected) {
+        this.lineOfSightObject.toggleIntersectionSightLines(selected);
     }
     
     
