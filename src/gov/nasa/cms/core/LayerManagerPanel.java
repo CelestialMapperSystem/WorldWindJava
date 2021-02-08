@@ -18,7 +18,6 @@ import gov.nasa.worldwind.avlist.AVList;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
 import gov.nasa.worldwindx.applications.worldwindow.core.WMSLayerInfo;
-import gov.nasa.worldwindx.applications.worldwindow.util.PanelTitle;
 import gov.nasa.worldwindx.applications.worldwindow.util.Util;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
@@ -28,7 +27,6 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
@@ -47,7 +45,6 @@ public class LayerManagerPanel extends JPanel implements TreeModelListener
     
     public LayerManagerPanel(WorldWindow wwdObject)
     {
-        super(new BorderLayout());
         this.wwd = wwdObject;
         
         JPanel mainPanel = new JPanel();
@@ -57,10 +54,10 @@ public class LayerManagerPanel extends JPanel implements TreeModelListener
     
     public void makePanel(JPanel panel)
     {
-        LayerList layerList = getWwd().getModel().getLayers();
+        LayerList layerList = getWwd().getModel().getLayers(); // Get the current layer list
         layerList.setDisplayName("Base Layers");
-        layerTree = new LayerTree(new LayerTreeModel(layerList));
-       // layerTree.setBorder(new EmptyBorder(10, 10, 10, 10));
+        layerTree = new LayerTree(new LayerTreeModel(layerList));   // Initialize the LayerTreeModel with current layer list
+        layerTree.setBorder(new EmptyBorder(20, 20, 20, 20));
         this.layerTree.getModel().addTreeModelListener(this);
         
         JScrollPane scrollPane = new JScrollPane(layerTree); // Add layerTree to the scroll pane
@@ -71,13 +68,12 @@ public class LayerManagerPanel extends JPanel implements TreeModelListener
         layerPanel.setOpaque(false);
         layerPanel.add(scrollPane, BorderLayout.CENTER);
         
-
         
         JPanel outerPanel = new JPanel();
         outerPanel.setLayout(new BoxLayout(outerPanel, BoxLayout.Y_AXIS));
         // Add the border padding in the dialog
         outerPanel.setBorder(new CompoundBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10), new TitledBorder("Layer Manager")));    
-        outerPanel.add(layerPanel, BorderLayout.CENTER); // Add layer panel to the main panel
+        this.add(layerPanel, BorderLayout.CENTER); // Add the outerpanel to the main JPanel
         
          layerList.addPropertyChangeListener(new PropertyChangeListener()
         {
@@ -144,7 +140,6 @@ public class LayerManagerPanel extends JPanel implements TreeModelListener
     public void treeStructureChanged(TreeModelEvent arg0)
     {}
     
-    // METHODS REQUIRED TO MODIFY NODES IN THE TREE
     protected void handleGroupSelection(LayerTreeNode group, LayerList layerList)
     {
         Enumeration iter = group.breadthFirstEnumeration();

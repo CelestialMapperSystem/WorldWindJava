@@ -10,6 +10,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Rectangle;
 import javax.swing.JDialog;
 
 /**
@@ -23,15 +24,23 @@ public class LayerManagerDialog
     
     public LayerManagerDialog(WorldWindow wwd, Component component)
     {
-        layerPanel = new LayerManagerPanel(wwd); 
+        layerPanel = new LayerManagerPanel(wwd);
         
-        dialog = new JDialog((Frame) component);  
-        this.dialog.setPreferredSize(new Dimension(350, 700));
+        // Create the dialog
+        dialog = new JDialog((Frame) component);
+        this.dialog.setPreferredSize(new Dimension(350, 450));
         this.dialog.getContentPane().setLayout(new BorderLayout());
         this.dialog.setResizable(true);
         this.dialog.setModal(false);
         this.dialog.setTitle("Layer Manager");
+        
+        // Add the layer panel to the dialog and set the location
         dialog.getContentPane().add(layerPanel, BorderLayout.CENTER);
+        Rectangle bounds = component.getBounds();
+        dialog.setLocation(bounds.x + 850, bounds.y + 60); 
+        dialog.setResizable(false); // Set resizable to false to prevent users from seeing blank panels
+        
+        // Set dialog to be visible always
         dialog.setVisible(true);
         
         dialog.pack();

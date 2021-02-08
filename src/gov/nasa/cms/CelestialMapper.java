@@ -40,11 +40,7 @@ import javax.imageio.ImageIO;
  */
 public class CelestialMapper extends AppFrame
 {
-    //**************************************************************//
-    //********************  Main  **********************************//
-    //**************************************************************//
-    ActionListener controller;
-    protected RenderableLayer airspaceLayer;
+    protected ActionListener controller;
     private CMSPlaceNamesMenu cmsPlaceNamesMenu;
     private ApolloMenu apolloMenu;
     private MoonElevationModel elevationModel;
@@ -76,7 +72,6 @@ public class CelestialMapper extends AppFrame
     public void initialize()
     {
         super.initialize();
-        getWwd().getModel().getLayers().add(new LayerManagerLayer(getWwd())); // add layer box UI
 
         // Make the menu bar
         makeMenuBar(this, this.controller);
