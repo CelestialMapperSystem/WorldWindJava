@@ -10,6 +10,8 @@ import gov.nasa.cms.core.swinglayermanager.LayerTree;
 import gov.nasa.cms.core.swinglayermanager.LayerTreeGroupNode;
 import gov.nasa.cms.core.swinglayermanager.LayerTreeModel;
 import gov.nasa.cms.core.swinglayermanager.LayerTreeNode;
+import gov.nasa.cms.util.PanelTitle;
+import gov.nasa.cms.util.ShadedPanel;
 import gov.nasa.worldwind.Factory;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
@@ -27,6 +29,7 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
@@ -57,23 +60,27 @@ public class LayerManagerPanel extends JPanel implements TreeModelListener
         LayerList layerList = getWwd().getModel().getLayers(); // Get the current layer list
         layerList.setDisplayName("Base Layers");
         layerTree = new LayerTree(new LayerTreeModel(layerList));   // Initialize the LayerTreeModel with current layer list
-        layerTree.setBorder(new EmptyBorder(20, 20, 20, 20));
+        layerTree.setBorder(new EmptyBorder(10, 10, 10, 10));
         this.layerTree.getModel().addTreeModelListener(this);
         
+        PanelTitle panelTitle = new PanelTitle("Available Layers", SwingConstants.CENTER);
         JScrollPane scrollPane = new JScrollPane(layerTree); // Add layerTree to the scroll pane
         scrollPane.setOpaque(false);
         scrollPane.getViewport().setOpaque(false);
         
-        JPanel layerPanel = new JPanel(new BorderLayout(5, 5));
+        //JPanel layerPanel = new JPanel(new BorderLayout(5, 5));
+        ShadedPanel layerPanel = new ShadedPanel(new BorderLayout());
+       // JPanel layerPanel = new TransparentPanel();
         layerPanel.setOpaque(false);
         layerPanel.add(scrollPane, BorderLayout.CENTER);
         
-        
-        JPanel outerPanel = new JPanel();
-        outerPanel.setLayout(new BoxLayout(outerPanel, BoxLayout.Y_AXIS));
-        // Add the border padding in the dialog
-        outerPanel.setBorder(new CompoundBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10), new TitledBorder("Layer Manager")));    
+        layerPanel.add(panelTitle, BorderLayout.NORTH);
+//        JPanel outerPanel = new JPanel();
+//        outerPanel.setLayout(new BoxLayout(outerPanel, BoxLayout.Y_AXIS));
+//        // Add the border padding in the dialog
+//        outerPanel.setBorder(new CompoundBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10), new TitledBorder("Layer Manager")));    
         this.add(layerPanel, BorderLayout.CENTER); // Add the outerpanel to the main JPanel
+
         
          layerList.addPropertyChangeListener(new PropertyChangeListener()
         {

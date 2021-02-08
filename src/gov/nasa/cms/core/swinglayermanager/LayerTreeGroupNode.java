@@ -37,8 +37,7 @@ import gov.nasa.worldwindx.applications.worldwindow.core.WMSLayerInfo;
 public class LayerTreeGroupNode extends LayerTreeNode
 {
     public LayerTreeGroupNode()
-    {
-    }
+    {}
 
     public LayerTreeGroupNode(String title)
     {

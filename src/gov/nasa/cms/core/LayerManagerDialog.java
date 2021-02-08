@@ -7,6 +7,7 @@ package gov.nasa.cms.core;
 
 import gov.nasa.worldwind.WorldWindow;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -28,7 +29,7 @@ public class LayerManagerDialog
         
         // Create the dialog
         dialog = new JDialog((Frame) component);
-        this.dialog.setPreferredSize(new Dimension(350, 450));
+        this.dialog.setPreferredSize(new Dimension(370, 480));
         this.dialog.getContentPane().setLayout(new BorderLayout());
         this.dialog.setResizable(true);
         this.dialog.setModal(false);
@@ -37,8 +38,9 @@ public class LayerManagerDialog
         // Add the layer panel to the dialog and set the location
         dialog.getContentPane().add(layerPanel, BorderLayout.CENTER);
         Rectangle bounds = component.getBounds();
-        dialog.setLocation(bounds.x + 850, bounds.y + 60); 
-        dialog.setResizable(false); // Set resizable to false to prevent users from seeing blank panels
+        dialog.setLocation(bounds.x + 840, bounds.y + 60); 
+        
+        dialog.setResizable(false); // Set false to resizable until we can expand panels with dialog
         
         // Set dialog to be visible always
         dialog.setVisible(true);

@@ -65,11 +65,9 @@ public class LayerTree extends JTree
     /** This is the component displayed by the individual tree entries. It's a panel with icon, check box and name. */
     protected static class CellPanel extends JPanel
     {
-        private static final ImageIcon EARTH_ICON =
-            new ImageIcon(LayerNodeTreeCellRenderer.class.getResource("/images/16x16-icon-earth.png"));
 
         protected JCheckBox checkBox;
-        protected JLabel layerTitle = new JLabel(EARTH_ICON);
+        protected JLabel layerTitle = new JLabel();
 
         public CellPanel()
         {
@@ -82,8 +80,8 @@ public class LayerTree extends JTree
 
             this.setOpaque(false);
 
-            JPanel boxAndIconPanel = new JPanel(new GridLayout(1, 0, 0, 0));
-            boxAndIconPanel.setOpaque(false);
+            JPanel checkboxPanel = new JPanel(new GridLayout(1, 0, 0, 0));
+            checkboxPanel.setOpaque(false);
 
             this.checkBox = new JCheckBox();
             this.checkBox.setOpaque(false);
@@ -91,17 +89,13 @@ public class LayerTree extends JTree
             this.checkBox.setIconTextGap(0);
             Boolean drawFocus = (Boolean) UIManager.get("Tree.drawsFocusBorderAroundIcon");
             this.checkBox.setFocusPainted((drawFocus != null) && drawFocus);
-            boxAndIconPanel.add(this.checkBox);
-
-            JLabel iconLabel = new JLabel(EARTH_ICON);
-            iconLabel.setOpaque(false);
-            boxAndIconPanel.add(iconLabel);
+            checkboxPanel.add(this.checkBox);
 
             this.layerTitle = new JLabel();
             this.layerTitle.setOpaque(false);
             this.layerTitle.setAlignmentX(SwingConstants.LEFT);
 
-            this.add(boxAndIconPanel, BorderLayout.WEST);
+            this.add(checkboxPanel, BorderLayout.WEST);
             this.add(this.layerTitle, BorderLayout.CENTER);
         }
     }
