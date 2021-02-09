@@ -10,6 +10,7 @@
 
  <!-- Global Basemaps -->   
     <Layer href="cms-data/layers/LROWACGlobalMosaic.xml" actuate="onLoad"/>
+    <Layer href="cms-data/layers/high-res/SouthPoleMosaic.xml" actuate="onRequest"/>
     <Layer href="cms-data/layers/LOLAColor.xml" actuate="onRequest"/>
     <Layer href="cms-data/layers/LOLASteel.xml" actuate="onRequest"/>
     <Layer href="cms-data/layers/LOLAGrayscale.xml" actuate="onRequest"/>
