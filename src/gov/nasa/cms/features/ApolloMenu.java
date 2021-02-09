@@ -79,7 +79,7 @@ public class ApolloMenu extends JMenu
 
                     colladaViewer.createObjects("Apollo 11");
                     // Zoom to a close up view of the Apollo landing site
-                    zoomTo(LatLon.fromDegrees(0.67, 23.49), Angle.fromDegrees(30), Angle.fromDegrees(75), 2100);                   
+                    zoomTo(LatLon.fromDegrees(172.93, 23.97), Angle.fromDegrees(0), Angle.fromDegrees(0), 2100);                   
                 } else
                 {
                     getWwd().getModel().getLayers().remove(apollo11); // Removes Apollo 11 from LayerList

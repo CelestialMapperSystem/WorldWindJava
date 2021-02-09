@@ -5,14 +5,15 @@
  */
 package gov.nasa.cms;
 
-import gov.nasa.cms.core.LayerManagerDialog;
-import gov.nasa.cms.core.LayerManagerPanel;
+import gov.nasa.cms.features.LayerManagerDialog;
+import gov.nasa.cms.features.LayerManagerPanel;
 import gov.nasa.cms.features.CMSPlaceNamesMenu;
 import gov.nasa.cms.features.ApolloMenu;
 import gov.nasa.cms.features.CMSProfile;
 import gov.nasa.cms.features.LayerManagerLayer;
 import gov.nasa.cms.features.MeasureDialog;
 import gov.nasa.cms.features.MoonElevationModel;
+import gov.nasa.cms.features.WMSLayerManager;
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 import gov.nasa.worldwind.layers.*;
@@ -49,16 +50,21 @@ public class CelestialMapper extends AppFrame
     private MeasureTool measureTool;
     private CMSLineOfSight lineOfSight;
     private LayerManagerDialog layerManager;
+    private WMSLayerManager wmsLayerManager;
     
     private boolean stereo;
     private boolean flat;
     private boolean isMeasureDialogOpen;
+    private boolean isWMSManagerOpen;
     private boolean resetWindow;
     private boolean sight;
+    private boolean isLayerManagerOpen;
 
     private JCheckBoxMenuItem stereoCheckBox;
     private JCheckBoxMenuItem flatGlobe;
     private JCheckBoxMenuItem measurementCheckBox;
+    private JCheckBoxMenuItem wmsCheckBox;
+    private JCheckBoxMenuItem layerManagerCheckBox;
     private JMenuItem reset;
 
     public void restart()
@@ -79,7 +85,7 @@ public class CelestialMapper extends AppFrame
         // Import the lunar elevation data
         elevationModel = new MoonElevationModel(this.getWwd());
         
-        layerManager = new LayerManagerDialog(this.getWwd(), this);
+      //  layerManager = new LayerManagerDialog(this.getWwd(), this);
         
         // Display the ScreenImage CMS logo as a RenderableLayer
         this.renderLogo();
@@ -131,6 +137,53 @@ public class CelestialMapper extends AppFrame
     {
         JMenuBar menuBar = new JMenuBar();
 
+        //========"File"=========
+        JMenu layers = new JMenu("Layers");
+        {            
+            // Layers
+            layerManagerCheckBox = new JCheckBoxMenuItem("Layers");
+            layerManagerCheckBox.setSelected(isLayerManagerOpen);
+            layerManagerCheckBox.addActionListener((ActionEvent event) ->
+            {
+                isLayerManagerOpen = !isLayerManagerOpen;
+                if (isLayerManagerOpen)
+                {
+                    if (layerManager == null)
+                    {
+                        layerManager = new LayerManagerDialog(getWwd(), this);
+                    }
+                    layerManager.setVisible(true);
+                }
+                else
+                {
+                    layerManager.setVisible(false);
+                }
+            });
+            layers.add(layerManagerCheckBox);
+            
+           // WMS Layer Manager
+            wmsCheckBox = new JCheckBoxMenuItem("WMS Layer Panel");
+            wmsCheckBox.setSelected(isWMSManagerOpen);
+            wmsCheckBox.addActionListener((ActionEvent event) ->
+            {
+                isWMSManagerOpen = !isWMSManagerOpen;
+                if (isWMSManagerOpen)
+                {
+                    if (measureDialog == null)
+                    {
+                        wmsLayerManager = new WMSLayerManager(this.getWwd(), this);
+                    }
+                    wmsLayerManager.setVisible(true);
+                }
+                else
+                {
+                    wmsLayerManager.setVisible(false);
+                }
+            });
+            layers.add(wmsCheckBox);
+        }
+        menuBar.add(layers);
+        
         //======== "CMS Place Names" ========          
         cmsPlaceNamesMenu = new CMSPlaceNamesMenu(this, this.getWwd());
         menuBar.add(cmsPlaceNamesMenu);
