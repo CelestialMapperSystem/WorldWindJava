@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import java.awt.Component;
 import java.awt.Frame;
 
+
 /**
  *
  * @author kjdickin
@@ -23,12 +24,14 @@ public class MoonShadingDialog
      private JPanel moonShadingPanel;
      private WorldWindow wwd;
      
+     
      // Pass in the WorldWindow and Component (AppFrame)
      // To initialize in CMS look at MeasureDialog
      // In CelestialMapper->  
         //MoonShadingDialog moonShadingDialog = new MeasureDialog(getWwd(), this); -> passes in CMS WorldWindow and AppFrame (CMS extends AppFrame, so use this)
      public MoonShadingDialog(WorldWindow wwdObject, Component component)
      {
+         
         moonShadingPanel = new MoonShadingPanel(wwdObject);
         this.wwd = wwdObject; // Make sure WorldWindow = passed in WorldWindow
           
@@ -40,7 +43,6 @@ public class MoonShadingDialog
         dialog.setLocation(bounds.x, bounds.y + 60);
         dialog.setResizable(false);
         dialog.getContentPane().add(moonShadingPanel, BorderLayout.CENTER);
-        
         dialog.pack();
           
           

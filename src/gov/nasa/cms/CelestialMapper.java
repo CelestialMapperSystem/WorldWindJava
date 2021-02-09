@@ -23,6 +23,7 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.MoonFlat;
 import gov.nasa.worldwind.render.ScreenImage;
 import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwindx.examples.sunlight.ShowTimeJSpinner;
 import java.awt.Point;
 import java.awt.Rectangle;
 import javax.swing.*;
@@ -186,6 +187,7 @@ public class CelestialMapper extends AppFrame
                     {
                         // Create the dialog from the WorldWindow and AppFrame
                         this.moonShadingDialog = new MoonShadingDialog(getWwd(), this);
+                        
                     }
                      // Display on screen
                     moonShadingDialog.setVisible(true);

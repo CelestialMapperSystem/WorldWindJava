@@ -41,6 +41,9 @@ import javax.swing.event.ChangeListener;
  */
 // Creates the JPanel to be added to the dialog
 public class MoonShadingPanel extends JPanel {
+   
+
+    
 
     WorldWindow wwd;
     private JCheckBox enableCheckBox;
@@ -211,6 +214,7 @@ public class MoonShadingPanel extends JPanel {
             }
         });
         elevationPanel.add(elevationSlider);
+        
 
         // Control panel assembly
         controlPanel.add(colorPanel);
