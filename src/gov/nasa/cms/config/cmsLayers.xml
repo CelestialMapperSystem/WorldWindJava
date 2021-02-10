@@ -10,7 +10,6 @@
 
  <!-- Global Basemaps -->   
     <Layer href="cms-data/layers/LROWACGlobalMosaic.xml" actuate="onLoad"/>
-    <Layer href="cms-data/layers/high-res/SouthPoleMosaic.xml" actuate="onRequest"/>
     <Layer href="cms-data/layers/LOLAColor.xml" actuate="onRequest"/>
     <Layer href="cms-data/layers/LOLASteel.xml" actuate="onRequest"/>
     <Layer href="cms-data/layers/LOLAGrayscale.xml" actuate="onRequest"/>
@@ -20,7 +19,13 @@
     <Layer href="cms-data/layers/ClementineLunarOrbiterHybrid.xml" actuate="onRequest"/>
     <Layer href="cms-data/layers/LunarOrbiterGlobalMosaic.xml" actuate="onRequest"/>
     <Layer href="cms-data/layers/UnifiedGeologicMapOfTheMoon.xml" actuate="onRequest"/>
-          
+  
+<!-- High-res -->  
+    <Layer href="cms-data/layers/high-res/SouthPoleMosaic.xml" actuate="onRequest"/>
+    <Layer href="cms-data/layers/high-res/Copernicus.xml" actuate="onRequest"/> 
+    <Layer href="cms-data/layers/high-res/Cobrahead.xml" actuate="onRequest"/>       
+    <Layer href="cms-data/layers/high-res/CatenaLittrow.xml" actuate="onRequest"/>    
+         
 <!-- Class Layers -->       
     <Layer className="gov.nasa.worldwind.layers.LatLonGraticuleLayer" actuate="onRequest">
         <Property name="Name" value="Lat-Lon Graticule"/>
