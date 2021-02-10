@@ -2,7 +2,7 @@ package gov.nasa.cms;
 
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwindx.examples.sunlight.RectangularNormalTessellator;
+import gov.nasa.cms.features.moonshading.RectangularNormalTessellator;
 import javax.swing.JFrame;
 
 /**
