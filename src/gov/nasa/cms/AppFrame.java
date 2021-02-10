@@ -19,7 +19,7 @@ import java.awt.*;
 
 public class AppFrame extends JFrame {
 
-    private Dimension canvasSize = new Dimension(1200, 800);
+    private Dimension canvasSize = new Dimension(1200, 600);
 
     protected AppPanel wwjPanel;
     protected JPanel controlPanel;
