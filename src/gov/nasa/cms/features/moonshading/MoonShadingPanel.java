@@ -15,6 +15,8 @@ import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -52,7 +54,8 @@ public class MoonShadingPanel extends JPanel
     private LensFlareLayer lensFlareLayer;
     private AtmosphereLayer atmosphereLayer;
     private SunPositionProvider spp = new BasicSunPositionProvider();
-
+    private Vec4 sun, light;
+    
     public MoonShadingPanel(WorldWindow wwdObject) {
         super(new BorderLayout()); // Create the border layerout
         this.wwd = wwdObject; // Set up the WorldWindow
@@ -65,7 +68,7 @@ public class MoonShadingPanel extends JPanel
     // Reset moon shading in progress
     public void resetMoonShadingProperties()
     {
-        Vec4 sun, light;
+        //Vec4 sun, light;
         
         // Disable UI controls
         this.azimuthSlider.setEnabled(false);
@@ -250,6 +253,12 @@ public class MoonShadingPanel extends JPanel
     private void update() {
         if (this.enableCheckBox.isSelected()) {
             // Enable UI controls
+            if(lensFlareLayer == null)
+            {
+                this.getWwd().getModel().getLayers().add(lensFlareLayer);
+            }
+            lensFlareLayer.setEnabled(true);
+
             this.colorButton.setEnabled(true);
             this.ambientButton.setEnabled(true);
             this.absoluteRadioButton.setEnabled(true);
@@ -260,7 +269,7 @@ public class MoonShadingPanel extends JPanel
                this.tessellator.setLightColor(this.colorButton.getBackground());
                this.tessellator.setAmbientColor(this.ambientButton.getBackground());
             // Compute Sun direction
-            Vec4 sun, light;
+            //Vec4 sun, light;
             if (this.relativeRadioButton.isSelected()) {
                 // Enable UI controls
                 this.azimuthSlider.setEnabled(true);
@@ -274,7 +283,7 @@ public class MoonShadingPanel extends JPanel
                 sun = sun.transformBy3(Matrix.fromRotationZ(azimuth.multiply(-1)));
                 sun = sun.transformBy3(getWwd().getModel().getGlobe().computeModelCoordinateOriginTransform(
                         eyePos.getLatitude(), eyePos.getLongitude(), 0));
-            } else {
+            } else { // Absolute is selected
                 // Disable UI controls
                 this.azimuthSlider.setEnabled(false);
                 this.elevationSlider.setEnabled(false);
@@ -298,7 +307,8 @@ public class MoonShadingPanel extends JPanel
             this.tessellator.setLightDirection(null);
             this.lensFlareLayer.setSunDirection(null);
             this.atmosphereLayer.setSunDirection(null);
-            this.getWwd().getModel().getLayers().remove(lensFlareLayer);
+            this.lensFlareLayer.setEnabled(false);
+            
         }
         // Redraw
         this.getWwd().redraw();

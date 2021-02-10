@@ -56,6 +56,7 @@ public class MoonShadingDialog
          this.wwd = wwdObject;
          lensFlareLayer = moonShadingPanel.getLensFlareLayer();
          wwd.getModel().getLayers().add(lensFlareLayer);
+         lensFlareLayer.setEnabled(true);
          
      }
     public void setVisible(boolean visible)
