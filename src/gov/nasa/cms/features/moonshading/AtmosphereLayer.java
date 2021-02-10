@@ -1,4 +1,4 @@
-package gov.nasa.worldwindx.examples.sunlight;
+package gov.nasa.cms.features.moonshading;
 
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.layers.AbstractLayer;

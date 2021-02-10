@@ -1,4 +1,4 @@
-package gov.nasa.worldwindx.examples.sunlight;
+package gov.nasa.cms.features.moonshading;
 
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.event.PositionEvent;
@@ -8,12 +8,8 @@ import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Matrix;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec4;
-import gov.nasa.worldwind.layers.Earth.USGSTopoHighRes;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.SkyGradientLayer;
-import gov.nasa.worldwind.terrain.RectangularTessellator;
-import gov.nasa.worldwind.terrain.Tessellator;
-import static gov.nasa.worldwindx.examples.ApplicationTemplate.insertBeforePlacenames;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
@@ -40,12 +36,9 @@ import javax.swing.event.ChangeListener;
  * @author kjdickin
  */
 // Creates the JPanel to be added to the dialog
-public class MoonShadingPanel extends JPanel {
-   
-
-    
-
-    WorldWindow wwd;
+public class MoonShadingPanel extends JPanel 
+{  
+    private WorldWindow wwd;
     private JCheckBox enableCheckBox;
     private JButton colorButton;
     private JButton ambientButton;
@@ -55,7 +48,6 @@ public class MoonShadingPanel extends JPanel {
     private JSlider elevationSlider;
 
     private RectangularNormalTessellator tessellator;
-//    private Object tessellator;
 
     private LensFlareLayer lensFlareLayer;
     private AtmosphereLayer atmosphereLayer;
@@ -69,10 +61,37 @@ public class MoonShadingPanel extends JPanel {
         this.makeControlPanel(mainPanel); // Create the moon shading panels and add to mainPanel
 
     }
+   
+    // Reset moon shading in progress
+    public void resetMoonShadingProperties()
+    {
+        Vec4 sun, light;
+        
+        // Disable UI controls
+        this.azimuthSlider.setEnabled(false);
+        this.elevationSlider.setEnabled(false);
+        // Compute Sun position according to current date and time
+        LatLon sunPos = spp.getPosition();
+        sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3();
+        
+        // Disable UI controls
+        this.colorButton.setEnabled(false);
+        this.ambientButton.setEnabled(false);
+        this.absoluteRadioButton.setEnabled(false);
+        this.relativeRadioButton.setEnabled(false);
+        this.azimuthSlider.setEnabled(false);
+        this.elevationSlider.setEnabled(false);
+        
+        // Turn off lighting
+        this.tessellator.setLightDirection(null);
+        this.lensFlareLayer.setSunDirection(null);
+        this.atmosphereLayer.setSunDirection(null);
+        
+        this.getWwd().redraw();
+    }
 
-    private void makeControlPanel(JPanel panel) {
-        // Add USGS Topo maps
-        //insertBeforePlacenames(getWwd(), new USGSTopoHighRes());
+    private void makeControlPanel(JPanel panel) 
+    {
 
         // Replace sky gradient with atmosphere layer
         this.atmosphereLayer = new AtmosphereLayer();
@@ -225,7 +244,7 @@ public class MoonShadingPanel extends JPanel {
         
         update();
     }
-
+    
     // Update worldwind
     private void update() {
         if (this.enableCheckBox.isSelected()) {
@@ -275,7 +294,7 @@ public class MoonShadingPanel extends JPanel {
             this.azimuthSlider.setEnabled(false);
             this.elevationSlider.setEnabled(false);
             // Turn off lighting
-               this.tessellator.setLightDirection(null);
+            this.tessellator.setLightDirection(null);
             this.lensFlareLayer.setSunDirection(null);
             this.atmosphereLayer.setSunDirection(null);
         }

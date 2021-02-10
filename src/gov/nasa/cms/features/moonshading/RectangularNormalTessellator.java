@@ -4,7 +4,7 @@ as represented by the Administrator of the
 National Aeronautics and Space Administration.
 All Rights Reserved.
  */
-package gov.nasa.worldwindx.examples.sunlight;
+package gov.nasa.cms.features.moonshading;
 
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;

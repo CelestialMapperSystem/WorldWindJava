@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package gov.nasa.worldwindx.examples.sunlight;
+package gov.nasa.cms.features.moonshading;
 
 import gov.nasa.worldwind.WorldWindow;
 import java.awt.BorderLayout;
@@ -24,16 +24,12 @@ public class MoonShadingDialog
      private JPanel moonShadingPanel;
      private WorldWindow wwd;
      
-     
-     // Pass in the WorldWindow and Component (AppFrame)
-     // To initialize in CMS look at MeasureDialog
-     // In CelestialMapper->  
-        //MoonShadingDialog moonShadingDialog = new MeasureDialog(getWwd(), this); -> passes in CMS WorldWindow and AppFrame (CMS extends AppFrame, so use this)
+
      public MoonShadingDialog(WorldWindow wwdObject, Component component)
      {
          
         moonShadingPanel = new MoonShadingPanel(wwdObject);
-        this.wwd = wwdObject; // Make sure WorldWindow = passed in WorldWindow
+        this.wwd = wwdObject; 
           
         dialog = new JDialog((Frame) component);     
         Rectangle bounds = component.getBounds();
@@ -46,10 +42,16 @@ public class MoonShadingDialog
         dialog.pack();
           
           
-     }
-      public void setVisible(boolean visible)
+    }
+     
+    public void setVisible(boolean visible)
     {
         dialog.setVisible(visible);
+    }
+    
+    public void resetDialog()
+    {
+        
     }
     
 }
