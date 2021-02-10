@@ -26,14 +26,15 @@ import javax.swing.text.DateFormatter;
 public class MoonShadingDialog 
 {
      private JDialog dialog;
-     private JPanel moonShadingPanel;
+     private MoonShadingPanel moonShadingPanel;
      private WorldWindow wwd;
+     private LensFlareLayer lensFlareLayer;
      
 
      public MoonShadingDialog(WorldWindow wwdObject, Component component)
      {
-         
         moonShadingPanel = new MoonShadingPanel(wwdObject);
+        
         this.wwd = wwdObject; 
           
         dialog = new JDialog((Frame) component);     
@@ -45,10 +46,18 @@ public class MoonShadingDialog
         dialog.setResizable(false);
         dialog.getContentPane().add(moonShadingPanel, BorderLayout.CENTER);
         dialog.pack();
+        dialog.setVisible(true);
         ShowTimeJSpinner calendar = new ShowTimeJSpinner();
           
     }
      
+    public void enableLensFlare(WorldWindow wwdObject)
+     {
+         this.wwd = wwdObject;
+         lensFlareLayer = moonShadingPanel.getLensFlareLayer();
+         wwd.getModel().getLayers().add(lensFlareLayer);
+         
+     }
     public void setVisible(boolean visible)
     {
         dialog.setVisible(visible);
@@ -56,7 +65,8 @@ public class MoonShadingDialog
     
     public void resetDialog()
     {
-        
+        moonShadingPanel.resetMoonShadingProperties();
+        dialog.setVisible(false);
     }
     
 }

@@ -86,6 +86,7 @@ public class MoonShadingPanel extends JPanel
         this.tessellator.setLightDirection(null);
         this.lensFlareLayer.setSunDirection(null);
         this.atmosphereLayer.setSunDirection(null);
+        this.getWwd().getModel().getLayers().remove(lensFlareLayer);
         
         this.getWwd().redraw();
     }
@@ -297,11 +298,17 @@ public class MoonShadingPanel extends JPanel
             this.tessellator.setLightDirection(null);
             this.lensFlareLayer.setSunDirection(null);
             this.atmosphereLayer.setSunDirection(null);
+            this.getWwd().getModel().getLayers().remove(lensFlareLayer);
         }
         // Redraw
         this.getWwd().redraw();
     }
 
+    public LensFlareLayer getLensFlareLayer()
+    {
+        return this.lensFlareLayer;
+    }
+    
     protected WorldWindow getWwd() {
         return this.wwd;
     }

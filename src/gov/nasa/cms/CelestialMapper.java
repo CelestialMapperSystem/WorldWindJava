@@ -188,12 +188,15 @@ public class CelestialMapper extends AppFrame
                         this.moonShadingDialog = new MoonShadingDialog(getWwd(), this);
                         
                     }
-                     // Display on screen
-                    moonShadingDialog.setVisible(true);
+                    else // Dialog has been opened and closed before
+                    {
+                        moonShadingDialog.setVisible(true);
+                        moonShadingDialog.enableLensFlare(getWwd());
+                    }
                 }
                  else // Hide the dialog
                 {
-                    moonShadingDialog.setVisible(false);
+                    moonShadingDialog.resetDialog();
                 }
             });
             tools.add(moonShadingCheckBox);
