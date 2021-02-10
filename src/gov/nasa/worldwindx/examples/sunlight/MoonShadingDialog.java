@@ -12,6 +12,11 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import java.awt.Component;
 import java.awt.Frame;
+import java.util.Calendar;
+import javax.swing.JFrame;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerDateModel;
+import javax.swing.text.DateFormatter;
 
 
 /**
@@ -44,7 +49,7 @@ public class MoonShadingDialog
         dialog.setResizable(false);
         dialog.getContentPane().add(moonShadingPanel, BorderLayout.CENTER);
         dialog.pack();
-          
+        ShowTimeJSpinner calendar = new ShowTimeJSpinner();
           
      }
       public void setVisible(boolean visible)
