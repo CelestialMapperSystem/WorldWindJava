@@ -32,6 +32,7 @@ public class MoonShadingDialog
      private WorldWindow wwd;
      private LensFlareLayer lensFlareLayer;
      private ShowTimeJSpinner calendar;
+    private CalendarWindow window;
      
 
      public MoonShadingDialog(WorldWindow wwdObject, Component component)
@@ -50,7 +51,9 @@ public class MoonShadingDialog
         dialog.getContentPane().add(moonShadingPanel, BorderLayout.CENTER);
         dialog.pack();
         dialog.setVisible(true);
-        calendar = new ShowTimeJSpinner();
+        //calendar = new ShowTimeJSpinner();
+        window = new CalendarWindow();
+        window.setVisible(true);
           
     }
     

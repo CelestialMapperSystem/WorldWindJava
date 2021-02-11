@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 /**
- * Creates a calendar with date and time
+ * Creates a calendar with dates that have time
  * @author hniyer
  */
 public class ShowTimeJSpinner{
