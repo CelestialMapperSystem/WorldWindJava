@@ -4,10 +4,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 /**
- * Creates a calendar with dates that have time
+ * shows the time
  * @author hniyer
  */
 public class ShowTimeJSpinner{
+
+    private static ShowTimeJSpinner time;
     
    
      private JFrame calendar;
@@ -28,6 +30,10 @@ public class ShowTimeJSpinner{
         public void setVisible(boolean visible)
         {
             calendar.setVisible(visible);
+        }
+        public static void main(String[]args){
+            time = new ShowTimeJSpinner();
+            time.setVisible(true);
         }
      
 }
