@@ -32,6 +32,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.*;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -340,7 +342,7 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
         final double height = 5; // meters
 //        final double height = curAltitude + 5; // meters
 
-        System.out.println("height at curPos is: " + height);
+//        System.out.println("height at curPos is: " + height);
 
         // Form the grid.
         this.formGrid(curPos, height);
@@ -375,7 +377,7 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
 //                System.out.println("NUM_THREADS: " + NUM_THREADS);
                 this.threadPool.execute(new Intersector(gridPos));
             } else {
-                System.out.println("Performing Intersection Calculation On Single Thread");
+//                System.out.println("Performing Intersection Calculation On Single Thread");
                 performIntersection(gridPos);
             }
         }
@@ -394,7 +396,7 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
         Intersection[] intersections = this.terrain.intersect(this.referencePosition, gridPosition);
         if (intersections == null || intersections.length == 0) {
             // No intersection, so the line goes from the center to the grid point.
-            System.out.println("No Intersection found for: " + this.referencePosition + " : " + gridPosition);
+//            System.out.println("No Intersection found for: " + this.referencePosition + " : " + gridPosition);
             this.gridSightLines.add(new Position[]{this.referencePosition, gridPosition});
             this.sightLines.add(new Position[]{this.referencePosition, gridPosition});
 //            return;
@@ -409,7 +411,7 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
             if (iPoint.distanceTo3(this.referencePoint) >= gPoint.distanceTo3(this.referencePoint)) {
                 // Intersection is beyond the grid point; the line goes from the center to the grid point.
                 this.addSightLine(this.referencePosition, gridPosition);
-                System.out.println("Intersection but beyond grid for: " + this.referencePosition + " : " + gridPosition);
+//                System.out.println("Intersection but beyond grid for: " + this.referencePosition + " : " + gridPosition);
                 this.gridSightLines.add(new Position[]{this.referencePosition, gridPosition});
 //                return;
             } else {
@@ -423,7 +425,7 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
                 // Keep track of the intersection positions.
                 this.addIntersectionPosition(iPosition);
 
-                System.out.println("Intersection Found for: " + this.referencePosition + " : " + iPosition);
+//                System.out.println("Intersection Found for: " + this.referencePosition + " : " + iPosition);
             }
         }
 
@@ -519,6 +521,57 @@ public class CMSLineOfSight extends JCheckBoxMenuItem {
 //            this.showIntersectingTiles(this.grid, this.referencePosition);
         setLayersNotNull(true);
         this.getWwd().redraw();
+        csvOutput(grid,"Grid Points");
+        csvOutput(firstIntersectionPositions,"Intersections");
+    }
+
+    protected void csvOutput(List<Position> positions, String ListName){
+
+        File outputDir = new File("csv_output");
+        if(!outputDir.exists()){
+            outputDir.mkdir();
+        }
+
+        long timeStamp = System.currentTimeMillis();
+
+        DecimalFormat formatter = new DecimalFormat("###_##");
+        String origin = formatter.format(referencePosition.getLatitude().getDegrees()) +
+            "_" + formatter.format(referencePosition.getLongitude().getDegrees());
+        File filename =
+            new File(outputDir + "\\" + ListName + "_" + origin + "_" + timeStamp +
+                ".csv");
+
+
+
+        try (PrintWriter writer = new PrintWriter(filename)) {
+            int rowNum = 0;
+            String header =
+                ListName + "_Entries," + "Latitude" + "," + "Longitude" + "," +
+                    "Altitude" + "," + "Origin";
+//            System.out.println(header);
+            writer.println(header);
+
+            positions.add(0,referencePosition);
+
+            for (Position p: positions)
+            {
+                Vec4 iPoint = terrain.getSurfacePoint(p);
+//            System.out.println(iPoint);
+                Position iPosition = this.terrain.getGlobe().computePositionFromPoint(iPoint);
+//            System.out.println(iPosition);
+                Boolean isOrigin = rowNum == 0 ? true : false;
+
+                String pLabel = rowNum + "," +
+                    p.getLatitude() + "," + p.getLongitude() + "," + iPosition.getElevation() + "," + isOrigin;
+//                System.out.println(pLabel);
+                writer.println(pLabel.replaceAll("°+", ""));
+                rowNum++;
+            }
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     protected void showIntersections(List<Position> intersections) {
