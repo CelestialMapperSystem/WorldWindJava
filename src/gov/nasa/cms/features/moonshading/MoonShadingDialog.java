@@ -13,6 +13,8 @@ import javax.swing.JPanel;
 import java.awt.Component;
 import java.awt.Frame;
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JFrame;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerDateModel;
@@ -29,6 +31,7 @@ public class MoonShadingDialog
      private MoonShadingPanel moonShadingPanel;
      private WorldWindow wwd;
      private LensFlareLayer lensFlareLayer;
+     private ShowTimeJSpinner calendar;
      
 
      public MoonShadingDialog(WorldWindow wwdObject, Component component)
@@ -47,27 +50,30 @@ public class MoonShadingDialog
         dialog.getContentPane().add(moonShadingPanel, BorderLayout.CENTER);
         dialog.pack();
         dialog.setVisible(true);
-        ShowTimeJSpinner calendar = new ShowTimeJSpinner();
+        calendar = new ShowTimeJSpinner();
           
     }
      
     public void enableLensFlare(WorldWindow wwdObject)
-     {
-         this.wwd = wwdObject;
-         lensFlareLayer = moonShadingPanel.getLensFlareLayer();
-         wwd.getModel().getLayers().add(lensFlareLayer);
-         lensFlareLayer.setEnabled(true);
-         
-     }
+    {
+        this.wwd = wwdObject;
+        lensFlareLayer = moonShadingPanel.getLensFlareLayer();
+        wwd.getModel().getLayers().add(lensFlareLayer);
+        lensFlareLayer.setEnabled(true);      
+    }
+    
     public void setVisible(boolean visible)
     {
         dialog.setVisible(visible);
+        calendar.setVisible(true);    
     }
     
     public void resetDialog()
     {
         moonShadingPanel.resetMoonShadingProperties();
         dialog.setVisible(false);
+        calendar.setVisible(false);
+        
     }
     
 }

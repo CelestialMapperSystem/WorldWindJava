@@ -181,22 +181,22 @@ public class CelestialMapper extends AppFrame
                 if (isMoonShadingDialogOpen)
                 {
                     
-                    // Only open if the sunShadingDialog has never been opened
+                    // Only open if the moonShadingDialog has never been opened
                     if (moonShadingDialog == null)
                     {
-                        // Create the dialog from the WorldWindow and AppFrame
                         this.moonShadingDialog = new MoonShadingDialog(getWwd(), this);
                         
                     }
                     else // Dialog has been opened and closed before
                     {
                         moonShadingDialog.setVisible(true);
-                        moonShadingDialog.enableLensFlare(getWwd());
+                        moonShadingDialog.enableLensFlare(getWwd()); // Re-enable lens flare layer
                     }
                 }
-                 else // Hide the dialog
+                 else // Reset moon shading properties and restart the WorldWindow
                 {
                     moonShadingDialog.resetDialog();
+                    this.restart();
                 }
             });
             tools.add(moonShadingCheckBox);

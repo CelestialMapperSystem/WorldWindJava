@@ -24,5 +24,10 @@ public class ShowTimeJSpinner{
 		this.calendar.setSize(100,100);
 		this.calendar.setVisible(true);
 	}
+        
+        public void setVisible(boolean visible)
+        {
+            calendar.setVisible(visible);
+        }
      
 }

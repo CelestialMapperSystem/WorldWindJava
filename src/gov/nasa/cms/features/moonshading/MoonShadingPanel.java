@@ -68,27 +68,17 @@ public class MoonShadingPanel extends JPanel
     // Reset moon shading in progress
     public void resetMoonShadingProperties()
     {
-        //Vec4 sun, light;
-        
-        // Disable UI controls
-        this.azimuthSlider.setEnabled(false);
-        this.elevationSlider.setEnabled(false);
-        // Compute Sun position according to current date and time
-        LatLon sunPos = spp.getPosition();
-        sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3();
-        
-        // Disable UI controls
         this.colorButton.setEnabled(false);
         this.ambientButton.setEnabled(false);
         this.absoluteRadioButton.setEnabled(false);
         this.relativeRadioButton.setEnabled(false);
         this.azimuthSlider.setEnabled(false);
         this.elevationSlider.setEnabled(false);
-        
         // Turn off lighting
         this.tessellator.setLightDirection(null);
         this.lensFlareLayer.setSunDirection(null);
         this.atmosphereLayer.setSunDirection(null);
+        this.lensFlareLayer.setEnabled(false);
         this.getWwd().getModel().getLayers().remove(lensFlareLayer);
         
         this.getWwd().redraw();
@@ -265,11 +255,11 @@ public class MoonShadingPanel extends JPanel
             this.relativeRadioButton.setEnabled(true);
             this.azimuthSlider.setEnabled(true);
             this.elevationSlider.setEnabled(true);
+            
             // Update colors
                this.tessellator.setLightColor(this.colorButton.getBackground());
                this.tessellator.setAmbientColor(this.ambientButton.getBackground());
-            // Compute Sun direction
-            //Vec4 sun, light;
+ 
             if (this.relativeRadioButton.isSelected()) {
                 // Enable UI controls
                 this.azimuthSlider.setEnabled(true);
@@ -292,7 +282,8 @@ public class MoonShadingPanel extends JPanel
                 sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3();
             }
             light = sun.getNegative3();
-               this.tessellator.setLightDirection(light);
+            
+            this.tessellator.setLightDirection(light);
             this.lensFlareLayer.setSunDirection(sun);
             this.atmosphereLayer.setSunDirection(sun);
         } else {
