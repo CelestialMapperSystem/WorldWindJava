@@ -240,7 +240,7 @@ public class MoonShadingPanel extends JPanel
     }
     
     // Update worldwind
-    private void update() {
+    public void update() {
         if (this.enableCheckBox.isSelected()) {
             // Enable UI controls
             if(lensFlareLayer == null)
@@ -303,11 +303,6 @@ public class MoonShadingPanel extends JPanel
         }
         // Redraw
         this.getWwd().redraw();
-    }
-
-    public LensFlareLayer getLensFlareLayer()
-    {
-        return this.lensFlareLayer;
     }
     
     protected WorldWindow getWwd() {

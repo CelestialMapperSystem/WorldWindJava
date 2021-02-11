@@ -53,20 +53,6 @@ public class MoonShadingDialog
         calendar = new ShowTimeJSpinner();
           
     }
-     
-    public void enableLensFlare(WorldWindow wwdObject)
-    {
-        this.wwd = wwdObject;
-        lensFlareLayer = moonShadingPanel.getLensFlareLayer();
-        wwd.getModel().getLayers().add(lensFlareLayer);
-        lensFlareLayer.setEnabled(true);      
-    }
-    
-    public void setVisible(boolean visible)
-    {
-        dialog.setVisible(visible);
-        calendar.setVisible(true);    
-    }
     
     public void resetDialog()
     {
