@@ -4,18 +4,36 @@
  * and open the template in the editor.
  */
 package gov.nasa.cms.features.moonshading;
-import javax.swing.*;
-import java.awt.Color;
+
+import gov.nasa.worldwind.WorldWindow;
 import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.util.Calendar;
 import java.util.Date;
+import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.SpinnerDateModel;
+import javax.swing.SpinnerListModel;
+import javax.swing.SpinnerModel;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.SpringLayout;
 
 /**
  *
- * @author hniyer
+ * @author kjdickin
  */
-public class SpinnerDemo extends JPanel {
-    public SpinnerDemo(boolean cycleMonths) {
+public class DateTimePicker extends JPanel
+{
+     private WorldWindow wwd;
+     private static JFrame frame;
+      public DateTimePicker(boolean cycleMonths) 
+      {
         super(new SpringLayout());
 
         String[] labels = {"Month: ","Day:", "Year: ", "Time: "};
@@ -90,10 +108,42 @@ public class SpinnerDemo extends JPanel {
         SpringUtilities.makeCompactGrid(this,
                                         numPairs, 2, //rows, cols
                                         10, 10,        //initX, initY
-                                        6, 10);       //xPad, yPad
+                                        50, 10);       //xPad, yPad
     }
 
-    /**
+       /**
+     * DateFormatSymbols returns an extra, empty value at the
+     * end of the array of months.  Remove it.
+     */
+    protected static String[] getMonthStrings() {
+        String[] months = new java.text.DateFormatSymbols().getMonths();
+        int lastIndex = months.length - 1;
+
+        if (months[lastIndex] == null
+           || months[lastIndex].length() <= 0) { //last item empty
+            String[] monthStrings = new String[lastIndex];
+            System.arraycopy(months, 0,
+                             monthStrings, 0, lastIndex);
+            return monthStrings;
+        } else { //last item not empty
+            return months;
+        }
+    }
+    
+     protected static JSpinner addLabeledSpinner(Container c,
+                                                String label,
+                                                SpinnerModel model) {
+        JLabel l = new JLabel(label);
+        c.add(l);
+
+        JSpinner spinner = new JSpinner(model);
+        l.setLabelFor(spinner);
+        c.add(spinner);
+
+        return spinner;
+    }
+     
+     /**
      * Return the formatted text field used by the editor, or
      * null if the editor doesn't descend from JSpinner.DefaultEditor.
      */
@@ -108,68 +158,31 @@ public class SpinnerDemo extends JPanel {
             return null;
         }
     }
+    
+    public static void createAndShowGUI() 
+    {
+        //Create and set up the window.
+        if(frame == null)
+        {
+          frame = new JFrame("Date/Time Picker");
+          frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-    /**
-     * DateFormatSymbols returns an extra, empty value at the
-     * end of the array of months.  Remove it.
-     */
-    static protected String[] getMonthStrings() {
-        String[] months = new java.text.DateFormatSymbols().getMonths();
-        int lastIndex = months.length - 1;
+          //Add content to the window.
+          frame.add(new DateTimePicker(false));
 
-        if (months[lastIndex] == null
-           || months[lastIndex].length() <= 0) { //last item empty
-            String[] monthStrings = new String[lastIndex];
-            System.arraycopy(months, 0,
-                             monthStrings, 0, lastIndex);
-            return monthStrings;
-        } else { //last item not empty
-            return months;
+          // Offset the bounds to appear underneath Moon Shading dialog
+          Rectangle bounds = frame.getBounds();
+          frame.setLocation(bounds.x + 352, bounds.y + 555);
+
+          //Display the window.
+          frame.pack();
+          frame.setVisible(true);
         }
     }
-
-    static protected JSpinner addLabeledSpinner(Container c,
-                                                String label,
-                                                SpinnerModel model) {
-        JLabel l = new JLabel(label);
-        c.add(l);
-
-        JSpinner spinner = new JSpinner(model);
-        l.setLabelFor(spinner);
-        c.add(spinner);
-
-        return spinner;
+    
+    public static JFrame getFrame()
+    {
+         return frame;
     }
 
-    /**
-     * Create the GUI and show it.  For thread safety,
-     * this method should be invoked from the
-     * event dispatch thread.
-     */
-    public static void createAndShowGUI() {
-        //Create and set up the window.
-        JFrame frame = new JFrame("SpinnerDemo");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        //Add content to the window.
-        frame.add(new SpinnerDemo(false));
-
-        //Display the window.
-        frame.pack();
-        frame.setVisible(true);
-    }
-
-    public static void main(String[] args) {
-        //Schedule a job for the event dispatch thread:
-        //creating and showing this application's GUI.
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                //Turn off metal's use of bold fonts
-	        UIManager.put("swing.boldMetal", Boolean.FALSE);
-		createAndShowGUI();
-            }
-        });
-    }
 }
-
-

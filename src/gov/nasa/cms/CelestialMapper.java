@@ -11,12 +11,9 @@ import gov.nasa.cms.features.CMSProfile;
 import gov.nasa.cms.features.LayerManagerLayer;
 import gov.nasa.cms.features.MeasureDialog;
 import gov.nasa.cms.features.MoonElevationModel;
-import gov.nasa.cms.features.moonshading.CalendarWindow;
-import gov.nasa.cms.features.moonshading.MainWindow;
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 import gov.nasa.cms.features.moonshading.MoonShadingDialog;
-import gov.nasa.cms.features.moonshading.SpinnerDemo;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
@@ -69,8 +66,6 @@ public class CelestialMapper extends AppFrame
     private JCheckBoxMenuItem measurementCheckBox;
     private JCheckBoxMenuItem moonShadingCheckBox;
     private JMenuItem reset;
-    private MainWindow window;
-    private SpinnerDemo dateTime;
     
 
     public void restart()
@@ -186,14 +181,11 @@ public class CelestialMapper extends AppFrame
                 if (isMoonShadingDialogOpen)
                 {
                     this.moonShadingDialog = new MoonShadingDialog(getWwd(), this);
-                    window = new MainWindow();
-                    window.setVisible(true);
-                    SpinnerDemo.createAndShowGUI();
                     
                 }
                  else // Reset moon shading properties and restart the WorldWindow
                 {
-                   // moonShadingDialog.resetDialog();
+                    moonShadingDialog.resetDialog();
                     this.restart();
                 }
             });

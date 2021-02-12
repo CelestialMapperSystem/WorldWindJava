@@ -31,8 +31,6 @@ public class MoonShadingDialog
      private MoonShadingPanel moonShadingPanel;
      private WorldWindow wwd;
      private LensFlareLayer lensFlareLayer;
-     private ShowTimeJSpinner calendar;
-     private static CalendarWindow window;
      
 
      public MoonShadingDialog(WorldWindow wwdObject, Component component)
@@ -45,13 +43,13 @@ public class MoonShadingDialog
         Rectangle bounds = component.getBounds();
         dialog.getContentPane().setLayout(new BorderLayout());
         dialog.setTitle("Moon Shading");
+        
         // Set the location and resizable to false
         dialog.setLocation(bounds.x, bounds.y + 60);
         dialog.setResizable(false);
         dialog.getContentPane().add(moonShadingPanel, BorderLayout.CENTER);
         dialog.pack();
-        dialog.setVisible(true);
-        //calendar = new ShowTimeJSpinner();     
+        dialog.setVisible(true);  
           
     }
     
@@ -59,7 +57,7 @@ public class MoonShadingDialog
     {
         moonShadingPanel.resetMoonShadingProperties();
         dialog.setVisible(false);
-        calendar.setVisible(false);
+        DateTimePicker.getFrame().setVisible(false);
         
     }
     

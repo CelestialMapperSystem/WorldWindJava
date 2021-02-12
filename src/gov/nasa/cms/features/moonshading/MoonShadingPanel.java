@@ -44,6 +44,7 @@ public class MoonShadingPanel extends JPanel
     private JCheckBox enableCheckBox;
     private JButton colorButton;
     private JButton ambientButton;
+    private JButton dateTimePickerButton;
     private JRadioButton relativeRadioButton;
     private JRadioButton absoluteRadioButton;
     private JSlider azimuthSlider;
@@ -55,6 +56,7 @@ public class MoonShadingPanel extends JPanel
     private AtmosphereLayer atmosphereLayer;
     private SunPositionProvider spp = new BasicSunPositionProvider();
     private Vec4 sun, light;
+    private DateTimePicker dateTimePicker;
     
     public MoonShadingPanel(WorldWindow wwdObject) {
         super(new BorderLayout()); // Create the border layerout
@@ -141,14 +143,10 @@ public class MoonShadingPanel extends JPanel
                 update();
             }
         });
-        updateTimer.start();
-
-       
+        updateTimer.start();      
 
         colorButton = new JButton("Light");
-        
-            colorButton.setBackground(this.tessellator.getLightColor());
-        
+        colorButton.setBackground(this.tessellator.getLightColor());       
         colorButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 Color c = JColorChooser.showDialog(colorPanel, "Choose a color...",
@@ -162,7 +160,7 @@ public class MoonShadingPanel extends JPanel
         colorPanel.add(colorButton);
 
         ambientButton = new JButton("Shade");
-          ambientButton.setBackground(this.tessellator.getAmbientColor());
+        ambientButton.setBackground(this.tessellator.getAmbientColor());
         ambientButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 Color c = JColorChooser.showDialog(colorPanel, "Choose a color...",
@@ -228,12 +226,25 @@ public class MoonShadingPanel extends JPanel
         });
         elevationPanel.add(elevationSlider);
         
+        dateTimePickerButton = new JButton("Date/Time Picker");    
+        dateTimePickerButton.setToolTipText("Select a date and time for simulation");
+        dateTimePickerButton.addActionListener(new ActionListener() 
+         {
+            public void actionPerformed(ActionEvent event) 
+            {
+                DateTimePicker.createAndShowGUI();
+                DateTimePicker.getFrame().setVisible(true);
+            }
+        });
+
+        
 
         // Control panel assembly
         controlPanel.add(colorPanel);
         controlPanel.add(positionTypePanel);
         controlPanel.add(azimuthPanel);
         controlPanel.add(elevationPanel);
+        controlPanel.add(dateTimePickerButton);
         this.add(controlPanel, BorderLayout.NORTH);
         
         update();
@@ -312,5 +323,4 @@ public class MoonShadingPanel extends JPanel
     protected void setWwd(WorldWindow Wwd) {
         this.wwd = Wwd;
     }
-
 }
