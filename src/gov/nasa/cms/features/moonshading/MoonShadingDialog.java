@@ -31,6 +31,7 @@ public class MoonShadingDialog
      private MoonShadingPanel moonShadingPanel;
      private WorldWindow wwd;
      private LensFlareLayer lensFlareLayer;
+     private DateTimeDialog dateTimeDialog;
      
 
      public MoonShadingDialog(WorldWindow wwdObject, Component component)
@@ -56,9 +57,7 @@ public class MoonShadingDialog
     public void resetDialog()
     {
         moonShadingPanel.resetMoonShadingProperties();
-        dialog.setVisible(false);
-        DateTimePicker.getFrame().setVisible(false);
-        
+        dialog.setVisible(false);   
     }
     
 }

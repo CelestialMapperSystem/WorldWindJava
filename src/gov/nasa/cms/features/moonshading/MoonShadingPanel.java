@@ -1,5 +1,6 @@
 package gov.nasa.cms.features.moonshading;
 
+import gov.nasa.cms.CelestialMapper;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.event.PositionEvent;
 import gov.nasa.worldwind.event.PositionListener;
@@ -56,7 +57,8 @@ public class MoonShadingPanel extends JPanel
     private AtmosphereLayer atmosphereLayer;
     private SunPositionProvider spp = new BasicSunPositionProvider();
     private Vec4 sun, light;
-    private DateTimePicker dateTimePicker;
+    private DateTimeDialog dateTimeDialog;
+    private CelestialMapper cms;
     
     public MoonShadingPanel(WorldWindow wwdObject) {
         super(new BorderLayout()); // Create the border layerout
@@ -232,8 +234,11 @@ public class MoonShadingPanel extends JPanel
          {
             public void actionPerformed(ActionEvent event) 
             {
-                DateTimePicker.createAndShowGUI();
-                DateTimePicker.getFrame().setVisible(true);
+                 if(dateTimeDialog == null)
+                 {
+                      dateTimeDialog = new DateTimeDialog(cms, false);
+                 }      
+                 dateTimeDialog.setVisible(true);
             }
         });
 

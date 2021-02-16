@@ -223,7 +223,7 @@ public class TerrainProfilePanel extends JPanel implements Restorable {
 
         //======== this ========
         setBorder(new EmptyBorder(10, 10, 10, 10));
-        setLayout(new BorderLayout(20, 20));
+        setLayout(new BorderLayout(30, 30));
 
         //======== panel1 ========
         {

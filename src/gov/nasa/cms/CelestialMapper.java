@@ -11,6 +11,7 @@ import gov.nasa.cms.features.CMSProfile;
 import gov.nasa.cms.features.LayerManagerLayer;
 import gov.nasa.cms.features.MeasureDialog;
 import gov.nasa.cms.features.MoonElevationModel;
+import gov.nasa.cms.features.moonshading.DateTimeDialog;
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 import gov.nasa.cms.features.moonshading.MoonShadingDialog;
@@ -51,8 +52,8 @@ public class CelestialMapper extends AppFrame
     private MeasureDialog measureDialog;
     private MoonShadingDialog moonShadingDialog;
     private MeasureTool measureTool;
-    //private SatelliteObject orbitalSatellite;
     private CMSLineOfSight lineOfSight;
+    private DateTimeDialog dialog;
     
     private boolean stereo;
     private boolean flat;
@@ -186,7 +187,7 @@ public class CelestialMapper extends AppFrame
                  else // Reset moon shading properties and restart the WorldWindow
                 {
                     moonShadingDialog.resetDialog();
-                    this.restart();
+                    this.restart();                 
                 }
             });
             tools.add(moonShadingCheckBox);       
