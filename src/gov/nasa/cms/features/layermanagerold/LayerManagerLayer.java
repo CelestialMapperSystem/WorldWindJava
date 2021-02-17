@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
-package gov.nasa.cms.features;
+package gov.nasa.cms.features.layermanagerold;
 
 import gov.nasa.worldwindx.examples.util.*;
 import gov.nasa.worldwind.WorldWindow;

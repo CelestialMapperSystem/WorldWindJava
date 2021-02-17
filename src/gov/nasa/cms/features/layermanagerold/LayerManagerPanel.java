@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package gov.nasa.cms.features;
+package gov.nasa.cms.features.layermanagerold;
 
 import gov.nasa.cms.core.swinglayermanager.LayerNode;
 import gov.nasa.cms.core.swinglayermanager.LayerTree;

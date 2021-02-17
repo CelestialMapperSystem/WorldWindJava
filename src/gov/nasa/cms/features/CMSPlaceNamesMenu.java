@@ -126,6 +126,7 @@ public class CMSPlaceNamesMenu extends JMenu implements ShapefileRenderable.Attr
                         switch(chosenName) {
                             case "Oceanus":
                                 Wwd.getModel().getLayers().remove(selectedLayer);
+                                Wwd.redraw();
                                 break;
                             case "Mare":
                                 Wwd.getModel().getLayers().remove(selectedLayer);
