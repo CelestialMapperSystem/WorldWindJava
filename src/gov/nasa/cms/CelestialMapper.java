@@ -78,9 +78,6 @@ public class CelestialMapper extends AppFrame
 
         // Make the menu bar
         makeMenuBar(this, this.controller);
-
-        // Import the lunar elevation data
-     //   elevationModel = new MoonElevationModel(this.getWwd());
         
         // Display the ScreenImage CMS logo as a RenderableLayer
         this.renderLogo();
