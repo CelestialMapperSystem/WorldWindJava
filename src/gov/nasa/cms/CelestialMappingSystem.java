@@ -15,6 +15,12 @@ public class CelestialMappingSystem
     public static void main(String[] args) 
     {  
         // Set the WorldWind Configuration document to be overriden by CMS properties
+
+        // This is using a local cacerts file that incorporates the rsa cert
+        // that kaitlyn provided
+        // use this option to the JVM to see verbose output on whether we're
+        // able to connect or not:
+        // -Djavax.net.debug=ssl,keymanager
         System.setProperty("gov.nasa.worldwind.app.config.document", "gov/nasa/cms/config/cmsConfiguration.xml");
         Path path = Paths.get("C:\\Users\\gknorman\\cms-main\\WorldWindJava"
             + "-cms\\security\\cacerts");
