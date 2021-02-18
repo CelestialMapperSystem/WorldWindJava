@@ -86,7 +86,7 @@ public class CMSLineOfSight extends JCheckBoxMenuItem
     /**
      * The number of cells along each edge of the grid.
      */
-    protected static final int GRID_DIMENSION = 10; // cells per side
+    protected static final int GRID_DIMENSION = 20; // cells per side
 
     /**
      * The desired terrain resolution to use in the intersection calculations.
