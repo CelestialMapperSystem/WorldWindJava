@@ -439,7 +439,7 @@ public class CMSMeasurePanel extends JPanel
         this.add(outerPanel, BorderLayout.NORTH);
     }
 
-    // Updates the position list when the measute tool changes
+    // Updates the position list when the measure tool changes
     private void fillPointsPanel()
     {
         int i = 0;

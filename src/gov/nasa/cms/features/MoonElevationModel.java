@@ -47,8 +47,8 @@ public class MoonElevationModel extends CelestialMapper {
                             // Set the view to look at the imported elevations, although they might be hard to detect. To
                             // make them easier to detect, replace the globe's CompoundElevationModel with the new elevation
                             // model rather than adding it.
-                            Sector modelSector = elevationModel.getSector();
-                            ExampleUtil.goTo(wwd, modelSector);
+//                            Sector modelSector = elevationModel.getSector();
+//                            ExampleUtil.goTo(wwd, modelSector);
                         }
                     });
                 } catch (Exception e) {
