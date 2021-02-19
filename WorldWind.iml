@@ -10,10 +10,24 @@
       <sourceFolder url="file://$MODULE_DIR$/testFunctional" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="11" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="gdal" level="project" />
     <orderEntry type="library" scope="TEST" name="junit4" level="project" />
-    <orderEntry type="library" name="jogl-gluegen-worldwind231" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$" />
+          <root url="file://$MODULE_DIR$" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/src" />
+          <root url="file://$MODULE_DIR$/test" />
+          <root url="file://$MODULE_DIR$/testFunctional" />
+        </SOURCES>
+        <jarDirectory url="file://$MODULE_DIR$" recursive="false" />
+      </library>
+    </orderEntry>
   </component>
 </module>
