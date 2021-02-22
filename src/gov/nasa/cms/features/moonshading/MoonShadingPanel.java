@@ -57,7 +57,7 @@ public class MoonShadingPanel extends JPanel
     private AtmosphereLayer atmosphereLayer;
     private SunPositionProvider spp = new BasicSunPositionProvider();
     private Vec4 sun, light;
-    private DateTimeDialog dateTimeDialog;
+    private DateTimePickerDialog dateTimeDialog;
     private CelestialMapper cms;
     
     public MoonShadingPanel(WorldWindow wwdObject) {
@@ -236,7 +236,7 @@ public class MoonShadingPanel extends JPanel
             {
                  if(dateTimeDialog == null)
                  {
-                      dateTimeDialog = new DateTimeDialog(cms, false);
+                      dateTimeDialog = new DateTimePickerDialog(wwd, cms);
                  }      
                  dateTimeDialog.setVisible(true);
             }

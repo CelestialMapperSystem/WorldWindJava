@@ -31,7 +31,6 @@ public class MoonShadingDialog
      private MoonShadingPanel moonShadingPanel;
      private WorldWindow wwd;
      private LensFlareLayer lensFlareLayer;
-     private DateTimeDialog dateTimeDialog;
      
 
      public MoonShadingDialog(WorldWindow wwdObject, Component component)
