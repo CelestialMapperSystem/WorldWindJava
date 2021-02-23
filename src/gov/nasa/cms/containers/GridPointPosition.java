@@ -6,13 +6,23 @@
 
 package gov.nasa.cms.containers;
 
-import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.*;
 
-public class GridPoint
+public class GridPointPosition
 {
-    private Position position;
+    private String positionName;
+    private int positionNum;
+    private Position gridPosition;
     private Position intersection;
-    private double relativeHeight;
-    private double trueElevation;
+    private double gridRelativeHeight;
+    private double gridTrueElevation;
+    private double intersectionRelativeHeight;
+    private double intersectionTrueElevation;
+
+    private Vec4 referencePoint;
+
+
+
+
 
 }
