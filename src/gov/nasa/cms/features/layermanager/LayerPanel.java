@@ -118,8 +118,6 @@ public class LayerPanel extends JPanel
           Vector resourceMapsCategory = new Vector();
           Vector globalMapsCategory = new Vector();
           Vector toolsCategory = new Vector();
-          Vector placeNamesCategory = new Vector();
-          Vector apolloCategory = new Vector();
           Vector miscOptions = new Vector();
 
           // Put the layers into categories for WorldWindow's LayerList
@@ -165,16 +163,14 @@ public class LayerPanel extends JPanel
 			
           }
 
-          Object rootNodes[] = new Object[8];
+          Object rootNodes[] = new Object[6];
 
           rootNodes[0] = new NamedVector("LOLA", lolaCategory);
-          rootNodes[1] = new NamedVector("Place Names", placeNamesCategory);
-          rootNodes[2] = new NamedVector("Clementine", clementineCategory);
-          rootNodes[3] = new NamedVector("Resource Maps", resourceMapsCategory);
-          rootNodes[4] = new NamedVector("Global Maps", globalMapsCategory);
-          rootNodes[5] = new NamedVector("Apollo", apolloCategory);
-          rootNodes[6] = new NamedVector("Tools", toolsCategory);
-          rootNodes[7] = new NamedVector("Misc", miscOptions);
+          rootNodes[1] = new NamedVector("Clementine", clementineCategory);
+          rootNodes[2] = new NamedVector("Resource Maps", resourceMapsCategory);
+          rootNodes[3] = new NamedVector("Global Maps", globalMapsCategory);
+          rootNodes[4] = new NamedVector("Tools", toolsCategory);
+          rootNodes[5] = new NamedVector("Misc", miscOptions);
 
           Vector rootVector = new NamedVector("Root", rootNodes);
 
