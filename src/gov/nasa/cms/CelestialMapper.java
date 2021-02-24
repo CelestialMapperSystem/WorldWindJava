@@ -13,6 +13,8 @@ import gov.nasa.cms.features.MeasureDialog;
 import gov.nasa.cms.features.MoonElevationModel;
 import gov.nasa.cms.features.WMSLayerManager;
 import gov.nasa.worldwind.Configuration;
+import gov.nasa.worldwind.util.WWUtil;
+import gov.nasa.worldwind.util.WWXML;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.WorldWindow;
@@ -23,14 +25,32 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.MoonFlat;
 import gov.nasa.worldwind.render.ScreenImage;
 import gov.nasa.worldwind.util.Logging;
-import java.awt.Point;
-import java.awt.Rectangle;
+import gov.nasa.worldwindx.applications.worldwindow.core.*;
+import gov.nasa.worldwindx.applications.worldwindow.features.Measurement;
+import gov.nasa.worldwindx.applications.worldwindow.util.Util;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import java.awt.*;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.swing.*;
 import javax.imageio.ImageIO;
 
 /**
@@ -64,6 +84,10 @@ public class CelestialMapper extends AppFrame
     private JCheckBoxMenuItem wmsCheckBox;
     private JCheckBoxMenuItem layerManagerCheckBox;
     private JMenuItem reset;
+    private ToolBarImpl.GradientToolBar toolBar;
+    private Registry regController;
+    private Controller generalController;
+    private MouseListener mouseListener;
 
     public void restart()
     {
@@ -80,15 +104,106 @@ public class CelestialMapper extends AppFrame
         // Make the menu bar
         makeMenuBar(this, this.controller);
 
+        createToolbar(this);
+
+
+
         // Import the lunar elevation data
         elevationModel = new MoonElevationModel(this.getWwd());
-        
         //layerManager = new LayerManagerDialog(this.getWwd(), this);
         
         // Display the ScreenImage CMS logo as a RenderableLayer
         this.renderLogo();
+    }
+
+    private void createToolbar(AppFrame frame) {
+        // The original constructor in worldwindow.ToolBarImpl relies completely
+        // on an XML based configuration and initialization.
+        // Will attempt to create a new GradientToolBar() object without requiring the
+        // same process
+//        this.createMouseListener();
+        JToolBar jToolBar001 = new JToolBar();
+        jToolBar001.setLayout(new GridLayout(1, 5));
+//        jToolBar001.setRollover(false);
+//        jToolBar001.setFloatable(false);
+//        jToolBar001.setPreferredSize(new Dimension(450, 130));
+        jToolBar001.setOpaque(false);
+
+//        jToolBar001.addSeparator(new Dimension(150, 0));
+        ImageIcon image = null;
+        JButton button1 = new JButton("Click Me");
+        button1.setPreferredSize(new Dimension(100,100));
+        try {
+            URL url =  new URL("http://i.imgur.com/6mbHZRU.png");
+            System.out.println(url);
+            URLConnection MASTER_CONNECTION = url.openConnection();
+            MASTER_CONNECTION.setDefaultUseCaches( false );
+            BufferedImage io = ImageIO.read(url);
+            System.out.println(io);
+            image = new ImageIcon(io);
+            System.out.println(image);
+
+            button1.setIcon(image);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NullPointerException e){
+            e.printStackTrace();
+        }
+
+
+        button1.setHorizontalTextPosition(AbstractButton.CENTER);
+        button1.setVerticalTextPosition(AbstractButton.BOTTOM);
+
+        JButton button2 = new JButton("Click Me");
+        JButton button3 = new JButton("Click Me");
+        JButton button4 = new JButton("Click Me");
+        JButton button5 = new JButton("Click Me");
+        jToolBar001.add(button1);
+        jToolBar001.add(button2);
+        jToolBar001.add(button3);
+        jToolBar001.add(button4);
+        jToolBar001.add(button5);
+
+        frame.getContentPane().add(jToolBar001,BorderLayout.PAGE_START);
 
     }
+
+//    public void add(JButton button){
+//        button.setBorderPainted(false);
+//        button.setOpaque(false);
+//        button.setHideActionText(true);
+//        button.addMouseListener(this.mouseListener);
+//        super.add(button);
+//    }
+
+//    public void createMouseListener(){
+//        this.mouseListener = new MouseListener() {
+//            @Override
+//            public void mouseClicked(MouseEvent e) {
+//
+//            }
+//
+//            @Override
+//            public void mousePressed(MouseEvent e) {
+//
+//            }
+//
+//            @Override
+//            public void mouseReleased(MouseEvent e) {
+//
+//            }
+//
+//            @Override
+//            public void mouseEntered(MouseEvent e) {
+//
+//            }
+//
+//            @Override
+//            public void mouseExited(MouseEvent e) {
+//
+//            }
+//        };
+//    }
 
     /**
      * Causes the View attached to the specified WorldWindow to animate to the
