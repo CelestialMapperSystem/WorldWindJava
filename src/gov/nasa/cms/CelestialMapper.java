@@ -5,13 +5,8 @@
  */
 package gov.nasa.cms;
 
+import gov.nasa.cms.features.*;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
-import gov.nasa.cms.features.CMSPlaceNamesMenu;
-import gov.nasa.cms.features.ApolloMenu;
-import gov.nasa.cms.features.CMSProfile;
-import gov.nasa.cms.features.MeasureDialog;
-import gov.nasa.cms.features.MoonElevationModel;
-import gov.nasa.cms.features.WMSLayerManager;
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.util.WWUtil;
 import gov.nasa.worldwind.util.WWXML;
@@ -84,7 +79,7 @@ public class CelestialMapper extends AppFrame
     private JCheckBoxMenuItem wmsCheckBox;
     private JCheckBoxMenuItem layerManagerCheckBox;
     private JMenuItem reset;
-    private ToolBarImpl.GradientToolBar toolBar;
+    private CMSToolBar toolBar;
     private Registry regController;
     private Controller generalController;
     private MouseListener mouseListener;
@@ -104,7 +99,9 @@ public class CelestialMapper extends AppFrame
         // Make the menu bar
         makeMenuBar(this, this.controller);
 
-        createToolbar(this);
+//        createToolbar(this);
+        this.toolBar = new CMSToolBar(this);
+        toolBar.createToolbar();
 
 
 
@@ -116,94 +113,7 @@ public class CelestialMapper extends AppFrame
         this.renderLogo();
     }
 
-    private void createToolbar(AppFrame frame) {
-        // The original constructor in worldwindow.ToolBarImpl relies completely
-        // on an XML based configuration and initialization.
-        // Will attempt to create a new GradientToolBar() object without requiring the
-        // same process
-//        this.createMouseListener();
-        JToolBar jToolBar001 = new JToolBar();
-        jToolBar001.setLayout(new GridLayout(1, 5));
-//        jToolBar001.setRollover(false);
-//        jToolBar001.setFloatable(false);
-//        jToolBar001.setPreferredSize(new Dimension(450, 130));
-        jToolBar001.setOpaque(false);
 
-//        jToolBar001.addSeparator(new Dimension(150, 0));
-        ImageIcon image = null;
-        JButton button1 = new JButton("Click Me");
-        button1.setPreferredSize(new Dimension(100,100));
-        try {
-            URL url =  new URL("http://i.imgur.com/6mbHZRU.png");
-            System.out.println(url);
-            URLConnection MASTER_CONNECTION = url.openConnection();
-            MASTER_CONNECTION.setDefaultUseCaches( false );
-            BufferedImage io = ImageIO.read(url);
-            System.out.println(io);
-            image = new ImageIcon(io);
-            System.out.println(image);
-
-            button1.setIcon(image);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (NullPointerException e){
-            e.printStackTrace();
-        }
-
-
-        button1.setHorizontalTextPosition(AbstractButton.CENTER);
-        button1.setVerticalTextPosition(AbstractButton.BOTTOM);
-
-        JButton button2 = new JButton("Click Me");
-        JButton button3 = new JButton("Click Me");
-        JButton button4 = new JButton("Click Me");
-        JButton button5 = new JButton("Click Me");
-        jToolBar001.add(button1);
-        jToolBar001.add(button2);
-        jToolBar001.add(button3);
-        jToolBar001.add(button4);
-        jToolBar001.add(button5);
-
-        frame.getContentPane().add(jToolBar001,BorderLayout.PAGE_START);
-
-    }
-
-//    public void add(JButton button){
-//        button.setBorderPainted(false);
-//        button.setOpaque(false);
-//        button.setHideActionText(true);
-//        button.addMouseListener(this.mouseListener);
-//        super.add(button);
-//    }
-
-//    public void createMouseListener(){
-//        this.mouseListener = new MouseListener() {
-//            @Override
-//            public void mouseClicked(MouseEvent e) {
-//
-//            }
-//
-//            @Override
-//            public void mousePressed(MouseEvent e) {
-//
-//            }
-//
-//            @Override
-//            public void mouseReleased(MouseEvent e) {
-//
-//            }
-//
-//            @Override
-//            public void mouseEntered(MouseEvent e) {
-//
-//            }
-//
-//            @Override
-//            public void mouseExited(MouseEvent e) {
-//
-//            }
-//        };
-//    }
 
     /**
      * Causes the View attached to the specified WorldWindow to animate to the
@@ -254,25 +164,26 @@ public class CelestialMapper extends AppFrame
         JMenu layers = new JMenu("Layers");
         {            
             // Layers
-            layerManagerCheckBox = new JCheckBoxMenuItem("Layers");
-            layerManagerCheckBox.setSelected(isLayerManagerOpen);
-            layerManagerCheckBox.addActionListener((ActionEvent event) ->
-            {
-                isLayerManagerOpen = !isLayerManagerOpen;
-                if (isLayerManagerOpen)
-                {
-                    if (layerManager == null)
-                    {
-                        layerManager = new LayerManagerDialog(getWwd(), this);
-                    }
-                    layerManager.setVisible(true);
-                }
-                else
-                {
-                    layerManager.setVisible(false);
-                }
-            });
-            layers.add(layerManagerCheckBox);
+//            layerManagerCheckBox = new JCheckBoxMenuItem("Layers");
+//            layerManagerCheckBox.setSelected(isLayerManagerOpen);
+//            layerManagerCheckBox.addActionListener((ActionEvent event) ->
+//            {
+//                isLayerManagerOpen = !isLayerManagerOpen;
+//                if (isLayerManagerOpen)
+//                {
+//                    if (layerManager == null)
+//                    {
+//                        layerManager = new LayerManagerDialog(getWwd(), this);
+//                    }
+//                    layerManager.setVisible(true);
+//                }
+//                else
+//                {
+//                    layerManager.setVisible(false);
+//                }
+//            }
+//            );
+//            layers.add(layerManagerCheckBox);
             
            // WMS Layer Manager
             wmsCheckBox = new JCheckBoxMenuItem("WMS Layer Panel");
@@ -282,7 +193,7 @@ public class CelestialMapper extends AppFrame
                 isWMSManagerOpen = !isWMSManagerOpen;
                 if (isWMSManagerOpen)
                 {
-                    if (measureDialog == null)
+                    if (wmsLayerManager == null)
                     {
                         wmsLayerManager = new WMSLayerManager(this.getWwd(), this);
                     }
@@ -435,5 +346,45 @@ public class CelestialMapper extends AppFrame
         layer.setName("Logo");
 
         getWwd().getModel().getLayers().add(layer);
+    }
+
+    public LayerManagerDialog getLayerManager()
+    {
+        return layerManager;
+    }
+
+    public WMSLayerManager getWmsLayerManager()
+    {
+        return wmsLayerManager;
+    }
+
+    public boolean isWMSManagerOpen()
+    {
+        return isWMSManagerOpen;
+    }
+
+    public boolean isLayerManagerOpen()
+    {
+        return isLayerManagerOpen;
+    }
+
+    public void setLayerManager(LayerManagerDialog layerManager)
+    {
+        this.layerManager = layerManager;
+    }
+
+    public void setWmsLayerManager(WMSLayerManager wmsLayerManager)
+    {
+        this.wmsLayerManager = wmsLayerManager;
+    }
+
+    public void setWMSManagerOpen(boolean WMSManagerOpen)
+    {
+        isWMSManagerOpen = WMSManagerOpen;
+    }
+
+    public void setLayerManagerOpen(boolean layerManagerOpen)
+    {
+        isLayerManagerOpen = layerManagerOpen;
     }
 }
