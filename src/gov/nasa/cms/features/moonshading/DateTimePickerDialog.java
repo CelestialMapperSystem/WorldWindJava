@@ -6,6 +6,9 @@
 package gov.nasa.cms.features.moonshading;
 
 import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Frame;
@@ -13,6 +16,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import javax.swing.JButton;
@@ -27,7 +31,7 @@ import javax.swing.WindowConstants;
  *
  * @author kjdickin
  */
-public class DateTimePickerDialog extends JDialog
+public class DateTimePickerDialog extends JDialog 
 {
     private JSlider animationSpeedSlider;
     private JButton applyChangesButton;
@@ -36,9 +40,19 @@ public class DateTimePickerDialog extends JDialog
     private JLabel jLabel2;
     private JLabel jLabel3;
     private JSpinner startDateTime;
+    private Calendar calendar;
+    private LatLon position;
+    private SunPositionProvider spp = new BasicSunPositionProvider();
+    private Vec4 sun, light;
+      private RectangularNormalTessellator tessellator;
+    private LensFlareLayer lensFlareLayer;
+    private AtmosphereLayer atmosphereLayer;
+    private MoonShadingPanel wwd;
+  
     
     public DateTimePickerDialog(WorldWindow wwdObject, Component component)
     {
+        
         this.setSize(400, 240);
         this.setTitle("Date/Time Picker");
         GridBagConstraints gridBagConstraints;
@@ -126,12 +140,46 @@ public class DateTimePickerDialog extends JDialog
 
         applyChangesButton.setText("OK");
         // Action listener for the OK button (apply changes and start animating)
+        
         applyChangesButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+            {   //converts start date and time to string
+                //creates date object with start date and time
+                Object start = startDateTime.getValue();
+                    if (start instanceof Date) {
+                        Date startDateTime = (Date)start;
+                        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss");
+                        String startTime = format.format(startDateTime);
+                        System.out.println(startTime);
+                        Date newDate=new Date(startTime); 
+                        calendar.clear();
+                        calendar.setTime(newDate);
+                        LatLon sunPos=spp.changePosition();
+                        sun = wwd.getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3();
+                        light = sun.getNegative3();
+                        tessellator.setLightDirection(light);
+                        lensFlareLayer.setSunDirection(sun);
+                        atmosphereLayer.setSunDirection(sun);
+                        
+                    }
+                  //converts end date and time to string
+                  //creates date object with end date and time
+                Object end = endDateTime.getValue();
+                    if (end instanceof Date) {
+                        Date endDateTime = (Date)end;
+                        SimpleDateFormat format2 = new SimpleDateFormat("yyyy.MM.dd G 'at' HH:mm:ss z");
+                        String endTime = format2.format(endDateTime);
+                        Date newDate2=new Date(endTime); 
+                 
+                //calls changeTimeAndDate() from BasicSunPositionProvider to update position
+                //with position variable, can use same format as done previously for absolute checkbox in MoonShadingPanel
+            }
+                    
             }
         });
+        
+       
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -139,6 +187,10 @@ public class DateTimePickerDialog extends JDialog
         gridBagConstraints.insets = new Insets(35, 6, 6, 0);
         getContentPane().add(applyChangesButton, gridBagConstraints);
 
+        
+       
+       
           
     }
+    
 }

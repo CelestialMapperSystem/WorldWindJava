@@ -232,6 +232,7 @@ public class MoonShadingPanel extends JPanel
         dateTimePickerButton.setToolTipText("Select a date and time for simulation");
         dateTimePickerButton.addActionListener(new ActionListener() 
          {
+             
             public void actionPerformed(ActionEvent event) 
             {
                  if(dateTimeDialog == null)
@@ -298,7 +299,7 @@ public class MoonShadingPanel extends JPanel
                 sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3();
             }
             light = sun.getNegative3();
-            
+             
             this.tessellator.setLightDirection(light);
             this.lensFlareLayer.setSunDirection(sun);
             this.atmosphereLayer.setSunDirection(sun);

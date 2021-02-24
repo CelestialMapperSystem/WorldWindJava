@@ -41,4 +41,11 @@ public class BasicSunPositionProvider implements SunPositionProvider {
     public synchronized LatLon getPosition() {
         return position;
     }
+    //changes position when input if given for time and date
+    public LatLon changePosition(){
+        this.position = SunCalculator.subsolarPoint(calendar);
+        return position;
+    }
+       
+    
 }
