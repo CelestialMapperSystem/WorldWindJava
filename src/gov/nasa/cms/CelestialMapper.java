@@ -161,30 +161,8 @@ public class CelestialMapper extends AppFrame
         JMenuBar menuBar = new JMenuBar();
 
         //========"File"=========
-        JMenu layers = new JMenu("Layers");
-        {            
-            // Layers
-//            layerManagerCheckBox = new JCheckBoxMenuItem("Layers");
-//            layerManagerCheckBox.setSelected(isLayerManagerOpen);
-//            layerManagerCheckBox.addActionListener((ActionEvent event) ->
-//            {
-//                isLayerManagerOpen = !isLayerManagerOpen;
-//                if (isLayerManagerOpen)
-//                {
-//                    if (layerManager == null)
-//                    {
-//                        layerManager = new LayerManagerDialog(getWwd(), this);
-//                    }
-//                    layerManager.setVisible(true);
-//                }
-//                else
-//                {
-//                    layerManager.setVisible(false);
-//                }
-//            }
-//            );
-//            layers.add(layerManagerCheckBox);
-            
+        JMenu layers = new JMenu("File");
+        {
            // WMS Layer Manager
             wmsCheckBox = new JCheckBoxMenuItem("WMS Layer Panel");
             wmsCheckBox.setSelected(isWMSManagerOpen);

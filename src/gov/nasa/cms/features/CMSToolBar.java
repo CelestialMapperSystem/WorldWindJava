@@ -83,7 +83,7 @@ public class CMSToolBar
              switch (buttonText){
                  case LAYER_MANAGER:
                      setButtonIcon("cms-data/icons/icons8-layers-48.png",button);
-                     button.addMouseListener(createToolbarButtonMouseListener());
+                     button.addActionListener(e -> showLayerManager());
                  case MEASUREMENTS:
                      setButtonIcon("cms-data/icons/icons8-layers-48.png",button);
                  case COORDINATES:
