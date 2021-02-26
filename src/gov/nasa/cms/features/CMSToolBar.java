@@ -123,7 +123,7 @@ public class CMSToolBar
             else if (BUTTON.MEASUREMENTS.jButton.equals(button))
             {
                 System.out.println(buttonText + " = MEASUREMENTS: " + buttonText.equals(BUTTON.MEASUREMENTS.name));
-//                     setButtonIcon("cms-data/icons/icons8-layers-48.png",button);
+                     setButtonIcon("cms-data/icons/icons8-measurement-tool-48.png",button);
                      button.addActionListener((ActionEvent e) -> {
                          showMeasureTool();
                      });
