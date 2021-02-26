@@ -21,12 +21,29 @@ public class CMSToolBar
     private final CelestialMapper frame;
 
     // TODO - Create ENUM to hold various button names and any properties
-    private final String LAYER_MANAGER = "Layer Manager";
-    private final String MEASUREMENTS = "Measurements";
-    private final String COORDINATES = "Coordinates";
-    private final String PROFILER = "Profiler";
-    private final String SIGHT_LINES = "Sight Lines";
+//    private final String LAYER_MANAGER = "Layer Manager";
+//    private final String MEASUREMENTS = "Measurements";
+//    private final String COORDINATES = "Coordinates";
+//    private final String PROFILER = "Profiler";
+//    private final String SIGHT_LINES = "Sight Lines";
     private boolean isLayerManagerOpen;
+    private boolean isMeasureDialogOpen;
+
+    enum BUTTON {
+        LAYER_MANAGER("Layer Manager"),
+        MEASUREMENTS("Measurements"),
+        COORDINATES("Coordinates"),
+        PROFILER("Profiler"),
+        SIGHT_LINES("Sight Lines");
+
+        private JButton jButton;
+        private final String name;
+
+        BUTTON(String s) {
+            this.name = s;
+            this.jButton = new JButton(s);
+        }
+    }
 
     public CMSToolBar(CelestialMapper frame)
     {
@@ -48,11 +65,18 @@ public class CMSToolBar
 //        toolBar.addSeparator(new Dimension(150, 0));
 
         ArrayList<JButton> buttons = new ArrayList<>(5);
-        buttons.add(new JButton(LAYER_MANAGER));
-        buttons.add(new JButton(MEASUREMENTS));
-        buttons.add(new JButton(COORDINATES));
-        buttons.add(new JButton(PROFILER));
-        buttons.add(new JButton(SIGHT_LINES));
+        buttons.add(BUTTON.LAYER_MANAGER.jButton);
+        buttons.add(BUTTON.MEASUREMENTS.jButton);
+        buttons.add(BUTTON.COORDINATES.jButton);
+        buttons.add(BUTTON.PROFILER.jButton);
+        buttons.add(BUTTON.SIGHT_LINES.jButton);
+
+//        ArrayList<BUTTON> buttons1 = new ArrayList<>(5);
+//        for (BUTTON value : BUTTON.values())
+//        {
+//            buttons1.add(value);
+//        }
+
 
         try
         {
@@ -64,6 +88,7 @@ public class CMSToolBar
         }
 
         buttons.forEach(toolBar::add);
+//        buttons1.forEach(e -> toolBar.add(e.jButton));
         this.frame.getContentPane().add(toolBar,BorderLayout.PAGE_START);
 
     }
@@ -79,22 +104,70 @@ public class CMSToolBar
             button.setVerticalTextPosition(AbstractButton.BOTTOM);
 
             String buttonText = button.getText();
+            System.out.println(buttonText);
 
-             switch (buttonText){
-                 case LAYER_MANAGER:
-                     setButtonIcon("cms-data/icons/icons8-layers-48.png",button);
-                     button.addActionListener(e -> showLayerManager());
-                 case MEASUREMENTS:
-                     setButtonIcon("cms-data/icons/icons8-layers-48.png",button);
-                 case COORDINATES:
-                     setButtonIcon("cms-data/icons/icons8-layers-48.png",button);
-                 case PROFILER:
-                     setButtonIcon("cms-data/icons/icons8-layers-48.png",button);
-                 case SIGHT_LINES:
-                     setButtonIcon("cms-data/icons/icons8-layers-48.png",button);
-             }
+            // Due to weird issues with the original Switch/Case code block here
+            // Where the button was set according to the string value of it's name
+            // I had to encapsulate everything in an Enum and resort to using this
+            // convoluted If / Else tree to make sure that this first button
+            // wasn't being given multiple ActionListeners AND that each button was
+            //
+            if (BUTTON.LAYER_MANAGER.jButton.equals(button))
+            {
+                System.out.println(buttonText + " = LAYER_MANAGER: " + buttonText.equals(BUTTON.LAYER_MANAGER.name));
+                setButtonIcon("cms-data/icons/icons8-layers-48.png", button);
+                button.addActionListener((ActionEvent ev) -> {
+                    showLayerManager();
+                });
+            }
+            else if (BUTTON.MEASUREMENTS.jButton.equals(button))
+            {
+                System.out.println(buttonText + " = MEASUREMENTS: " + buttonText.equals(BUTTON.MEASUREMENTS.name));
+//                     setButtonIcon("cms-data/icons/icons8-layers-48.png",button);
+                     button.addActionListener((ActionEvent e) -> {
+                         showMeasureTool();
+                     });
+            }
+            else if (BUTTON.COORDINATES.jButton.equals(button))
+            {
+//                setButtonIcon("cms-data/icons/icons8-layers-48.png", button);
+
+            }
+            else if (BUTTON.PROFILER.jButton.equals(button))
+            {
+//                setButtonIcon("cms-data/icons/icons8-layers-48.png", button);
+
+            }
+            else if (BUTTON.SIGHT_LINES.jButton.equals(button))
+            {
+//                setButtonIcon("cms-data/icons/icons8-layers-48.png", button);
+            }
         }
     }
+
+//    private void initializeButtons(ArrayList<BUTTON> buttons) throws IOException{
+//        for (BUTTON button: buttons)
+//        {
+//            button.jButton.setPreferredSize(new Dimension(50,80));
+//            button.jButton.setFocusPainted(false);
+//
+//            button.jButton.setHorizontalTextPosition(AbstractButton.CENTER);
+//            button.jButton.setVerticalTextPosition(AbstractButton.BOTTOM);
+//
+//            String buttonText = button.name;
+//            System.out.println(buttonText);
+//
+//            switch (button){
+//                case LAYER_MANAGER:
+//                    System.out.println(buttonText + " = LAYER_MANAGER: " + buttonText.equals(BUTTON.LAYER_MANAGER.name));
+//                    setButtonIcon("cms-data/icons/icons8-layers-48.png", button.jButton);
+//                    button.jButton.addActionListener((ActionEvent ev) -> {
+//                        showLayerManager();
+//                    });
+//            }
+//
+//        }
+//    }
 
     private void setButtonIcon(String path, AbstractButton button) throws IOException
     {
@@ -111,42 +184,68 @@ public class CMSToolBar
                     frame.setLayerManager(new LayerManagerDialog(frame.getWwd(), frame));
                 }
                 frame.getLayerManager().setVisible(true);
+                frame.setLayerManagerisOpen(true);
             }
             else
             {
                 frame.getLayerManager().setVisible(false);
+                frame.setLayerManagerisOpen(false);
             }
         };
     }
 
-    public MouseListener createToolbarButtonMouseListener(){
-        MouseListener mouseListener = new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                showLayerManager();
+    public void showMeasureTool(){
+        {
+
+            this.isMeasureDialogOpen = !frame.isMeasureDialogOpen();
+            if (isMeasureDialogOpen)
+            {
+                // Only open if the MeasureDialog has never been opened
+                if (frame.getMeasureDialog() == null)
+                {
+                    // Create the dialog from the WorldWindow, MeasureTool and AppFrame
+                    frame.setMeasureDialog(new MeasureDialog(frame.getWwd(), frame.getMeasureTool(), frame));
+                }
+                // Display on screen
+                frame.getMeasureDialog().setVisible(true);
+                frame.setMeasureDialogOpen(true);
             }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-
+            else // Hide the dialog
+            {
+                frame.getMeasureDialog().setVisible(false);
+                frame.setMeasureDialogOpen(false);
             }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-        };
-        return mouseListener;
+        }
     }
+
+//    public MouseListener createToolbarButtonMouseListener(){
+//        MouseListener mouseListener = new MouseListener() {
+//            @Override
+//            public void mouseClicked(MouseEvent e) {
+//                showLayerManager();
+//            }
+//
+//            @Override
+//            public void mousePressed(MouseEvent e) {
+//
+//            }
+//
+//            @Override
+//            public void mouseReleased(MouseEvent e) {
+//
+//            }
+//
+//            @Override
+//            public void mouseEntered(MouseEvent e) {
+//
+//            }
+//
+//            @Override
+//            public void mouseExited(MouseEvent e) {
+//
+//            }
+//        };
+//        return mouseListener;
+//    }
 
 }

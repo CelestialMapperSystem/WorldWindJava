@@ -199,27 +199,27 @@ public class CelestialMapper extends AppFrame
             menuBar.add(tools);
 
             // Measure Tool
-            measurementCheckBox = new JCheckBoxMenuItem("Measurement");
-            measurementCheckBox.setSelected(isMeasureDialogOpen);
-            measurementCheckBox.addActionListener((ActionEvent event) ->
-            {
-                isMeasureDialogOpen = !isMeasureDialogOpen;
-                if (isMeasureDialogOpen)
-                {
-                    // Only open if the MeasureDialog has never been opened
-                    if (measureDialog == null)
-                    {
-                        // Create the dialog from the WorldWindow, MeasureTool and AppFrame
-                        measureDialog = new MeasureDialog(getWwd(), measureTool, this);
-                    }
-                    // Display on screen
-                    measureDialog.setVisible(true);
-                } else // Hide the dialog
-                {
-                    measureDialog.setVisible(false);
-                }
-            });
-            tools.add(measurementCheckBox);
+//            measurementCheckBox = new JCheckBoxMenuItem("Measurement");
+//            measurementCheckBox.setSelected(isMeasureDialogOpen);
+//            measurementCheckBox.addActionListener((ActionEvent event) ->
+//            {
+//                isMeasureDialogOpen = !isMeasureDialogOpen;
+//                if (isMeasureDialogOpen)
+//                {
+//                    // Only open if the MeasureDialog has never been opened
+//                    if (measureDialog == null)
+//                    {
+//                        // Create the dialog from the WorldWindow, MeasureTool and AppFrame
+//                        measureDialog = new MeasureDialog(getWwd(), measureTool, this);
+//                    }
+//                    // Display on screen
+//                    measureDialog.setVisible(true);
+//                } else // Hide the dialog
+//                {
+//                    measureDialog.setVisible(false);
+//                }
+//            });
+//            tools.add(measurementCheckBox);
         }
         menuBar.add(tools);
 
@@ -364,5 +364,230 @@ public class CelestialMapper extends AppFrame
     public void setLayerManagerOpen(boolean layerManagerOpen)
     {
         isLayerManagerOpen = layerManagerOpen;
+    }
+
+    public boolean isMeasureDialogOpen()
+    {
+        return isMeasureDialogOpen;
+    }
+
+    public MeasureDialog getMeasureDialog()
+    {
+        return this.measureDialog;
+    }
+
+    public CMSPlaceNamesMenu getCmsPlaceNamesMenu()
+    {
+        return cmsPlaceNamesMenu;
+    }
+
+    public void setCmsPlaceNamesMenu(CMSPlaceNamesMenu cmsPlaceNamesMenu)
+    {
+        this.cmsPlaceNamesMenu = cmsPlaceNamesMenu;
+    }
+
+    public ApolloMenu getApolloMenu()
+    {
+        return apolloMenu;
+    }
+
+    public void setApolloMenu(ApolloMenu apolloMenu)
+    {
+        this.apolloMenu = apolloMenu;
+    }
+
+    public MoonElevationModel getElevationModel()
+    {
+        return elevationModel;
+    }
+
+    public void setElevationModel(MoonElevationModel elevationModel)
+    {
+        this.elevationModel = elevationModel;
+    }
+
+    public CMSProfile getProfile()
+    {
+        return profile;
+    }
+
+    public void setProfile(CMSProfile profile)
+    {
+        this.profile = profile;
+    }
+
+    public void setMeasureDialog(MeasureDialog measureDialog)
+    {
+        this.measureDialog = measureDialog;
+    }
+
+    public MeasureTool getMeasureTool()
+    {
+        return measureTool;
+    }
+
+    public void setMeasureTool(MeasureTool measureTool)
+    {
+        this.measureTool = measureTool;
+    }
+
+    public CMSLineOfSight getLineOfSight()
+    {
+        return lineOfSight;
+    }
+
+    public void setLineOfSight(CMSLineOfSight lineOfSight)
+    {
+        this.lineOfSight = lineOfSight;
+    }
+
+    public boolean isStereo()
+    {
+        return stereo;
+    }
+
+    public void setStereo(boolean stereo)
+    {
+        this.stereo = stereo;
+    }
+
+    public boolean isFlat()
+    {
+        return flat;
+    }
+
+    public void setFlat(boolean flat)
+    {
+        this.flat = flat;
+    }
+
+    public void setMeasureDialogOpen(boolean measureDialogOpen)
+    {
+        isMeasureDialogOpen = measureDialogOpen;
+    }
+
+    public boolean isResetWindow()
+    {
+        return resetWindow;
+    }
+
+    public void setResetWindow(boolean resetWindow)
+    {
+        this.resetWindow = resetWindow;
+    }
+
+    public boolean isSight()
+    {
+        return sight;
+    }
+
+    public void setSight(boolean sight)
+    {
+        this.sight = sight;
+    }
+
+    public JCheckBoxMenuItem getStereoCheckBox()
+    {
+        return stereoCheckBox;
+    }
+
+    public void setStereoCheckBox(JCheckBoxMenuItem stereoCheckBox)
+    {
+        this.stereoCheckBox = stereoCheckBox;
+    }
+
+    public JCheckBoxMenuItem getFlatGlobe()
+    {
+        return flatGlobe;
+    }
+
+    public void setFlatGlobe(JCheckBoxMenuItem flatGlobe)
+    {
+        this.flatGlobe = flatGlobe;
+    }
+
+    public JCheckBoxMenuItem getMeasurementCheckBox()
+    {
+        return measurementCheckBox;
+    }
+
+    public void setMeasurementCheckBox(JCheckBoxMenuItem measurementCheckBox)
+    {
+        this.measurementCheckBox = measurementCheckBox;
+    }
+
+    public JCheckBoxMenuItem getWmsCheckBox()
+    {
+        return wmsCheckBox;
+    }
+
+    public void setWmsCheckBox(JCheckBoxMenuItem wmsCheckBox)
+    {
+        this.wmsCheckBox = wmsCheckBox;
+    }
+
+    public JCheckBoxMenuItem getLayerManagerCheckBox()
+    {
+        return layerManagerCheckBox;
+    }
+
+    public void setLayerManagerCheckBox(JCheckBoxMenuItem layerManagerCheckBox)
+    {
+        this.layerManagerCheckBox = layerManagerCheckBox;
+    }
+
+    public JMenuItem getReset()
+    {
+        return reset;
+    }
+
+    public void setReset(JMenuItem reset)
+    {
+        this.reset = reset;
+    }
+
+    public CMSToolBar getToolBar()
+    {
+        return toolBar;
+    }
+
+    public void setToolBar(CMSToolBar toolBar)
+    {
+        this.toolBar = toolBar;
+    }
+
+    public Registry getRegController()
+    {
+        return regController;
+    }
+
+    public void setRegController(Registry regController)
+    {
+        this.regController = regController;
+    }
+
+    public Controller getGeneralController()
+    {
+        return generalController;
+    }
+
+    public void setGeneralController(Controller generalController)
+    {
+        this.generalController = generalController;
+    }
+
+    public MouseListener getMouseListener()
+    {
+        return mouseListener;
+    }
+
+    public void setMouseListener(MouseListener mouseListener)
+    {
+        this.mouseListener = mouseListener;
+    }
+
+    public void setLayerManagerisOpen(boolean b)
+    {
+        this.isLayerManagerOpen = b;
     }
 }
