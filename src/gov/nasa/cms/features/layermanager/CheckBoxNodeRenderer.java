@@ -27,6 +27,7 @@ public class CheckBoxNodeRenderer implements TreeCellRenderer
 	private Color textBackground;
 	private Font fontValue;
 	private WorldWindow wwd;
+	private CheckBoxNode node;
 
 	public CheckBoxNodeRenderer( WorldWindow wwd, Font fontValue )
 	{
@@ -53,7 +54,6 @@ public class CheckBoxNodeRenderer implements TreeCellRenderer
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row,
 		boolean hasFocus)
 	{
-
 		Component c;
 
 		if (leaf)
@@ -62,7 +62,6 @@ public class CheckBoxNodeRenderer implements TreeCellRenderer
 
 			leafRenderer.setText(stringValue);
 			leafRenderer.setSelected(false);
-
 			leafRenderer.setEnabled(tree.isEnabled());
 
 			if (selected)
@@ -82,17 +81,22 @@ public class CheckBoxNodeRenderer implements TreeCellRenderer
 
 				if (userObject instanceof CheckBoxNode)
 				{
-					CheckBoxNode node = (CheckBoxNode) userObject;
+					this.node = (CheckBoxNode) userObject;
 
 					leafRenderer.setToolTipText(node.getParentText());
 					leafRenderer.setText(node.getText());
 					leafRenderer.setSelected(node.isSelected());
 
-					Layer layer = wwd.getModel().getLayers().getLayerByName( node.getFullText() );
+					// Need to use the shortened name of the layer to look it up in wwd for some reason
+					Layer layer = wwd.getModel().getLayers().getLayerByName( node.getText() );
 
+					// I expect that this code only executes once when the tree is first filled
+					// But it seems that both the Editor and Renderer need to have non-null results
+					// for the layer look up in order for multiple checkboxes to be selected and
+					// multiple layers to be shown at the same time.
 					if ( layer != null )	
 					{
-						layer.setEnabled( leafRenderer.isSelected() );
+						layer.setEnabled( leafRenderer.isSelected());
 					}
 				}
 			}
@@ -110,5 +114,50 @@ public class CheckBoxNodeRenderer implements TreeCellRenderer
 	protected JCheckBox getLeafRenderer()
 	{
 		return leafRenderer;
+	}
+
+	public DefaultTreeCellRenderer getNonLeafRenderer()
+	{
+		return nonLeafRenderer;
+	}
+
+	public Color getSelectionBorderColor()
+	{
+		return selectionBorderColor;
+	}
+
+	public Color getSelectionForeground()
+	{
+		return selectionForeground;
+	}
+
+	public Color getSelectionBackground()
+	{
+		return selectionBackground;
+	}
+
+	public Color getTextForeground()
+	{
+		return textForeground;
+	}
+
+	public Color getTextBackground()
+	{
+		return textBackground;
+	}
+
+	public Font getFontValue()
+	{
+		return fontValue;
+	}
+
+	public WorldWindow getWwd()
+	{
+		return wwd;
+	}
+
+	public CheckBoxNode getNode()
+	{
+		return node;
 	}
 }

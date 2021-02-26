@@ -5,10 +5,8 @@
  */
 package gov.nasa.cms.features.layermanager;
 
-import gov.nasa.cms.features.layermanager.LayerPanel;
 import gov.nasa.worldwind.WorldWindow;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;

@@ -3,44 +3,17 @@ package gov.nasa.cms.features.layermanager;
 import gov.nasa.cms.CelestialMapper;
 import gov.nasa.cms.features.CMSPlaceNamesMenu;
 import gov.nasa.cms.util.PanelTitle;
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
-import java.awt.Font;
-import java.awt.Dimension;
-import java.awt.event.*;
-import java.util.Vector;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.TitledBorder;
-import javax.swing.BorderFactory;
-import javax.swing.AbstractAction;
+import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.layers.*;
+import gov.nasa.worldwind.layers.placename.PlaceNameLayer;
+
+import javax.swing.*;
+import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
-
-import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.formats.shapefile.ShapefileLayerFactory;
-import gov.nasa.worldwind.formats.shapefile.ShapefileRecord;
-import gov.nasa.worldwind.formats.shapefile.ShapefileRenderable;
-import gov.nasa.worldwind.layers.Layer;
-import gov.nasa.worldwind.layers.StarsLayer;
-import gov.nasa.worldwind.layers.SkyGradientLayer;
-import gov.nasa.worldwind.layers.SkyColorLayer;
-import gov.nasa.worldwind.layers.CompassLayer;
-import gov.nasa.worldwind.layers.placename.PlaceNameLayer;
-import gov.nasa.worldwind.render.PointPlacemarkAttributes;
-import gov.nasa.worldwind.util.Logging;
-import gov.nasa.worldwind.util.WWIO;
-import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.io.InputStream;
-import javax.imageio.ImageIO;
-import javax.swing.JCheckBox;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.Vector;
 
 public class LayerPanel extends JPanel
 {
@@ -48,6 +21,7 @@ public class LayerPanel extends JPanel
      private JPanel layersPanel = null;
      private JPanel treePanel_ = null;
      private JTree tree_ = null;
+
      private JScrollPane scrollPane = null;
      private Font defaultFont = null;
      private WorldWindow wwd = null;
@@ -126,49 +100,53 @@ public class LayerPanel extends JPanel
           {
                String name = layer.getName();
 
-               // This object enables/disables the layer and is stored in the CMSCheckBoxNode
-               // See the tree.addTreeSelectionListener() below
-               LayerAction layerAction = new LayerAction(layer, wwd, layer.isEnabled());
-
                // LOLA Maps
                if (name.startsWith("LOLA") || name.startsWith("LRO"))
                {
+                    // GNorman - 02/26/2021
 
-                    lolaCategory.add(new CMSCheckBoxNode("LOLA", name, layer.isEnabled(),layerAction));
-                    // The first LOLA layer is set to enabled so it appears by default, but redraw is
-                    // needed here to make sure it's rendered when WorldWind loads.
+                    // Originally was thinking of extending the CheckBoxNode to manually add an ActionListener
+                    // to the JCheckBox that gets shown in the tree...but as it turns out the JCheckBox is added
+                    // later by the Renderer using the text stored in CheckBoxNode.
+
+                    // The easiest way to add an ActionListener then is in the CheckBoxNodeEditor, since the
+                    // Renderer should only construct the checkboxes once and the tree needs to be set to "editable"
+                    // in order for the user to even make a change to the checkboxes!
+
+                    // SO instead of fighting how the Tree wants to operate in Java (with total and utter control)
+                    // I updated the CheckBoxNodeEditor stub that Kaitlyn had made with an ActionListener and used
+                    // the text stored here in the CheckBoxNode, stored in the Renderer, to look up and enable/disable
+                    // the WorldWind layer.
+
+                    lolaCategory.add(new CheckBoxNode("LOLA", name, layer.isEnabled()));
                     wwd.redraw();
                } 
                // Clementine Maps
                else if (name.startsWith("Clementine"))
                {
-                    clementineCategory.add(new CMSCheckBoxNode("Clementine", name, layer.isEnabled(), layerAction));
+                    clementineCategory.add(new CheckBoxNode("Clementine", name, layer.isEnabled()));
                } 
                // Kaguya Maps
                else if (name.startsWith("Kaguya") || name.startsWith("Lunar"))
                {
-                    globalMapsCategory.add(new CMSCheckBoxNode("Global Maps", name, layer.isEnabled(), layerAction));
+                    globalMapsCategory.add(new CheckBoxNode("Global Maps", name, layer.isEnabled()));
                } 
                // Resource Maps
                else if (name.startsWith("Unified"))
                {
-                    resourceMapsCategory.add(new CMSCheckBoxNode("Resource Maps", name, layer.isEnabled(), layerAction));
+                    resourceMapsCategory.add(new CheckBoxNode("Resource Maps", name, layer.isEnabled()));
                } 
                // Tools
                else if (name.startsWith("Lat") || name.startsWith("GARS") || name.startsWith("View") || name.startsWith("Scale"))
                {
-                    toolsCategory.add(new CMSCheckBoxNode("Tools", name, layer.isEnabled(), layerAction));
+                    toolsCategory.add(new CheckBoxNode("Tools", name, layer.isEnabled()));
                } 
                // Misc
                else
                {
-                    miscOptions.add(new CMSCheckBoxNode("Misc", name, layer.isEnabled(), layerAction));
+                    miscOptions.add(new CheckBoxNode("Misc", name, layer.isEnabled()));
                }
-//
-//            LayerAction action = new LayerAction(layer, wwd, layer.isEnabled());
-//            JCheckBox jcb = new JCheckBox(action);
-//            jcb.setSelected(action.selected);
-//            CheckBoxNode.add(jcb);
+
           }
 
           Object rootNodes[] = new Object[6];
@@ -184,6 +162,7 @@ public class LayerPanel extends JPanel
 
           JTree tree = new JTree(rootVector);
 
+
           tree.setCellRenderer(new CheckBoxNodeRenderer(wwd, font_));
           tree.setCellEditor(new CheckBoxNodeEditor(wwd, tree, font_));
 
@@ -191,37 +170,6 @@ public class LayerPanel extends JPanel
 
           tree.expandRow(6); 
           tree.expandRow(0);
-
-          // Finally!  This is how to get the same effect as registering an actionEvent
-          // on a jCheckBox, whenever a change is registered on the Tree itself.
-          // It's essentially doing the same thing as an ActionListener
-          // by manually updating a boolean value and enabling / disabling the layer
-          // using the LayerAction object's methods.
-
-          tree.addTreeSelectionListener(new TreeSelectionListener() {
-               public void valueChanged(TreeSelectionEvent e) {
-                    DefaultMutableTreeNode node = (DefaultMutableTreeNode)
-                        tree.getLastSelectedPathComponent();
-
-                    /* if nothing is selected */
-                    System.out.println(node);
-                    System.out.println(e.getSource());
-                    if (node == null) return;
-
-                    /* retrieve the node that was selected */
-                    Object nodeInfo = node.getUserObject();
-                    System.out.println(nodeInfo);
-                    System.out.println(nodeInfo.getClass());
-                    
-                    /* React to the node selection. */
-                    if(nodeInfo instanceof CMSCheckBoxNode){
-                         CMSCheckBoxNode cmsCheckBoxNode = (CMSCheckBoxNode) nodeInfo;
-                         boolean previousSelection = cmsCheckBoxNode.getSelected();
-                         System.out.println(previousSelection);
-                         cmsCheckBoxNode.setAction(!previousSelection);
-                    }
-               }
-          });
 
           return tree;
      }
@@ -260,85 +208,6 @@ public class LayerPanel extends JPanel
 
           return true;
      }
-
-     protected static class LayerAction extends AbstractAction
-     {
-          WorldWindow wwd;
-          protected Layer layer;
-          protected boolean selected;
-
-          public LayerAction(Layer layer, WorldWindow wwd, boolean selected)
-          {
-               super(layer.getName());
-               this.wwd = wwd;
-               this.layer = layer;
-               this.selected = selected;
-               this.layer.setEnabled(this.selected);
-          }
-
-          public void actionPerformed(ActionEvent actionEvent)
-          {
-               // Simply enable or disable the layer based on its toggle button.
-               if (((JCheckBoxMenuItem) actionEvent.getSource()).isSelected())
-               {
-                    this.layer.setEnabled(true);
-               } else
-               {
-                    this.layer.setEnabled(false);
-               }
-               wwd.redraw();
-          }
-
-          public void actionPerformed(boolean selected){
-               if(selected){
-                    this.layer.setEnabled(true);
-               } else {
-                    this.layer.setEnabled(false);
-               }
-               this.wwd.redraw();
-          }
-     }
-
-     class CMSCheckBoxNode extends CheckBoxNode
-     {
-          private final LayerAction action;
-          private boolean selected;
-
-          public CMSCheckBoxNode(String parent, String text, boolean selected, LayerAction action)
-          {
-               super(parent, text, selected);
-               this.selected = selected;
-               this.action = action;
-          }
-
-          public void setAction(Boolean newChoice){
-               this.setSelected(newChoice);
-               this.action.actionPerformed(newChoice);
-          }
-
-          public void fire(){
-               this.setAction(selected);
-          }
-
-          public void setSelected(Boolean newChoice){
-               this.selected = newChoice;
-          }
-
-          public boolean getSelected(){
-               return this.selected;
-          }
-     }
-
-     class CMSCheckBoxNodeEditor extends CheckBoxNodeEditor{
-
-          public CMSCheckBoxNodeEditor(WorldWindow wwd, JTree tree, Font f)
-          {
-               super(wwd, tree, f);
-          }
-
-
-     }
-
 
 
 }
