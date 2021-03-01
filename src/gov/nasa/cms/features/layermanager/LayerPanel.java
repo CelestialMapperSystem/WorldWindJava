@@ -117,7 +117,6 @@ public class LayerPanel extends JPanel
                     // I updated the CheckBoxNodeEditor stub that Kaitlyn had made with an ActionListener and used
                     // the text stored here in the CheckBoxNode, stored in the Renderer, to look up and enable/disable
                     // the WorldWind layer.
-
                     lolaCategory.add(new CheckBoxNode("LOLA", name, layer.isEnabled()));
                     wwd.redraw();
                } 
@@ -165,7 +164,6 @@ public class LayerPanel extends JPanel
 
           tree.setCellRenderer(new CheckBoxNodeRenderer(wwd, font_));
           tree.setCellEditor(new CheckBoxNodeEditor(wwd, tree, font_));
-
           tree.setEditable(true);
 
           tree.expandRow(6); 

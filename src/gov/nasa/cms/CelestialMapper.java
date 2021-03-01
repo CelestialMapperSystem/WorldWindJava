@@ -6,10 +6,10 @@
 package gov.nasa.cms;
 
 import gov.nasa.cms.features.*;
+import gov.nasa.cms.features.coordinates.CoordinatesDialog;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
+import gov.nasa.cms.features.LineOfSightController;
 import gov.nasa.worldwind.Configuration;
-import gov.nasa.worldwind.util.WWUtil;
-import gov.nasa.worldwind.util.WWXML;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.WorldWindow;
@@ -21,31 +21,14 @@ import gov.nasa.worldwind.globes.MoonFlat;
 import gov.nasa.worldwind.render.ScreenImage;
 import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwindx.applications.worldwindow.core.*;
-import gov.nasa.worldwindx.applications.worldwindow.features.Measurement;
-import gov.nasa.worldwindx.applications.worldwindow.util.Util;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URLConnection;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import java.awt.*;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import javax.swing.*;
 import javax.imageio.ImageIO;
 
 /**
@@ -61,7 +44,7 @@ public class CelestialMapper extends AppFrame
     private CMSProfile profile;
     private MeasureDialog measureDialog;
     private MeasureTool measureTool;
-    private CMSLineOfSight lineOfSight;
+    private LineOfSightController lineOfSight;
     private LayerManagerDialog layerManager;
     private WMSLayerManager wmsLayerManager;
     
@@ -83,6 +66,7 @@ public class CelestialMapper extends AppFrame
     private Registry regController;
     private Controller generalController;
     private MouseListener mouseListener;
+    private CoordinatesDialog coordinatesDialog;
 
     public void restart()
     {
@@ -191,12 +175,12 @@ public class CelestialMapper extends AppFrame
         menuBar.add(cmsPlaceNamesMenu);
 
         //======== "Tools" ========        
-        JMenu tools = new JMenu("Tools");
+//        JMenu tools = new JMenu("Tools");
         {
             // Terrain Profiler
-            profile = new CMSProfile(this.getWwd());
-            tools.add(profile);
-            menuBar.add(tools);
+//            profile = new CMSProfile(this.getWwd());
+//            tools.add(profile);
+//            menuBar.add(tools);
 
             // Measure Tool
 //            measurementCheckBox = new JCheckBoxMenuItem("Measurement");
@@ -221,7 +205,7 @@ public class CelestialMapper extends AppFrame
 //            });
 //            tools.add(measurementCheckBox);
         }
-        menuBar.add(tools);
+//        menuBar.add(tools);
 
         //======== "Apollo" ========      
         apolloMenu = new ApolloMenu(this.getWwd());
@@ -281,8 +265,8 @@ public class CelestialMapper extends AppFrame
             view.add(flatGlobe);    
             
             //======== "Line of Sight" =========
-            lineOfSight = new CMSLineOfSight(this, this.getWwd());
-            view.add(lineOfSight);
+//            lineOfSight = new CMSLineOfSight(this, this.getWwd());
+//            view.add(lineOfSight);
             
             
             //======== "Reset" =========
@@ -431,12 +415,12 @@ public class CelestialMapper extends AppFrame
         this.measureTool = measureTool;
     }
 
-    public CMSLineOfSight getLineOfSight()
+    public LineOfSightController getLineOfSight()
     {
         return lineOfSight;
     }
 
-    public void setLineOfSight(CMSLineOfSight lineOfSight)
+    public void setLineOfSight(LineOfSightController lineOfSight)
     {
         this.lineOfSight = lineOfSight;
     }
@@ -589,5 +573,15 @@ public class CelestialMapper extends AppFrame
     public void setLayerManagerisOpen(boolean b)
     {
         this.isLayerManagerOpen = b;
+    }
+
+    public CoordinatesDialog getCoordinatesDialog()
+    {
+        return this.coordinatesDialog;
+    }
+
+    public void setCoordinatesDialog(CoordinatesDialog coordinatesDialog)
+    {
+        this.coordinatesDialog = coordinatesDialog;
     }
 }

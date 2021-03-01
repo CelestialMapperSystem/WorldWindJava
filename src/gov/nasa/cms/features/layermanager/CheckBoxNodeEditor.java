@@ -113,7 +113,6 @@ public class CheckBoxNodeEditor extends AbstractCellEditor implements TreeCellEd
 				}
 			});
 		}
-	
 		return editor;
 	}
 

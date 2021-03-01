@@ -7,7 +7,9 @@
 package gov.nasa.cms.features;
 
 import gov.nasa.cms.*;
+import gov.nasa.cms.features.coordinates.CoordinatesDialog;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
+import gov.nasa.cms.features.LineOfSightController;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -26,8 +28,11 @@ public class CMSToolBar
 //    private final String COORDINATES = "Coordinates";
 //    private final String PROFILER = "Profiler";
 //    private final String SIGHT_LINES = "Sight Lines";
-    private boolean isLayerManagerOpen;
-    private boolean isMeasureDialogOpen;
+    private boolean isLayerManagerOpen = false;
+    private boolean isMeasureDialogOpen = false;
+    private boolean isCoordinatesDialogOpen = false;
+    private boolean isProfilerOpen = false;
+    private boolean isLineOfSightOpen = false;
 
     enum BUTTON {
         LAYER_MANAGER("Layer Manager"),
@@ -104,7 +109,7 @@ public class CMSToolBar
             button.setVerticalTextPosition(AbstractButton.BOTTOM);
 
             String buttonText = button.getText();
-            System.out.println(buttonText);
+//            System.out.println(buttonText);
 
             // Due to weird issues with the original Switch/Case code block here
             // Where the button was set according to the string value of it's name
@@ -114,7 +119,7 @@ public class CMSToolBar
             //
             if (BUTTON.LAYER_MANAGER.jButton.equals(button))
             {
-                System.out.println(buttonText + " = LAYER_MANAGER: " + buttonText.equals(BUTTON.LAYER_MANAGER.name));
+//                System.out.println(buttonText + " = LAYER_MANAGER: " + buttonText.equals(BUTTON.LAYER_MANAGER.name));
                 setButtonIcon("cms-data/icons/icons8-layers-48.png", button);
                 button.addActionListener((ActionEvent ev) -> {
                     showLayerManager();
@@ -122,7 +127,7 @@ public class CMSToolBar
             }
             else if (BUTTON.MEASUREMENTS.jButton.equals(button))
             {
-                System.out.println(buttonText + " = MEASUREMENTS: " + buttonText.equals(BUTTON.MEASUREMENTS.name));
+//                System.out.println(buttonText + " = MEASUREMENTS: " + buttonText.equals(BUTTON.MEASUREMENTS.name));
                      setButtonIcon("cms-data/icons/icons8-measurement-tool-48.png",button);
                      button.addActionListener((ActionEvent e) -> {
                          showMeasureTool();
@@ -130,18 +135,47 @@ public class CMSToolBar
             }
             else if (BUTTON.COORDINATES.jButton.equals(button))
             {
-//                setButtonIcon("cms-data/icons/icons8-layers-48.png", button);
+                setButtonIcon("cms-data/icons/icons8-grid-48.png", button);
+                button.addActionListener((ActionEvent e) -> showCoordinatesDialog());
 
             }
             else if (BUTTON.PROFILER.jButton.equals(button))
             {
-//                setButtonIcon("cms-data/icons/icons8-layers-48.png", button);
+                setButtonIcon("cms-data/icons/icons8-bell-curve-48.png", button);
+                button.addActionListener(e -> showProfiler());
 
             }
             else if (BUTTON.SIGHT_LINES.jButton.equals(button))
             {
-//                setButtonIcon("cms-data/icons/icons8-layers-48.png", button);
+                setButtonIcon("cms-data/icons/icons8-head-profile-48.png", button);
+                button.addActionListener(e -> showLineOfSight());
             }
+        }
+    }
+
+    private void showLineOfSight()
+    {
+        this.isLineOfSightOpen = !isLineOfSightOpen;
+        if(isLineOfSightOpen){
+            if(frame.getLineOfSight() == null){
+                frame.setLineOfSight(new LineOfSightController(frame, frame.getWwd()));
+            }
+            frame.getLineOfSight().setVisible(true);
+        } else {
+            frame.getLineOfSight().setVisible(false);
+        }
+    }
+
+    private void showProfiler()
+    {
+        this.isProfilerOpen = !isProfilerOpen;
+        if(isProfilerOpen){
+            if(frame.getProfile() == null){
+                frame.setProfile(new CMSProfile(frame.getWwd(), frame));
+            }
+            frame.getProfile().setVisible(true);
+        } else {
+            frame.getProfile().setVisible(false);
         }
     }
 
@@ -174,9 +208,25 @@ public class CMSToolBar
         button.setIcon(new ImageIcon(ImageIO.read(new File(path))));
     }
 
+    private void showCoordinatesDialog()
+    {
+        this.isCoordinatesDialogOpen = !isCoordinatesDialogOpen;
+        if(isCoordinatesDialogOpen){
+            if(frame.getCoordinatesDialog() == null)
+            {
+                frame.setCoordinatesDialog(new CoordinatesDialog(frame.getWwd(), frame));
+            }
+            frame.getCoordinatesDialog().setVisible(true);
+        }
+        else
+        {
+            frame.getCoordinatesDialog().setVisible(false);
+        }
+    }
+
     public void showLayerManager(){
         {
-            this.isLayerManagerOpen = !frame.isLayerManagerOpen();
+            this.isLayerManagerOpen = !isLayerManagerOpen;
             if (isLayerManagerOpen)
             {
                 if (frame.getLayerManager() == null)
@@ -184,12 +234,12 @@ public class CMSToolBar
                     frame.setLayerManager(new LayerManagerDialog(frame.getWwd(), frame));
                 }
                 frame.getLayerManager().setVisible(true);
-                frame.setLayerManagerisOpen(true);
+//                frame.setLayerManagerisOpen(true);
             }
             else
             {
                 frame.getLayerManager().setVisible(false);
-                frame.setLayerManagerisOpen(false);
+//                frame.setLayerManagerisOpen(false);
             }
         };
     }
@@ -197,7 +247,7 @@ public class CMSToolBar
     public void showMeasureTool(){
         {
 
-            this.isMeasureDialogOpen = !frame.isMeasureDialogOpen();
+            this.isMeasureDialogOpen = !isMeasureDialogOpen;
             if (isMeasureDialogOpen)
             {
                 // Only open if the MeasureDialog has never been opened
@@ -208,12 +258,12 @@ public class CMSToolBar
                 }
                 // Display on screen
                 frame.getMeasureDialog().setVisible(true);
-                frame.setMeasureDialogOpen(true);
+//                frame.setMeasureDialogOpen(true);
             }
             else // Hide the dialog
             {
                 frame.getMeasureDialog().setVisible(false);
-                frame.setMeasureDialogOpen(false);
+//                frame.setMeasureDialogOpen(false);
             }
         }
     }

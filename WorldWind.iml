@@ -10,6 +10,7 @@
       <sourceFolder url="file://$MODULE_DIR$/testFunctional" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/src/gov/nasa/newlayerpanel" />
+      <excludeFolder url="file://$MODULE_DIR$/src/gov/nasa/cms/old" />
     </content>
     <orderEntry type="jdk" jdkName="11" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />

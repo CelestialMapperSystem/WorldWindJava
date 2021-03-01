@@ -4,6 +4,10 @@ https://icons8.com/license
 	- icons8-layers-*
 <a target="_blank" href="https://icons8.com/icons/set/measurement-tool">Measurement Tool icon</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
 
+<a target="_blank" href="https://icons8.com/icons/set/grid">Grid icon</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
+
+<a target="_blank" href="https://icons8.com/icons/set/average-value">Bell Curve icon</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
+
 Source 002
 
 
