@@ -3,6 +3,7 @@ package gov.nasa.cms.features.moonshading;
 import gov.nasa.worldwind.geom.LatLon;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
 /**
@@ -25,7 +26,7 @@ public class BasicSunPositionProvider implements SunPositionProvider {
                         Thread.sleep(60000);
                     } catch (InterruptedException ignore) {
                     }
-                    calendar.setTimeInMillis(System.currentTimeMillis());
+                    calendar.setTime(new Date());
                     updatePosition();
                 }
             }
@@ -41,11 +42,4 @@ public class BasicSunPositionProvider implements SunPositionProvider {
     public synchronized LatLon getPosition() {
         return position;
     }
-    //changes position when input if given for time and date
-    public LatLon changePosition(){
-        this.position = SunCalculator.subsolarPoint(calendar);
-        return position;
-    }
-       
-    
 }
