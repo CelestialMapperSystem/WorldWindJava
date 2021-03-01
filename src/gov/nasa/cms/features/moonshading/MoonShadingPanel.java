@@ -238,6 +238,7 @@ public class MoonShadingPanel extends JPanel
                  if(dateTimeDialog == null)
                  {
                       dateTimeDialog = new DateTimePickerDialog(wwd, cms);
+                      spp.updateDateTime();
                  }      
                  dateTimeDialog.setVisible(true);
             }
@@ -296,6 +297,7 @@ public class MoonShadingPanel extends JPanel
                 this.elevationSlider.setEnabled(false);
                 // Compute Sun position according to current date and time
                 LatLon sunPos = spp.getPosition();
+              // LatLon sunPos = LatLon.fromDegrees(23, 40);
                 sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3();
             }
             light = sun.getNegative3();

@@ -20,6 +20,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -48,6 +49,8 @@ public class DateTimePickerDialog extends JDialog
     private Calendar calendar;
     private Date date;
     private SpinnerDateModel model;
+    private MoonShadingPanel moonShading;
+    Date date2 = new GregorianCalendar(2014, Calendar.JUNE, 12, 2, 1).getTime();
 
     public DateTimePickerDialog(WorldWindow wwdObject, Component component)
     {
@@ -77,19 +80,19 @@ public class DateTimePickerDialog extends JDialog
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new Insets(6, 6, 0, 0);
         getContentPane().add(jLabel2, gridBagConstraints);
-
+        
         model = new SpinnerDateModel();
-        calendar = Calendar.getInstance();
+        calendar = new GregorianCalendar(2017, 6, 3, 24, 1);
         date = calendar.getTime();
         model.setValue(date);
         startDateTime = new JSpinner(model);
         startDateTime.addChangeListener(new ChangeListener()
         {
-
             @Override
             public void stateChanged(ChangeEvent e)
             {
                 date = (Date) ((JSpinner) e.getSource()).getValue();
+                calendar.setTime(date);
                 DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss");
                 System.out.println(df.format(date)); 
             }
@@ -140,7 +143,7 @@ public class DateTimePickerDialog extends JDialog
         {
             public void stateChanged(javax.swing.event.ChangeEvent evt)
             {
-
+                
             }
         });
 
@@ -160,8 +163,9 @@ public class DateTimePickerDialog extends JDialog
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss");
-                System.out.println(df.format(startDateTime.getValue()));
+                moonShading.update();
+//                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss");
+//                System.out.println(df.format(startDateTime.getValue()));
             }
 
         });
@@ -173,6 +177,16 @@ public class DateTimePickerDialog extends JDialog
         gridBagConstraints.insets = new Insets(35, 6, 6, 0);
         getContentPane().add(applyChangesButton, gridBagConstraints);
 
+    }
+    
+    public Date getDate()
+    {
+        return date2;
+    }
+    
+    public Calendar getCalendar()
+    {
+        return calendar;
     }
 
 }
