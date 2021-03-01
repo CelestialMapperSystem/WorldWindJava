@@ -296,6 +296,7 @@ public class MoonShadingPanel extends JPanel
                 this.azimuthSlider.setEnabled(false);
                 this.elevationSlider.setEnabled(false);
                 // Compute Sun position according to current date and time
+                spp.updateDateTime();
                 LatLon sunPos = spp.getPosition();
               // LatLon sunPos = LatLon.fromDegrees(23, 40);
                 sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3();

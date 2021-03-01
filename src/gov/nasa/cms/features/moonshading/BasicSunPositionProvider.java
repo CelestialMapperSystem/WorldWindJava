@@ -63,12 +63,7 @@ public class BasicSunPositionProvider implements SunPositionProvider
 
     public synchronized LatLon getPosition()
     {
-        setDateTime();
-        return position;
-    }
-
-    public synchronized void setDateTime()
-    {
         calendar.setTime(dateTimePicker.getDate());
+        return position;
     }
 }

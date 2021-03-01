@@ -50,7 +50,8 @@ public class DateTimePickerDialog extends JDialog
     private Date date;
     private SpinnerDateModel model;
     private MoonShadingPanel moonShading;
-    Date date2 = new GregorianCalendar(2014, Calendar.JUNE, 12, 2, 1).getTime();
+    private BasicSunPositionProvider spp;
+   // Date date2 = new GregorianCalendar(2014, Calendar.JUNE, 12, 2, 1).getTime();
 
     public DateTimePickerDialog(WorldWindow wwdObject, Component component)
     {
@@ -82,6 +83,7 @@ public class DateTimePickerDialog extends JDialog
         getContentPane().add(jLabel2, gridBagConstraints);
         
         model = new SpinnerDateModel();
+       // calendar = new GregorianCalendar();
         calendar = new GregorianCalendar(2017, 6, 3, 24, 1);
         date = calendar.getTime();
         model.setValue(date);
@@ -93,7 +95,7 @@ public class DateTimePickerDialog extends JDialog
             {
                 date = (Date) ((JSpinner) e.getSource()).getValue();
                 calendar.setTime(date);
-                DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss");
+                DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH.mm");
                 System.out.println(df.format(date)); 
             }
         });
@@ -163,7 +165,8 @@ public class DateTimePickerDialog extends JDialog
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                moonShading.update();
+               // spp.updateDateTime();
+               // moonShading.update();
 //                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss");
 //                System.out.println(df.format(startDateTime.getValue()));
             }
@@ -181,7 +184,7 @@ public class DateTimePickerDialog extends JDialog
     
     public Date getDate()
     {
-        return date2;
+        return date;
     }
     
     public Calendar getCalendar()
