@@ -8,7 +8,6 @@ package gov.nasa.cms.features.coordinates;
 
 import gov.nasa.cms.CelestialMapper;
 import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.util.measure.MeasureTool;
 
 import javax.swing.*;
 import java.awt.*;
