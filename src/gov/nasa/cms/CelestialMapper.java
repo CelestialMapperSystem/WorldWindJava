@@ -8,6 +8,7 @@ package gov.nasa.cms;
 import gov.nasa.cms.features.CMSPlaceNamesMenu;
 import gov.nasa.cms.features.ApolloMenu;
 import gov.nasa.cms.features.CMSProfile;
+import gov.nasa.cms.features.ImportKML;
 import gov.nasa.cms.features.LayerManagerLayer;
 import gov.nasa.cms.features.MeasureDialog;
 import gov.nasa.cms.features.MoonElevationModel;
@@ -52,6 +53,7 @@ public class CelestialMapper extends AppFrame
     private MeasureTool measureTool;
     private CMSLineOfSight lineOfSight;
     private WMSLayerManager wmsLayerManager;
+    private ImportKML kmlImporter;
     private boolean stereo;
     private boolean flat;
     private boolean isMeasureDialogOpen;
@@ -171,8 +173,13 @@ public class CelestialMapper extends AppFrame
                 }
             });
             file.add(exportMeasureTool);
+            
+            // KML Importer
+            kmlImporter = new ImportKML(this, this.getWwd(), file);
         }
         menuBar.add(file);
+        
+
         
         
         //======== "CMS Place Names" ========          
