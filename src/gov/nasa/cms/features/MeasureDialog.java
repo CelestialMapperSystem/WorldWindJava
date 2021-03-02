@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,6 +23,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -45,6 +48,7 @@ public class MeasureDialog
     private JTabbedPane tabbedPane = new JTabbedPane();
     private final PropertyChangeListener measureToolListener = new MeasureToolListener();
     private int lastTabIndex = -1;
+    
    
     public MeasureDialog(WorldWindow wwdObject, MeasureTool measureToolObject, Component component)
     {
@@ -179,12 +183,27 @@ public class MeasureDialog
         mt.getWwd().redraw();
     }
     
+    // TO-DO: How to export other shapes besides lines? 
+    // TO-DO: Prompt user to name file
     public void exportMeasureTool() throws FileNotFoundException, XMLStreamException, IOException
     {
+        JFrame parentFrame = new JFrame();
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Specify a file to save");   
+
+        int userSelection = fileChooser.showSaveDialog(parentFrame);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) 
+        {
+            File fileToSave = fileChooser.getSelectedFile();
+            System.out.println("Save as file: " + fileToSave.getAbsolutePath());
+        }
+
         MeasureTool mt = ((CMSMeasurePanel) tabbedPane.getComponentAt(lastTabIndex)).getMeasureTool();
         
         // Create a new FileOutputStream to the user's home directory
-        OutputStream os = new FileOutputStream(Configuration.getUserHomeDirectory() + "/MeasureTool.kml");
+        OutputStream os = new FileOutputStream(fileChooser.getSelectedFile());
             
         // Build the KML document from the file stream
         KMLDocumentBuilder kmlBuilder = new KMLDocumentBuilder(os);
