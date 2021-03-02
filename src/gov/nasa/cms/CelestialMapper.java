@@ -11,6 +11,7 @@ import gov.nasa.cms.features.CMSProfile;
 import gov.nasa.cms.features.LayerManagerLayer;
 import gov.nasa.cms.features.MeasureDialog;
 import gov.nasa.cms.features.MoonElevationModel;
+import gov.nasa.cms.features.WMSLayerManager;
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 import gov.nasa.worldwind.layers.*;
@@ -49,18 +50,19 @@ public class CelestialMapper extends AppFrame
     private CMSProfile profile;
     private MeasureDialog measureDialog;
     private MeasureTool measureTool;
-    //private SatelliteObject orbitalSatellite;
     private CMSLineOfSight lineOfSight;
-    
+    private WMSLayerManager wmsLayerManager;
     private boolean stereo;
     private boolean flat;
     private boolean isMeasureDialogOpen;
+    private boolean isWMSManagerOpen;
     private boolean resetWindow;
     private boolean sight;
 
     private JCheckBoxMenuItem stereoCheckBox;
     private JCheckBoxMenuItem flatGlobe;
     private JCheckBoxMenuItem measurementCheckBox;
+    private JCheckBoxMenuItem wmsCheckBox;
     private JMenuItem reset;
 
     public void restart()
@@ -132,6 +134,33 @@ public class CelestialMapper extends AppFrame
     {
         JMenuBar menuBar = new JMenuBar();
 
+        //========"File"=========
+        JMenu file = new JMenu("File");
+        {
+            // WMS Layer Manager
+            wmsCheckBox = new JCheckBoxMenuItem("WMS Layer Panel");
+            wmsCheckBox.setSelected(isWMSManagerOpen);
+            wmsCheckBox.addActionListener((ActionEvent event) ->
+            {
+                isWMSManagerOpen = !isWMSManagerOpen;
+                if (isWMSManagerOpen)
+                {
+                    if (measureDialog == null)
+                    {
+                        wmsLayerManager = new WMSLayerManager(getWwd(), this);
+                    }
+                    wmsLayerManager.setVisible(true);
+                }
+                else
+                {
+                    wmsLayerManager.setVisible(false);
+                }
+            });
+            file.add(wmsCheckBox);
+        }
+        menuBar.add(file);
+        
+        
         //======== "CMS Place Names" ========          
         cmsPlaceNamesMenu = new CMSPlaceNamesMenu(this, this.getWwd());
         menuBar.add(cmsPlaceNamesMenu);
@@ -142,7 +171,6 @@ public class CelestialMapper extends AppFrame
             // Terrain Profiler
             profile = new CMSProfile(this.getWwd());
             tools.add(profile);
-            menuBar.add(tools);
 
             // Measure Tool
             measurementCheckBox = new JCheckBoxMenuItem("Measurement");
