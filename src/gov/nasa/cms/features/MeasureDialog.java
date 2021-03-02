@@ -184,32 +184,33 @@ public class MeasureDialog
     }
     
     // TO-DO: How to export other shapes besides lines? 
-    // TO-DO: Prompt user to name file
     public void exportMeasureTool() throws FileNotFoundException, XMLStreamException, IOException
     {
-        JFrame parentFrame = new JFrame();
+        JFrame parentFrame = new JFrame(); // Create the frame for the save dialog
 
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Specify a file to save");   
 
-        int userSelection = fileChooser.showSaveDialog(parentFrame);
+        int userSelection = fileChooser.showSaveDialog(parentFrame); // Show the JFileChoose in the popup frame
 
+        // If user approves, set the file save location and export the Measure Tool information in KML
         if (userSelection == JFileChooser.APPROVE_OPTION) 
         {
             File fileToSave = fileChooser.getSelectedFile();
             System.out.println("Save as file: " + fileToSave.getAbsolutePath());
-        }
-
-        MeasureTool mt = ((CMSMeasurePanel) tabbedPane.getComponentAt(lastTabIndex)).getMeasureTool();
-        
-        // Create a new FileOutputStream to the user's home directory
-        OutputStream os = new FileOutputStream(fileChooser.getSelectedFile());
             
-        // Build the KML document from the file stream
-        KMLDocumentBuilder kmlBuilder = new KMLDocumentBuilder(os);
+             MeasureTool mt = ((CMSMeasurePanel) tabbedPane.getComponentAt(lastTabIndex)).getMeasureTool();
         
-        kmlBuilder.writeObjects(
-                mt.getLine());
+            // Create a new FileOutputStream to where the user chose to save the file
+            OutputStream os = new FileOutputStream(fileChooser.getSelectedFile());
+
+            // Build the KML document from the file stream
+            KMLDocumentBuilder kmlBuilder = new KMLDocumentBuilder(os);
+
+            // Write to KML document
+            kmlBuilder.writeObjects(
+                    mt.getLine());
+        }    
     }
 
 }

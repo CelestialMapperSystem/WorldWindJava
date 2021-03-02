@@ -154,6 +154,23 @@ public class CelestialMapper extends AppFrame
                 }
             });
             file.add(wmsCheckBox);
+            
+                        
+            exportMeasureTool = new JMenuItem("Export Measure Tool");
+            exportMeasureTool.addActionListener((ActionEvent event) ->
+            {
+                try
+                {
+                    measureDialog.exportMeasureTool();
+                } catch (XMLStreamException ex)
+                {
+                    Logger.getLogger(CelestialMapper.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex)
+                {
+                    Logger.getLogger(CelestialMapper.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            file.add(exportMeasureTool);
         }
         menuBar.add(file);
         
@@ -191,22 +208,6 @@ public class CelestialMapper extends AppFrame
                 }
             });
             tools.add(measurementCheckBox);
-            
-            exportMeasureTool = new JMenuItem("Export Measure Tool");
-            exportMeasureTool.addActionListener((ActionEvent event) ->
-            {
-                try
-                {
-                    measureDialog.exportMeasureTool();
-                } catch (XMLStreamException ex)
-                {
-                    Logger.getLogger(CelestialMapper.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex)
-                {
-                    Logger.getLogger(CelestialMapper.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            });
-            tools.add(exportMeasureTool);
         }
         menuBar.add(tools);
 
