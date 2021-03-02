@@ -160,6 +160,7 @@ public class CelestialMapper extends AppFrame
         }
         menuBar.add(file);
         
+        
         //======== "CMS Place Names" ========          
         cmsPlaceNamesMenu = new CMSPlaceNamesMenu(this, this.getWwd());
         menuBar.add(cmsPlaceNamesMenu);
@@ -170,7 +171,6 @@ public class CelestialMapper extends AppFrame
             // Terrain Profiler
             profile = new CMSProfile(this.getWwd());
             tools.add(profile);
-            menuBar.add(tools);
 
             // Measure Tool
             measurementCheckBox = new JCheckBoxMenuItem("Measurement");
