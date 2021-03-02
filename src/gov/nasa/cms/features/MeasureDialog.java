@@ -1,16 +1,22 @@
 package gov.nasa.cms.features;
 
 import static gov.nasa.cms.AppFrame.insertBeforePlacenames;
+import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.layers.TerrainProfileLayer;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 import gov.nasa.worldwind.util.measure.MeasureToolController;
+import gov.nasa.worldwindx.examples.kml.KMLDocumentBuilder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -20,6 +26,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * Creates a MeasureDialog using CMSMeasurePanel.java. CMSMeasurePanel uses
@@ -41,7 +48,6 @@ public class MeasureDialog
    
     public MeasureDialog(WorldWindow wwdObject, MeasureTool measureToolObject, Component component)
     {
-      //  setWwd(wwdObject);
         // Add terrain profile layer
         profile.setEventSource(wwdObject);
         profile.setFollow(TerrainProfileLayer.FOLLOW_PATH);
@@ -157,6 +163,7 @@ public class MeasureDialog
         }
     }
 
+    // Updates the Terrain Profile Layer from the measure tool passed into it
     private void updateProfile(MeasureTool mt)
     {
         ArrayList<? extends LatLon> positions = mt.getPositions();
@@ -170,6 +177,20 @@ public class MeasureDialog
         }
 
         mt.getWwd().redraw();
+    }
+    
+    public void exportMeasureTool() throws FileNotFoundException, XMLStreamException, IOException
+    {
+        MeasureTool mt = ((CMSMeasurePanel) tabbedPane.getComponentAt(lastTabIndex)).getMeasureTool();
+        
+        // Create a new FileOutputStream to the user's home directory
+        OutputStream os = new FileOutputStream(Configuration.getUserHomeDirectory() + "/MeasureTool.kml");
+            
+        // Build the KML document from the file stream
+        KMLDocumentBuilder kmlBuilder = new KMLDocumentBuilder(os);
+        
+        kmlBuilder.writeObjects(
+                mt.getLine());
     }
 
 }

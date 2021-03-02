@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * CelestialMapper.java
@@ -45,23 +46,21 @@ public class CelestialMapper extends AppFrame
     protected RenderableLayer airspaceLayer;
     private CMSPlaceNamesMenu cmsPlaceNamesMenu;
     private ApolloMenu apolloMenu;
-    private MoonElevationModel elevationModel;
     private CMSProfile profile;
     private MeasureDialog measureDialog;
     private MeasureTool measureTool;
-    //private SatelliteObject orbitalSatellite;
     private CMSLineOfSight lineOfSight;
     
     private boolean stereo;
     private boolean flat;
     private boolean isMeasureDialogOpen;
     private boolean resetWindow;
-    private boolean sight;
 
     private JCheckBoxMenuItem stereoCheckBox;
     private JCheckBoxMenuItem flatGlobe;
     private JCheckBoxMenuItem measurementCheckBox;
     private JMenuItem reset;
+    private JMenuItem exportMeasureTool;
 
     public void restart()
     {
@@ -78,9 +77,6 @@ public class CelestialMapper extends AppFrame
 
         // Make the menu bar
         makeMenuBar(this, this.controller);
-
-        // Import the lunar elevation data
-        elevationModel = new MoonElevationModel(this.getWwd());
         
         // Display the ScreenImage CMS logo as a RenderableLayer
         this.renderLogo();
@@ -166,6 +162,22 @@ public class CelestialMapper extends AppFrame
                 }
             });
             tools.add(measurementCheckBox);
+            
+            exportMeasureTool = new JMenuItem("Export Measure Tool");
+            exportMeasureTool.addActionListener((ActionEvent event) ->
+            {
+                try
+                {
+                    measureDialog.exportMeasureTool();
+                } catch (XMLStreamException ex)
+                {
+                    Logger.getLogger(CelestialMapper.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex)
+                {
+                    Logger.getLogger(CelestialMapper.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            tools.add(exportMeasureTool);
         }
         menuBar.add(tools);
 

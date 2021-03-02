@@ -52,13 +52,6 @@ public class ExportKML
             Position.fromDegrees(37.8282, -122.3710, 0));
             Path path = new Path(positions);
 
-
-       // path.setAttributes(normalShapeAttributes);
-       // path.setHighlightAttributes(highlightShapeAttributes);
-
-     //   path.setValue(AVKey.SHORT_DESCRIPTION, "Short description of Path");
-     //   path.setValue(AVKey.BALLOON_TEXT, "This is a Path.");
-
         return path;
     }
 
@@ -73,13 +66,6 @@ public class ExportKML
             Position.fromDegrees(28, -106, 0));
 
        Polygon poly = new Polygon(positions);
-        
-      //  poly.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
-        //poly.setAttributes(normalShapeAttributes);
-      //  poly.setHighlightAttributes(highlightShapeAttributes);
-
-        //poly.setValue(AVKey.SHORT_DESCRIPTION, "Short description of Polygon");
-        //poly.setValue(AVKey.BALLOON_TEXT, "This is a Polygon.");
 
         return poly;
     }
@@ -108,15 +94,11 @@ public class ExportKML
             highlightShapeAttributes.setInteriorMaterial(Material.RED);
             highlightShapeAttributes.setOutlineMaterial(Material.BLACK);
 
-            // Create a StringWriter to collect KML in a string buffer
-            //Writer stringWriter = new StringWriter();
-
             // Create a new FileOutputStream to the user's home directory
             OutputStream os = new FileOutputStream(Configuration.getUserHomeDirectory() + "/ExportKMLTest2.kml");
+            
             // Build the KML document from the file stream
             KMLDocumentBuilder kmlBuilder = new KMLDocumentBuilder(os);
-            // Create a document builder that will write KML to the StringWriter
-//            KMLDocumentBuilder kmlBuilder = new KMLDocumentBuilder(stringWriter);
 //
             // Export the objects
             kmlBuilder.writeObjects(
@@ -126,17 +108,6 @@ public class ExportKML
                 makePolygon());
 
             kmlBuilder.close();
-//
-//            // Get the exported document as a string
-//            String xmlString = stringWriter.toString();
-//
-//            // Set up a transformer to pretty-print the XML
-//            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-//            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-//            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-//
-//            // Write the pretty-printed document to stdout
-//            transformer.transform(new StreamSource(new StringReader(xmlString)), new StreamResult(System.out));
         }
         catch (Exception e)
         {
