@@ -33,14 +33,14 @@ import javax.xml.stream.XMLStreamException;
 
 /**
  * Creates a MeasureDialog using CMSMeasurePanel.java. CMSMeasurePanel uses
- * MeasureTool and MeasureToolController to interact with shapes. The user
- * can create as many Measure Tools as they like by opening new tabs. Each
+ * MeasureTool and MeasureToolController to interact with shapes. The user can
+ * create as many Measure Tools as they like by opening new tabs. Each
  * MeasureTool contains a TerrainProfileLayer which measures the terrain profile
  * along the MeasureTool that is created.
  *
  * @author kjdickin
  */
-public class MeasureDialog 
+public class MeasureDialog
 {
 
     private JDialog dialog;
@@ -48,8 +48,7 @@ public class MeasureDialog
     private JTabbedPane tabbedPane = new JTabbedPane();
     private final PropertyChangeListener measureToolListener = new MeasureToolListener();
     private int lastTabIndex = -1;
-    
-   
+
     public MeasureDialog(WorldWindow wwdObject, MeasureTool measureToolObject, Component component)
     {
         // Add terrain profile layer
@@ -68,9 +67,9 @@ public class MeasureDialog
             {
                 // Add new measure tool in a tab when '+' selected
                 MeasureTool measureTool = new MeasureTool(wwdObject);
-                
+
                 measureTool.setController(new MeasureToolController());
-                
+
                 tabbedPane.setOpaque(false);
                 tabbedPane.add(new CMSMeasurePanel(wwdObject, measureTool));
                 tabbedPane.setTitleAt(tabbedPane.getTabCount() - 1, "" + (tabbedPane.getTabCount() - 1));
@@ -81,22 +80,22 @@ public class MeasureDialog
                 switchMeasureTool();
             }
         });
-        
+
         // Add measure tool control panel to tabbed pane
         final MeasureTool measureTool = new MeasureTool(wwdObject);
-        
-        measureTool.setController(new MeasureToolController());     
+
+        measureTool.setController(new MeasureToolController());
         CMSMeasurePanel measurePanel = new CMSMeasurePanel(wwdObject, measureTool);
-        
+
         tabbedPane.add(measurePanel);
         tabbedPane.setOpaque(false);
         tabbedPane.setTitleAt(1, "1");
         tabbedPane.setSelectedIndex(1);
         tabbedPane.setToolTipTextAt(0, "Create measurement");
         switchMeasureTool();
-        
+
         // Create the dialog from a Frame and set the bounds
-        dialog = new JDialog((Frame) component);     
+        dialog = new JDialog((Frame) component);
         Rectangle bounds = component.getBounds();
         dialog.getContentPane().setLayout(new BorderLayout());
         dialog.setTitle("Measure Tool");
@@ -105,7 +104,7 @@ public class MeasureDialog
         dialog.setResizable(false);
         // Add the tabbedPane to the dialog
         dialog.getContentPane().add(tabbedPane, BorderLayout.CENTER);
-        
+
         dialog.pack();
     }
 
@@ -116,20 +115,19 @@ public class MeasureDialog
         {
             mp.deletePanel();
             tabbedPane.remove(tabbedPane.getSelectedComponent());
-        }
-        else
+        } else
         {
             mp.clearPanel();
         }
     }
-    
+
     // Get the current tabbedPane 
     private CMSMeasurePanel getCurrentPanel()
     {
         JComponent p = (JComponent) tabbedPane.getSelectedComponent();
         return (CMSMeasurePanel) p;
     }
-    
+
     public void setVisible(boolean visible)
     {
         dialog.setVisible(visible);
@@ -182,35 +180,39 @@ public class MeasureDialog
 
         mt.getWwd().redraw();
     }
-    
+
     // TO-DO: How to export other shapes besides lines? 
     public void exportMeasureTool() throws FileNotFoundException, XMLStreamException, IOException
     {
         JFrame parentFrame = new JFrame(); // Create the frame for the save dialog
 
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Specify a file to save");   
+        fileChooser.setDialogTitle("Specify a file to save");
 
         int userSelection = fileChooser.showSaveDialog(parentFrame); // Show the JFileChoose in the popup frame
 
         // If user approves, set the file save location and export the Measure Tool information in KML
-        if (userSelection == JFileChooser.APPROVE_OPTION) 
+        if (userSelection == JFileChooser.APPROVE_OPTION)
         {
             File fileToSave = fileChooser.getSelectedFile();
-            System.out.println("Save as file: " + fileToSave.getAbsolutePath());
-            
-             MeasureTool mt = ((CMSMeasurePanel) tabbedPane.getComponentAt(lastTabIndex)).getMeasureTool();
-        
-            // Create a new FileOutputStream to where the user chose to save the file
-            OutputStream os = new FileOutputStream(fileChooser.getSelectedFile());
 
-            // Build the KML document from the file stream
-            KMLDocumentBuilder kmlBuilder = new KMLDocumentBuilder(os);
+            MeasureTool mt = ((CMSMeasurePanel) tabbedPane.getComponentAt(lastTabIndex)).getMeasureTool();
 
-            // Write to KML document
-            kmlBuilder.writeObjects(
-                    mt.getLine());
-        }    
+            if (mt.getMeasureShapeType().equals(MeasureTool.SHAPE_LINE) 
+                    || mt.getMeasureShapeType().equals(MeasureTool.SHAPE_PATH))
+            {
+
+                // Create a new FileOutputStream to where the user chose to save the file
+                OutputStream os = new FileOutputStream(fileChooser.getSelectedFile());
+
+                // Build the KML document from the file stream
+                KMLDocumentBuilder kmlBuilder = new KMLDocumentBuilder(os);
+                // Write to KML document
+                kmlBuilder.writeObjects(
+                        mt.getLine());
+            }
+
+        }
     }
 
 }
