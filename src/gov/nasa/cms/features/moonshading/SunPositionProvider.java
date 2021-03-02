@@ -9,5 +9,6 @@ import gov.nasa.worldwind.geom.LatLon;
 public interface SunPositionProvider {
 
     public LatLon getPosition();
-     public LatLon changePosition();
+    public void updateDateTime();
+     public void updateCurrentDateTime();
 }

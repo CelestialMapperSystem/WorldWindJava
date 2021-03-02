@@ -238,6 +238,7 @@ public class MoonShadingPanel extends JPanel
                  if(dateTimeDialog == null)
                  {
                       dateTimeDialog = new DateTimePickerDialog(wwd, cms);
+                      //spp.updateDateTime();
                  }      
                  dateTimeDialog.setVisible(true);
             }
@@ -290,14 +291,17 @@ public class MoonShadingPanel extends JPanel
                 sun = sun.transformBy3(Matrix.fromRotationZ(azimuth.multiply(-1)));
                 sun = sun.transformBy3(getWwd().getModel().getGlobe().computeModelCoordinateOriginTransform(
                         eyePos.getLatitude(), eyePos.getLongitude(), 0));
-            } else { // Absolute is selected
+            } else if (this.absoluteRadioButton.isSelected()) { // Absolute is selected
                 // Disable UI controls
                 this.azimuthSlider.setEnabled(false);
                 this.elevationSlider.setEnabled(false);
-                // Compute Sun position according to current date and time
+                // TO-DO: Move to a separate function not linked to Absolute
+                spp.updateCurrentDateTime(); // Update the elevation & azmith based on current date/time
                 LatLon sunPos = spp.getPosition();
                 sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3();
             }
+          
+            
             light = sun.getNegative3();
              
             this.tessellator.setLightDirection(light);
@@ -329,4 +333,19 @@ public class MoonShadingPanel extends JPanel
     protected void setWwd(WorldWindow Wwd) {
         this.wwd = Wwd;
     }
+    protected SunPositionProvider getSpp(){
+        return this.spp;
+    }
+    protected RectangularNormalTessellator getTessellator(){
+        return this.tessellator;
+    }
+    protected LensFlareLayer getLensFlareLayer(){
+        return this.lensFlareLayer;
+    }
+    protected AtmosphereLayer getAtmosphereLayer(){
+        return this.atmosphereLayer;
+    }
+    
 }
+
+
