@@ -295,10 +295,9 @@ public class MoonShadingPanel extends JPanel
                 // Disable UI controls
                 this.azimuthSlider.setEnabled(false);
                 this.elevationSlider.setEnabled(false);
-                // Compute Sun position according to current date and time
-                spp.updateDateTime();
+                // TO-DO: Move to a separate function not linked to Absolute
+                spp.updateDateTime(); // Update the elevation & azmith based on user input date/time
                 LatLon sunPos = spp.getPosition();
-              // LatLon sunPos = LatLon.fromDegrees(23, 40);
                 sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3();
             }
             light = sun.getNegative3();

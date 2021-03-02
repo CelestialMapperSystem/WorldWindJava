@@ -24,10 +24,12 @@ public class BasicSunPositionProvider implements SunPositionProvider
     
     public BasicSunPositionProvider()
     {
-        dateTimePicker = new DateTimePickerDialog(wwd, frame);
+        // Create and open the DateTimePickerDialog
+        dateTimePicker = new DateTimePickerDialog(wwd, frame); 
         dateTimePicker.setVisible(true);
-        calendar = new GregorianCalendar();
-        updatePosition();
+        
+        // Set the calendar equal to DateTimePickerDialog's calendar
+        calendar = dateTimePicker.getCalendar();
 
         Thread thread = new Thread(new Runnable()
         {
@@ -37,12 +39,13 @@ public class BasicSunPositionProvider implements SunPositionProvider
                 {
                     try
                     {
-                        Thread.sleep(60000);
+                        // Set the time of the Calendar from the Date in DateTimePickerDialog and update the position 
+                        calendar.setTime(dateTimePicker.getDate());
+                        updatePosition();
+                        Thread.sleep(10); // Sleep for a small period of time to update the globe quickly
                     } catch (InterruptedException ignore)
                     {
                     }
-                    calendar.setTime(dateTimePicker.getDate());
-                    updatePosition();
                 }
             }
         });

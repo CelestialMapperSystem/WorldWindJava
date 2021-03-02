@@ -32,7 +32,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- *
+ * Creates a date time picker that allows users to enter a start date & time, end date & time
+ * and animation speed to simulate the moon's shading over a period of time. 
+ * @see gov.nasa.cms.MoonShadingPanel
  * @author kjdickin
  */
 public class DateTimePickerDialog extends JDialog
@@ -45,22 +47,18 @@ public class DateTimePickerDialog extends JDialog
     private JLabel jLabel2;
     private JLabel jLabel3;
     private JSpinner startDateTime;
-
     private Calendar calendar;
     private Date date;
     private SpinnerDateModel model;
-    private MoonShadingPanel moonShading;
-    private BasicSunPositionProvider spp;
-   // Date date2 = new GregorianCalendar(2014, Calendar.JUNE, 12, 2, 1).getTime();
 
     public DateTimePickerDialog(WorldWindow wwdObject, Component component)
     {
         this.setSize(400, 240);
         this.setTitle("Date/Time Picker");
+        this.setAlwaysOnTop(true);
         GridBagConstraints gridBagConstraints;
 
         jLabel2 = new JLabel();
-        //startDateTime = new JSpinner();
         jLabel1 = new JLabel();
         endDateTime = new JSpinner();
         jLabel3 = new JLabel();
@@ -71,6 +69,7 @@ public class DateTimePickerDialog extends JDialog
         setLocation(new java.awt.Point(633, 180));
         getContentPane().setLayout(new GridBagLayout());
 
+        //======== Start Date Time ========  
         jLabel2.setText("Start date/time: ");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -83,24 +82,21 @@ public class DateTimePickerDialog extends JDialog
         getContentPane().add(jLabel2, gridBagConstraints);
         
         model = new SpinnerDateModel();
-       // calendar = new GregorianCalendar();
-        calendar = new GregorianCalendar(2017, 6, 3, 24, 1);
+        calendar = new GregorianCalendar();
         date = calendar.getTime();
         model.setValue(date);
         startDateTime = new JSpinner(model);
+        startDateTime.setToolTipText("Select a start date/time");
         startDateTime.addChangeListener(new ChangeListener()
         {
             @Override
             public void stateChanged(ChangeEvent e)
             {
-                date = (Date) ((JSpinner) e.getSource()).getValue();
-                calendar.setTime(date);
-                DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH.mm");
-                System.out.println(df.format(date)); 
+                date = (Date) ((JSpinner) e.getSource()).getValue(); // Set date from the JSpinner user input
+                calendar.setTime(date); // Set calendar time from the date
             }
         });
-
-        startDateTime.setToolTipText("Select a start date/time");
+   
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
@@ -109,6 +105,7 @@ public class DateTimePickerDialog extends JDialog
         gridBagConstraints.insets = new Insets(8, 6, 0, 0);
         getContentPane().add(startDateTime, gridBagConstraints);
 
+        //======== End Date Time ========  
         jLabel1.setText("End date/time:");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -131,6 +128,7 @@ public class DateTimePickerDialog extends JDialog
         gridBagConstraints.insets = new Insets(8, 6, 0, 0);
         getContentPane().add(endDateTime, gridBagConstraints);
 
+        //======== Animation Speed ========  
         jLabel3.setText("Animation Speed: ");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -165,10 +163,7 @@ public class DateTimePickerDialog extends JDialog
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-               // spp.updateDateTime();
-               // moonShading.update();
-//                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss");
-//                System.out.println(df.format(startDateTime.getValue()));
+                // TO-DO: Apply changes to BasicSunPositionProvider
             }
 
         });
