@@ -326,6 +326,21 @@ public class MoonShadingPanel extends JPanel
         this.getWwd().redraw();
     }
     
+    protected void dynamicShading(){
+        
+                spp=getSpp();//gets sun position provider instance from MoonShadingPanel
+                spp.updateDateTime(); // Update the elevation & azimuth based on JSpinner input
+                LatLon sunPos = spp.getPosition(); //get position based on inputted time
+                //updates sun
+                sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3();
+                //updates light
+                light = sun.getNegative3();
+             
+            getTessellator().setLightDirection(light);
+            getLensFlareLayer().setSunDirection(sun);
+            getAtmosphereLayer().setSunDirection(sun);
+        
+    }
     protected WorldWindow getWwd() {
         return this.wwd;
     }

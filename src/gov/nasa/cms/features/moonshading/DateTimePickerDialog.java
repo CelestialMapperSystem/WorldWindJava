@@ -53,6 +53,7 @@ public class DateTimePickerDialog extends JDialog
     private SunPositionProvider spp;
     private Vec4 sun,light;
     private MoonShadingPanel panel;
+    private WorldWindow wwd;
     
     public DateTimePickerDialog(WorldWindow wwdObject, Component component)
     {
@@ -168,20 +169,7 @@ public class DateTimePickerDialog extends JDialog
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                //gets sun position provider instance from MoonShadingPanel
-                spp=panel.getSpp();
-                
-                spp.updateDateTime(); // Update the elevation & azimuth based on JSpinner input
-                LatLon sunPos = spp.getPosition(); //get position based on inputted time
-                //updates sun
-                sun = panel.getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3();
-                //updates light
-                light = sun.getNegative3();
-             
-            panel.getTessellator().setLightDirection(light);
-            panel.getLensFlareLayer().setSunDirection(sun);
-            panel.getAtmosphereLayer().setSunDirection(sun);
-                
+                panel.dynamicShading();                
             }
 
         });
@@ -205,6 +193,7 @@ public class DateTimePickerDialog extends JDialog
     {
         return calendar;
     }
+    
 
 }
 

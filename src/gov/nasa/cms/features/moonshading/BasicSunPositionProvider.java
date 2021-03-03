@@ -21,9 +21,11 @@ public class BasicSunPositionProvider implements SunPositionProvider
     private WorldWindow wwd;
     private CelestialMapper frame;
     private DateTimePickerDialog dateTimePicker;
+
     
     public BasicSunPositionProvider()
     {
+        
         
         
 
@@ -35,6 +37,7 @@ public class BasicSunPositionProvider implements SunPositionProvider
                 {
                     try
                     {
+                        
                         
                         Thread.sleep(10); // Sleep for a small period of time to update the globe quickly
                     } catch (InterruptedException ignore)
@@ -59,8 +62,6 @@ public class BasicSunPositionProvider implements SunPositionProvider
     public synchronized void updateDateTime()
             
     {
-        dateTimePicker = new DateTimePickerDialog(wwd, frame); 
-        dateTimePicker.setVisible(true);
         calendar = dateTimePicker.getCalendar();
         calendar.setTime(dateTimePicker.getDate());
         System.out.println(dateTimePicker.getDate());
