@@ -6,18 +6,10 @@
 package gov.nasa.cms.features.moonshading;
 
 import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.geom.LatLon;
-import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.geom.Vec4;
-import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Rectangle;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -164,6 +156,7 @@ public class DateTimePickerDialog extends JDialog
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
                 // TO-DO: Apply changes to BasicSunPositionProvider
+                // 
             }
 
         });

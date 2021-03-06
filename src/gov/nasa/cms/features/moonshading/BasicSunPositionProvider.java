@@ -39,8 +39,6 @@ public class BasicSunPositionProvider implements SunPositionProvider
                 {
                     try
                     {
-                        // Set the time of the Calendar from the Date in DateTimePickerDialog and update the position 
-                        calendar.setTime(dateTimePicker.getDate());
                         updatePosition();
                         Thread.sleep(10); // Sleep for a small period of time to update the globe quickly
                     } catch (InterruptedException ignore)

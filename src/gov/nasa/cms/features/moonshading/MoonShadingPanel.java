@@ -228,21 +228,21 @@ public class MoonShadingPanel extends JPanel
         });
         elevationPanel.add(elevationSlider);
         
-        dateTimePickerButton = new JButton("Date/Time Picker");    
-        dateTimePickerButton.setToolTipText("Select a date and time for simulation");
-        dateTimePickerButton.addActionListener(new ActionListener() 
-         {
-             
-            public void actionPerformed(ActionEvent event) 
-            {
-                 if(dateTimeDialog == null)
-                 {
-                      dateTimeDialog = new DateTimePickerDialog(wwd, cms);
-                      spp.updateDateTime();
-                 }      
-                 dateTimeDialog.setVisible(true);
-            }
-        });
+//        dateTimePickerButton = new JButton("Date/Time Picker");    
+//        dateTimePickerButton.setToolTipText("Select a date and time for simulation");
+//        dateTimePickerButton.addActionListener(new ActionListener() 
+//         {
+//             
+//            public void actionPerformed(ActionEvent event) 
+//            {
+//                 if(dateTimeDialog == null)
+//                 {
+//                      dateTimeDialog = new DateTimePickerDialog(wwd, cms);
+//                      spp.updateDateTime();
+//                 }      
+//                 dateTimeDialog.setVisible(true);
+//            }
+//        });
 
         
 
@@ -251,7 +251,7 @@ public class MoonShadingPanel extends JPanel
         controlPanel.add(positionTypePanel);
         controlPanel.add(azimuthPanel);
         controlPanel.add(elevationPanel);
-        controlPanel.add(dateTimePickerButton);
+       // controlPanel.add(dateTimePickerButton);
         this.add(controlPanel, BorderLayout.NORTH);
         
         update();
@@ -296,7 +296,7 @@ public class MoonShadingPanel extends JPanel
                 this.azimuthSlider.setEnabled(false);
                 this.elevationSlider.setEnabled(false);
                 // TO-DO: Move to a separate function not linked to Absolute
-                spp.updateDateTime(); // Update the elevation & azmith based on user input date/time
+               // spp.updateDateTime(); // Update the elevation & azmith based on user input date/time
                 LatLon sunPos = spp.getPosition();
                 sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3();
             }
