@@ -6,6 +6,8 @@
 package gov.nasa.cms.features.moonshading;
 
 import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Vec4;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -42,10 +44,13 @@ public class DateTimePickerDialog extends JDialog
     private Calendar calendar;
     private Date date;
     private SpinnerDateModel model;
+    
+    private LatLon position;
+    private boolean isOKButtonSelected;
 
     public DateTimePickerDialog(WorldWindow wwdObject, Component component)
     {
-        this.setSize(400, 240);
+        this.setSize(400, 180);
         this.setTitle("Date/Time Picker");
         this.setAlwaysOnTop(true);
         GridBagConstraints gridBagConstraints;
@@ -58,7 +63,7 @@ public class DateTimePickerDialog extends JDialog
         applyChangesButton = new JButton();
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        setLocation(new java.awt.Point(633, 180));
+        setLocation(new java.awt.Point(645, 180));
         getContentPane().setLayout(new GridBagLayout());
 
         //======== Start Date Time ========  
@@ -148,26 +153,6 @@ public class DateTimePickerDialog extends JDialog
         gridBagConstraints.insets = new java.awt.Insets(18, 18, 0, 6);
         getContentPane().add(animationSpeedSlider, gridBagConstraints);
 
-        applyChangesButton.setText("OK");
-        // Action listener for the OK button (apply changes and start animating)
-
-        applyChangesButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                // TO-DO: Apply changes to BasicSunPositionProvider
-                // 
-            }
-
-        });
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new Insets(35, 6, 6, 0);
-        getContentPane().add(applyChangesButton, gridBagConstraints);
-
     }
     
     public Date getDate()
@@ -179,5 +164,18 @@ public class DateTimePickerDialog extends JDialog
     {
         return calendar;
     }
+    
+    public synchronized void updatePosition()
+    {
+        position = SunCalculator.subsolarPoint(calendar);
+    }
+    
+    public synchronized LatLon getPosition()
+    {
+        calendar.setTime(date);
+        return position;
+    }
+    
+    
 
 }

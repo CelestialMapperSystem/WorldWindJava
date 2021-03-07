@@ -53,10 +53,19 @@ public class MoonShadingDialog
           
     }
     
+    public void makePanel()
+    {
+        
+    }
     public void resetDialog()
     {
         moonShadingPanel.resetMoonShadingProperties();
         dialog.setVisible(false);   
+    }
+    
+    public JDialog getDialog()
+    {
+        return this.dialog;
     }
     
 }
