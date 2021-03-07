@@ -47,7 +47,6 @@ public class MoonShadingPanel extends JPanel
     private JButton colorButton;
     private JButton ambientButton;
     private JButton dateTimePickerButton;
-    private JRadioButton relativeRadioButton;
     private JRadioButton absoluteRadioButton;
     private JSlider azimuthSlider;
     private JSlider elevationSlider;
@@ -75,8 +74,6 @@ public class MoonShadingPanel extends JPanel
     {
         this.colorButton.setEnabled(false);
         this.ambientButton.setEnabled(false);
-        this.absoluteRadioButton.setEnabled(false);
-        this.relativeRadioButton.setEnabled(false);
         this.azimuthSlider.setEnabled(false);
         this.elevationSlider.setEnabled(false);
         // Turn off lighting
@@ -109,30 +106,22 @@ public class MoonShadingPanel extends JPanel
             {
                 if (eyePoint == null || eyePoint.distanceTo3(getWwd().getView().getEyePoint()) > 1000)
                 {
-                    update();
+                    // TO-DO: Find way to enable shading upon starting
+                    // Including the update() function here changes the shading back to the eye position after user enters new date & time
+                   // update();
                     eyePoint = getWwd().getView().getEyePoint();
                 }
             }
         });
 
-        // Enable and Color
+        // Color
         final JPanel colorPanel = new JPanel(new GridLayout(0, 3, 0, 0));
         colorPanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
-        enableCheckBox = new JCheckBox("Enable");
-        enableCheckBox.setSelected(true);
-        enableCheckBox.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                update();
-            }
-        });
-
+        
         JPanel controlPanel = new JPanel();
         controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.Y_AXIS));
         controlPanel.setBorder(new CompoundBorder(BorderFactory.createEmptyBorder(9, 9, 9, 9), new TitledBorder("Sun Light")));
         controlPanel.setToolTipText("Set the Sun light direction and color");
-        colorPanel.add(enableCheckBox);
 
         // Add one minute update timer
         Timer updateTimer = new Timer(60000, new ActionListener()
@@ -177,33 +166,6 @@ public class MoonShadingPanel extends JPanel
             }
         });
         colorPanel.add(ambientButton);
-
-        // Relative vs absolute Sun position
-        final JPanel positionTypePanel = new JPanel(new GridLayout(0, 2, 0, 0));
-        positionTypePanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
-        relativeRadioButton = new JRadioButton("Relative");
-        relativeRadioButton.setSelected(false);
-        relativeRadioButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent event)
-            {
-                update();
-            }
-        });
-        positionTypePanel.add(relativeRadioButton);
-        absoluteRadioButton = new JRadioButton("Absolute");
-        absoluteRadioButton.setSelected(true);
-        absoluteRadioButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent event)
-            {
-                update();
-            }
-        });
-        positionTypePanel.add(absoluteRadioButton);
-        ButtonGroup group = new ButtonGroup();
-        group.add(relativeRadioButton);
-        group.add(absoluteRadioButton);
 
         // Azimuth slider
         JPanel azimuthPanel = new JPanel(new GridLayout(0, 1, 0, 0));
@@ -253,11 +215,9 @@ public class MoonShadingPanel extends JPanel
                     dateTimeDialog = new DateTimePickerDialog(wwd, cms);
                     dateTimePickerButton.setText("Start Simulation");
                     dateTimeDialog.setVisible(true);
-                } 
-                // User wants to start a simulation
+                } // User wants to start a simulation
                 else if (dateTimeDialog.isVisible())
                 {
-                    absoluteRadioButton.setEnabled(false); // Disable absolute picking
                     dateTimeDialog.setVisible(false); // Display date/time picker dialog
                     dateTimePickerButton.setText("Date/Time Picker"); // Change the text in case the user wants to simulate again
 
@@ -265,13 +225,12 @@ public class MoonShadingPanel extends JPanel
                     LatLon sunPos = dateTimeDialog.getPosition(); // Change the LatLon position from user input
                     sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3(); // Set the sun position from the LatLon                    
                     light = sun.getNegative3();
-                    
+
                     // Change the tesselator and lensFalreLayer according to new light and sun direction
                     tessellator.setLightDirection(light);
                     lensFlareLayer.setSunDirection(sun);
-                    
-                } 
-                // User wants to start another simulation
+
+                } // User wants to start another simulation
                 else if (!dateTimeDialog.isVisible())
                 {
                     dateTimeDialog.setVisible(true);
@@ -283,20 +242,17 @@ public class MoonShadingPanel extends JPanel
 
         // Control panel assembly
         controlPanel.add(colorPanel);
-        controlPanel.add(positionTypePanel);
         controlPanel.add(azimuthPanel);
         controlPanel.add(elevationPanel);
         controlPanel.add(dateTimePickerButton);
         this.add(controlPanel, BorderLayout.NORTH);
 
-        update();
+      //  update();
     }
 
     // Update worldwind
     public void update()
     {
-        if (this.enableCheckBox.isSelected())
-        {
             // Enable UI controls
             if (lensFlareLayer == null)
             {
@@ -305,9 +261,6 @@ public class MoonShadingPanel extends JPanel
             lensFlareLayer.setEnabled(true);
 
             this.colorButton.setEnabled(true);
-            this.ambientButton.setEnabled(true);
-            this.absoluteRadioButton.setEnabled(true);
-            this.relativeRadioButton.setEnabled(true);
             this.azimuthSlider.setEnabled(true);
             this.elevationSlider.setEnabled(true);
 
@@ -315,48 +268,24 @@ public class MoonShadingPanel extends JPanel
             this.tessellator.setLightColor(this.colorButton.getBackground());
             this.tessellator.setAmbientColor(this.ambientButton.getBackground());
 
-            if (this.relativeRadioButton.isSelected())
-            {
-                // Enable UI controls
-                this.azimuthSlider.setEnabled(true);
-                this.elevationSlider.setEnabled(true);
-                // Compute Sun position relative to the eye position
-                Angle elevation = Angle.fromDegrees(this.elevationSlider.getValue());
-                Angle azimuth = Angle.fromDegrees(this.azimuthSlider.getValue());
-                Position eyePos = getWwd().getView().getEyePosition();
-                sun = Vec4.UNIT_Y;
-                sun = sun.transformBy3(Matrix.fromRotationX(elevation));
-                sun = sun.transformBy3(Matrix.fromRotationZ(azimuth.multiply(-1)));
-                sun = sun.transformBy3(getWwd().getModel().getGlobe().computeModelCoordinateOriginTransform(
-                        eyePos.getLatitude(), eyePos.getLongitude(), 0));
-            } else  // Absolute is selected
-            {
-                // Disable UI controls
-                this.azimuthSlider.setEnabled(false);
-                this.elevationSlider.setEnabled(false);
-                // TO-DO: Move to a separate function not linked to Absolute
-                LatLon sunPos = spp.getPosition();
-                sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3();
-            }
+            // Enable UI controls
+            this.azimuthSlider.setEnabled(true);
+            this.elevationSlider.setEnabled(true);
+            // Compute Sun position relative to the eye position
+            Angle elevation = Angle.fromDegrees(this.elevationSlider.getValue());
+            Angle azimuth = Angle.fromDegrees(this.azimuthSlider.getValue());
+            Position eyePos = getWwd().getView().getEyePosition();
+            sun = Vec4.UNIT_Y;
+            sun = sun.transformBy3(Matrix.fromRotationX(elevation));
+            sun = sun.transformBy3(Matrix.fromRotationZ(azimuth.multiply(-1)));
+            sun = sun.transformBy3(getWwd().getModel().getGlobe().computeModelCoordinateOriginTransform(
+                    eyePos.getLatitude(), eyePos.getLongitude(), 0));
+
             light = sun.getNegative3();
 
             this.tessellator.setLightDirection(light);
             this.lensFlareLayer.setSunDirection(sun);
-        } else
-        {
-            // Disable UI controls
-            this.colorButton.setEnabled(false);
-            this.ambientButton.setEnabled(false);
-            this.absoluteRadioButton.setEnabled(false);
-            this.relativeRadioButton.setEnabled(false);
-            this.azimuthSlider.setEnabled(false);
-            this.elevationSlider.setEnabled(false);
-            // Turn off lighting
-            this.tessellator.setLightDirection(null);
-            this.lensFlareLayer.setSunDirection(null);
-            this.lensFlareLayer.setEnabled(false);
-
-        }
+       
         // Redraw
         this.getWwd().redraw();
     }
