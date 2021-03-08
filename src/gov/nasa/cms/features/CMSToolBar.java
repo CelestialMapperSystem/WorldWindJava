@@ -33,13 +33,15 @@ public class CMSToolBar
     private boolean isCoordinatesDialogOpen = false;
     private boolean isProfilerOpen = false;
     private boolean isLineOfSightOpen = false;
+    private boolean isLandingSitesOpen;
 
     enum BUTTON {
         LAYER_MANAGER("Layer Manager"),
         MEASUREMENTS("Measurements"),
         COORDINATES("Coordinates"),
         PROFILER("Profiler"),
-        SIGHT_LINES("Sight Lines");
+        SIGHT_LINES("Sight Lines"),
+        LANDING_SITES("Landing Sites");
 
         private JButton jButton;
         private final String name;
@@ -48,6 +50,7 @@ public class CMSToolBar
             this.name = s;
             this.jButton = new JButton(s);
         }
+
     }
 
     public CMSToolBar(CelestialMapper frame)
@@ -75,6 +78,7 @@ public class CMSToolBar
         buttons.add(BUTTON.COORDINATES.jButton);
         buttons.add(BUTTON.PROFILER.jButton);
         buttons.add(BUTTON.SIGHT_LINES.jButton);
+        buttons.add(BUTTON.LANDING_SITES.jButton);
 
 //        ArrayList<BUTTON> buttons1 = new ArrayList<>(5);
 //        for (BUTTON value : BUTTON.values())
@@ -149,7 +153,24 @@ public class CMSToolBar
             {
                 setButtonIcon("cms-data/icons/icons8-head-profile-48.png", button);
                 button.addActionListener(e -> showLineOfSight());
+            } else if (BUTTON.LANDING_SITES.jButton.equals(button))
+            {
+                setButtonIcon("cms-data/icons/icons8-launchpad-48.png", button);
+                button.addActionListener(e -> showLandingSites());
             }
+        }
+    }
+
+    private void showLandingSites()
+    {
+        this.isLandingSitesOpen = !isLandingSitesOpen;
+        if(isLandingSitesOpen){
+            if(frame.getLandingSites() == null){
+                frame.setLandingSites(new ApolloDialog(frame.getWwd(),frame));
+            }
+            frame.getLandingSites().setVisible(true);
+        } else {
+            frame.getLandingSites().setVisible(false);
         }
     }
 

@@ -67,6 +67,7 @@ public class CelestialMapper extends AppFrame
     private Controller generalController;
     private MouseListener mouseListener;
     private CoordinatesDialog coordinatesDialog;
+    private ApolloDialog apolloDialog;
 
     public void restart()
     {
@@ -207,9 +208,12 @@ public class CelestialMapper extends AppFrame
         }
 //        menuBar.add(tools);
 
-        //======== "Apollo" ========      
-        apolloMenu = new ApolloMenu(this.getWwd());
-        menuBar.add(apolloMenu);
+        //======== "Apollo" ========
+        // This menu item is replaced by the CMSToolBar button
+//        apolloMenu = new ApolloMenu(this.getWwd());
+//        menuBar.add(apolloMenu);
+
+
 
         //======== "View" ========           
         JMenu view = new JMenu("View");
@@ -583,5 +587,15 @@ public class CelestialMapper extends AppFrame
     public void setCoordinatesDialog(CoordinatesDialog coordinatesDialog)
     {
         this.coordinatesDialog = coordinatesDialog;
+    }
+
+    public ApolloDialog getLandingSites()
+    {
+        return apolloDialog;
+    }
+
+    public void setLandingSites(ApolloDialog dialog)
+    {
+        this.apolloDialog = dialog;
     }
 }
