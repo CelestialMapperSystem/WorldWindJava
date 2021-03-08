@@ -169,6 +169,7 @@ public class DateTimePickerDialog extends JDialog
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
+                
                 panel.dynamicShading();                
             }
 
