@@ -235,6 +235,15 @@ public class MoonShadingPanel extends JPanel
                 {
                     dateTimeDialog.setVisible(true);
                     dateTimePickerButton.setText("Start Simulation");
+                    
+                    dateTimeDialog.updatePosition(); // Update the position from user input
+                    LatLon sunPos = dateTimeDialog.getPosition(); // Change the LatLon position from user input
+                    sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3(); // Set the sun position from the LatLon                    
+                    light = sun.getNegative3();
+
+                    // Change the tesselator and lensFalreLayer according to new light and sun direction
+                    tessellator.setLightDirection(light);
+                    lensFlareLayer.setSunDirection(sun);
                 }
 
             }
