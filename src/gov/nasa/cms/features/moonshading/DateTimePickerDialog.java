@@ -55,9 +55,10 @@ public class DateTimePickerDialog extends JDialog
     private MoonShadingPanel panel;
     private WorldWindow wwd;
     
-    public DateTimePickerDialog(WorldWindow wwdObject, Component component)
+    public DateTimePickerDialog(WorldWindow wwdObject, Component component, MoonShadingPanel panel)
     {
-        panel=new MoonShadingPanel(wwdObject);
+        // panel=new MoonShadingPanel(wwdObject);
+        this.panel=panel;
         this.setSize(400, 240);
         this.setTitle("Date/Time Picker");
         this.setAlwaysOnTop(true);

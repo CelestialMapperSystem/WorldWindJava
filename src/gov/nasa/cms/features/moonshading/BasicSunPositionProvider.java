@@ -18,15 +18,16 @@ public class BasicSunPositionProvider implements SunPositionProvider
 
     private LatLon position;
     private Calendar calendar;
-    private WorldWindow wwd;
-    private CelestialMapper frame;
-    private DateTimePickerDialog dateTimePicker;
+    // private WorldWindow wwd;
+    //private CelestialMapper frame;
+    //private DateTimePickerDialog dateTimePicker;
+    private MoonShadingPanel parentPanel;
 
     
-    public BasicSunPositionProvider()
+    public BasicSunPositionProvider(MoonShadingPanel parentPanel)
     {
         
-        
+        this.parentPanel=parentPanel;
         
 
         Thread thread = new Thread(new Runnable()
@@ -62,6 +63,7 @@ public class BasicSunPositionProvider implements SunPositionProvider
     public synchronized void updateDateTime()
             
     {
+        DateTimePickerDialog dateTimePicker=parentPanel.getDateTimeDialog();
         calendar = dateTimePicker.getCalendar();
         calendar.setTime(dateTimePicker.getDate());
         System.out.println(dateTimePicker.getDate());

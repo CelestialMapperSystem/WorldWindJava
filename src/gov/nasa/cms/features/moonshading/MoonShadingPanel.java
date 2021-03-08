@@ -55,7 +55,7 @@ public class MoonShadingPanel extends JPanel
 
     private LensFlareLayer lensFlareLayer;
     private AtmosphereLayer atmosphereLayer;
-    private SunPositionProvider spp = new BasicSunPositionProvider();
+    private SunPositionProvider spp;
     private Vec4 sun, light;
     private DateTimePickerDialog dateTimeDialog;
     private CelestialMapper cms;
@@ -65,6 +65,7 @@ public class MoonShadingPanel extends JPanel
         this.wwd = wwdObject; // Set up the WorldWindow
         JPanel mainPanel = new JPanel(); // Create the panel
         mainPanel.setOpaque(false);
+        this.spp = new BasicSunPositionProvider(this);
         this.makeControlPanel(mainPanel); // Create the moon shading panels and add to mainPanel
 
     }
@@ -237,7 +238,7 @@ public class MoonShadingPanel extends JPanel
             {
                  if(dateTimeDialog == null)
                  {
-                      dateTimeDialog = new DateTimePickerDialog(wwd, cms);
+                      dateTimeDialog = new DateTimePickerDialog(wwd, cms, MoonShadingPanel.this);
                       //spp.updateDateTime();
                  }      
                  dateTimeDialog.setVisible(true);
@@ -340,6 +341,9 @@ public class MoonShadingPanel extends JPanel
             getLensFlareLayer().setSunDirection(sun);
             getAtmosphereLayer().setSunDirection(sun);
         
+    }
+    public DateTimePickerDialog getDateTimeDialog() {
+        return this.dateTimeDialog;
     }
     protected WorldWindow getWwd() {
         return this.wwd;

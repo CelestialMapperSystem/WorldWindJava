@@ -47,7 +47,7 @@ public class SunShading extends ApplicationTemplate {
         private RectangularNormalTessellator tessellator;
         private LensFlareLayer lensFlareLayer;
         private AtmosphereLayer atmosphereLayer;
-        private SunPositionProvider spp = new BasicSunPositionProvider();
+        private SunPositionProvider spp; // = new BasicSunPositionProvider();
         
        // public Dialog(WorldWindow wwd, Component c){
         //}
@@ -57,7 +57,7 @@ public class SunShading extends ApplicationTemplate {
 
             // Add USGS Topo maps
             insertBeforePlacenames(getWwd(), new USGSTopoHighRes());
-
+            this.spp = new BasicSunPositionProvider(null);
             // Replace sky gradient with atmosphere layer
             this.atmosphereLayer = new AtmosphereLayer();
             for (int i = 0; i < this.getWwd().getModel().getLayers().size(); i++) {
