@@ -244,8 +244,9 @@ public class MoonShadingPanel extends JPanel
                     // Change the tesselator and lensFalreLayer according to new light and sun direction
                     tessellator.setLightDirection(light);
                     lensFlareLayer.setSunDirection(sun);
+                    
                 }
-
+               getWwd().redraw();    
             }
         });
 
