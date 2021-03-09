@@ -19,9 +19,17 @@ import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Measure Tool Control panel for MeasureDialog.java
@@ -420,6 +428,43 @@ public class CMSMeasurePanel extends JPanel
         metricPanel.add(new JLabel("Center:"));
         centerLabel = new JLabel();
         metricPanel.add(centerLabel);
+        
+        // Export at CSV functionality
+        JButton exportButton = new JButton("Export as CSV");
+        exportButton.addActionListener((ActionEvent actionEvent) ->
+        {             
+            try (PrintWriter writer = new PrintWriter(new File("MeasureStatistics.csv"))) {
+
+              StringBuilder sb = new StringBuilder();
+              
+              double length = measureTool.getLength();
+              double area = measureTool.getArea();
+              double width = measureTool.getWidth();
+              double height = measureTool.getHeight();
+              Angle heading = measureTool.getOrientation();
+              Position center = measureTool.getCenterPosition();
+              
+              sb.append("Length,");
+              sb.append("Area");
+              sb.append('\n');
+
+              String s = String.format("%,7.1f m", length);
+              sb.append(s);
+              sb.append(',');
+              
+              s = String.format("%,7.1f m2", area);
+              sb.append(s);
+              sb.append('\n');
+
+              writer.write(sb.toString());
+
+              System.out.println("done!");
+
+            } catch (FileNotFoundException e) {
+              System.out.println(e.getMessage());
+            }
+        });
+        metricPanel.add(exportButton);
 
         //======== Outer Panel ======== 
         JPanel outerPanel = new JPanel();
