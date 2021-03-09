@@ -47,6 +47,7 @@ public class MoonShadingPanel extends JPanel
     private JButton colorButton;
     private JButton ambientButton;
     private JButton dateTimePickerButton;
+    private JButton coordinatesButton;
     private JRadioButton absoluteRadioButton;
     private JSlider azimuthSlider;
     private JSlider elevationSlider;
@@ -58,6 +59,7 @@ public class MoonShadingPanel extends JPanel
     private Vec4 sun, light;
     private DateTimePickerDialog dateTimeDialog;
     private CelestialMapper cms;
+    private CoordinatesDialog coordinatesDialog;
 
     public MoonShadingPanel(WorldWindow wwdObject)
     {
@@ -249,16 +251,35 @@ public class MoonShadingPanel extends JPanel
                getWwd().redraw();    
             }
         });
+        
+        //Coordinate Zoom-In Feature
+        coordinatesButton = new JButton("Coordinates");
+        coordinatesButton.setToolTipText("Enter the coordinates");
+        coordinatesButton.addActionListener(new ActionListener()
+        {
+
+            public void actionPerformed(ActionEvent event)
+            {
+                if (coordinatesDialog == null)
+                {
+                    cms=new CelestialMapper();
+                    coordinatesDialog = new CoordinatesDialog(wwd, cms);
+            
+                    coordinatesDialog.setVisible(true);
+                } 
+            }
+        });
 
         // Control panel assembly
         controlPanel.add(colorPanel);
         controlPanel.add(azimuthPanel);
         controlPanel.add(elevationPanel);
         controlPanel.add(dateTimePickerButton);
+        controlPanel.add(coordinatesButton);
         this.add(controlPanel, BorderLayout.NORTH);
+    }
 
       //  update();
-    }
 
     // Update worldwind
     public void update()
@@ -299,6 +320,7 @@ public class MoonShadingPanel extends JPanel
         // Redraw
         this.getWwd().redraw();
     }
+
 
     protected WorldWindow getWwd()
     {
