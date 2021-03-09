@@ -443,6 +443,7 @@ public class SurfaceQuad extends AbstractSurfaceShape implements Exportable
      * @throws java.io.IOException        if an exception occurs while exporting the data.
      * @see #export(String, Object)
      */
+    @Override
     protected void exportAsKML(Object output) throws IOException, XMLStreamException
     {
         XMLStreamWriter xmlWriter = null;
@@ -514,7 +515,7 @@ public class SurfaceQuad extends AbstractSurfaceShape implements Exportable
         }
 
         // Write geometry
-        xmlWriter.writeStartElement("Polygon");
+        xmlWriter.writeStartElement("Quad");
 
         xmlWriter.writeStartElement("extrude");
         xmlWriter.writeCharacters("0");
