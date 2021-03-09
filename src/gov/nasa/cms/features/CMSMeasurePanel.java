@@ -448,11 +448,11 @@ public class CMSMeasurePanel extends JPanel
               sb.append("Area");
               sb.append('\n');
 
-              String s = String.format("%,7.1f m", length);
+              String s = String.format("%7.1f m", length);
               sb.append(s);
               sb.append(',');
               
-              s = String.format("%,7.1f m2", area);
+              s = String.format("%7.1f km2", area);
               sb.append(s);
               sb.append('\n');
 
