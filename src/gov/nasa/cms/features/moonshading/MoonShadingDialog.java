@@ -9,20 +9,14 @@ import gov.nasa.worldwind.WorldWindow;
 import java.awt.BorderLayout;
 import java.awt.Rectangle;
 import javax.swing.JDialog;
-import javax.swing.JPanel;
 import java.awt.Component;
 import java.awt.Frame;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Set;
-import javax.swing.JFrame;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerDateModel;
-import javax.swing.text.DateFormatter;
 
 
 /**
- *
+ * Displays the dialog for Moon Shading feature, which allows users
+ * to change the elevation and azimuth manually, or calculate the
+ * elevation & azimuth based on the date and time they enter.
  * @author kjdickin
  */
 public class MoonShadingDialog 
@@ -30,7 +24,6 @@ public class MoonShadingDialog
      private JDialog dialog;
      private MoonShadingPanel moonShadingPanel;
      private WorldWindow wwd;
-     private LensFlareLayer lensFlareLayer;
      
 
      public MoonShadingDialog(WorldWindow wwdObject, Component component)
@@ -52,11 +45,16 @@ public class MoonShadingDialog
         dialog.setVisible(true);  
           
     }
-    
+     
     public void resetDialog()
     {
         moonShadingPanel.resetMoonShadingProperties();
         dialog.setVisible(false);   
+    }
+    
+    public JDialog getDialog()
+    {
+        return this.dialog;
     }
     
 }

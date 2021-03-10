@@ -7,17 +7,11 @@ package gov.nasa.cms.features.moonshading;
 
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.LatLon;
-import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec4;
-import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Rectangle;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -50,16 +44,13 @@ public class DateTimePickerDialog extends JDialog
     private Calendar calendar;
     private Date date;
     private SpinnerDateModel model;
-    private SunPositionProvider spp;
-    private Vec4 sun,light;
-    private MoonShadingPanel panel;
-    private WorldWindow wwd;
     
-    public DateTimePickerDialog(WorldWindow wwdObject, Component component, MoonShadingPanel panel)
+    private LatLon position;
+    private boolean isOKButtonSelected;
+
+    public DateTimePickerDialog(WorldWindow wwdObject, Component component)
     {
-        // panel=new MoonShadingPanel(wwdObject);
-        this.panel=panel;
-        this.setSize(400, 240);
+        this.setSize(400, 180);
         this.setTitle("Date/Time Picker");
         this.setAlwaysOnTop(true);
         GridBagConstraints gridBagConstraints;
@@ -70,10 +61,9 @@ public class DateTimePickerDialog extends JDialog
         jLabel3 = new JLabel();
         animationSpeedSlider = new JSlider();
         applyChangesButton = new JButton();
-        
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        setLocation(new java.awt.Point(633, 180));
+        setLocation(new java.awt.Point(645, 180));
         getContentPane().setLayout(new GridBagLayout());
 
         //======== Start Date Time ========  
@@ -163,28 +153,7 @@ public class DateTimePickerDialog extends JDialog
         gridBagConstraints.insets = new java.awt.Insets(18, 18, 0, 6);
         getContentPane().add(animationSpeedSlider, gridBagConstraints);
 
-        applyChangesButton.setText("OK");
-        // Action listener for the OK button (apply changes and start animating)
-
-        applyChangesButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                
-                panel.dynamicShading();                
-            }
-
-        });
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new Insets(35, 6, 6, 0);
-        getContentPane().add(applyChangesButton, gridBagConstraints);
-
     }
-    
     
     public Date getDate()
     {
@@ -196,7 +165,17 @@ public class DateTimePickerDialog extends JDialog
         return calendar;
     }
     
+    public synchronized void updatePosition()
+    {
+        position = SunCalculator.subsolarPoint(calendar);
+    }
+    
+    public synchronized LatLon getPosition()
+    {
+        calendar.setTime(date);
+        return position;
+    }
+    
+    
 
 }
-
-
