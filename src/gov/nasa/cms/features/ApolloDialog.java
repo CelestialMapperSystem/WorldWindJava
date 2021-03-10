@@ -41,6 +41,7 @@ public class ApolloDialog
     private JDialog dialog;
     private JPanel panel;
     private Border titledBorder;
+    private ApolloAnnotationsCheckBox apolloAnnotations;
 
     public ApolloDialog(WorldWindow wwd, CelestialMapper cms)
     {
@@ -77,7 +78,7 @@ public class ApolloDialog
         Factory factory = (Factory) WorldWind.createConfigurationComponent(AVKey.LAYER_FACTORY);
 
         //======== Annotations ========   
-        JCheckBox apolloAnnotations = new ApolloAnnotationsCheckBox(this.getWwd());
+        this.apolloAnnotations = new ApolloAnnotationsCheckBox(this.getWwd());
         panel.add(apolloAnnotations);
 
         //======== Apollo 11 ========   
