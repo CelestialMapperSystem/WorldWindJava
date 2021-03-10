@@ -210,7 +210,10 @@ public class MeasureDialog
                 // Write to KML document
                 kmlBuilder.writeObjects(
                         mt.getLine());
+                
+                kmlBuilder.close();
             }
+            
 
         }
     }

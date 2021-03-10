@@ -95,7 +95,7 @@ public class ExportKML
             highlightShapeAttributes.setOutlineMaterial(Material.BLACK);
 
             // Create a new FileOutputStream to the user's home directory
-            OutputStream os = new FileOutputStream(Configuration.getUserHomeDirectory() + "/ExportKMLTest.kml");
+            OutputStream os = new FileOutputStream(Configuration.getUserHomeDirectory() + "/ExportKMLTest2.kml");
             
             // Build the KML document from the file stream
             KMLDocumentBuilder kmlBuilder = new KMLDocumentBuilder(os);
