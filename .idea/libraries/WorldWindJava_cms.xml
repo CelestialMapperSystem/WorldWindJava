@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="WorldWindJava-cms">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/cms-data/layers" />
+      <root url="file://$PROJECT_DIR$/src" />
+      <root url="file://$PROJECT_DIR$/test" />
+      <root url="file://$PROJECT_DIR$/testFunctional" />
+    </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$" recursive="false" />
+  </library>
+</component>

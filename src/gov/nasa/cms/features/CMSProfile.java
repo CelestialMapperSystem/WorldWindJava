@@ -5,7 +5,7 @@
  */
 package gov.nasa.cms.features;
 
-import gov.nasa.cms.AppFrame;
+import gov.nasa.cms.*;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.TerrainProfileLayer;
@@ -22,9 +22,12 @@ import javax.swing.JCheckBoxMenuItem;
 public class CMSProfile extends JCheckBoxMenuItem
 {
 
+    private final String layer =  "Terrain Profile";
     private WorldWindow wwd;
     private TerrainProfileLayer tpl;
     private boolean isItemEnabled;
+    private CelestialMapper cms;
+    private Layer selectedLayer;
 
     // Create the terrain profile layer
     public void setupProfile()
@@ -63,6 +66,33 @@ public class CMSProfile extends JCheckBoxMenuItem
                 }
             }
         });
+    }
+
+    public CMSProfile(WorldWindow Wwd, CelestialMapper cms){
+        super("Terrain Profiler");
+        setWwd(Wwd);
+        setCMS(cms);
+        setupProfile();
+        this.selectedLayer = Wwd.getModel().getLayers().getLayerByName(layer);
+    }
+
+    @Override
+    public void setVisible(boolean visible)
+    {
+//        super.setVisible(aFlag);
+        if(visible){
+            setupProfile();
+            this.selectedLayer.setEnabled(visible);
+        } else {
+            this.wwd.getModel().getLayers().remove(selectedLayer);
+        }
+//        tpl.setEnabled(visible);
+//        this.selectedLayer.setEnabled(visible);
+    }
+
+    private void setCMS(CelestialMapper cms)
+    {
+        this.cms = cms;
     }
 
     public WorldWindow getWwd()

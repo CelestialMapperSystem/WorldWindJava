@@ -9,11 +9,13 @@
       <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/testFunctional" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/src/gov/nasa/newlayerpanel" />
+      <excludeFolder url="file://$MODULE_DIR$/src/gov/nasa/cms/old" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="11" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="gdal" level="project" />
     <orderEntry type="library" scope="TEST" name="junit4" level="project" />
-    <orderEntry type="library" name="jogl-gluegen-worldwind231" level="project" />
+    <orderEntry type="library" name="WorldWindJava-cms" level="project" />
   </component>
 </module>
