@@ -15,7 +15,7 @@ import javax.swing.JCheckBoxMenuItem;
 
 
 /**
- * Creates a new terrain profile layer from <code>{@link JCheckBoxMenuItem}</code> created
+ * Creates a new terrain profile layer from <code>{@link JCheckBoxMenuItem}</code> constructed
  * from the passed in WorldWindow.
  * @author kjdickin
  */
@@ -68,7 +68,8 @@ public class CMSProfile extends JCheckBoxMenuItem
         });
     }
 
-    public CMSProfile(WorldWindow Wwd, CelestialMapper cms){
+    public CMSProfile(WorldWindow Wwd, CelestialMapper cms)
+    {
         super("Terrain Profiler");
         setWwd(Wwd);
         setCMS(cms);
@@ -79,15 +80,11 @@ public class CMSProfile extends JCheckBoxMenuItem
     @Override
     public void setVisible(boolean visible)
     {
-//        super.setVisible(aFlag);
         if(visible){
-            setupProfile();
             this.selectedLayer.setEnabled(visible);
         } else {
-            this.wwd.getModel().getLayers().remove(selectedLayer);
+            this.selectedLayer.setEnabled(false);
         }
-//        tpl.setEnabled(visible);
-//        this.selectedLayer.setEnabled(visible);
     }
 
     private void setCMS(CelestialMapper cms)
