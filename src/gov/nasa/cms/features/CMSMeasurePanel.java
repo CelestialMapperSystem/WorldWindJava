@@ -444,18 +444,50 @@ public class CMSMeasurePanel extends JPanel
               Angle heading = measureTool.getOrientation();
               Position center = measureTool.getCenterPosition();
               
-              sb.append("Length,");
+              // Header
+              sb.append("Length        ,");
               sb.append("Area");
+              sb.append(",");
+              sb.append("Width");
+              sb.append(",");
+              sb.append("Height");
+              sb.append(",");
+              sb.append("Heading");
+              sb.append(",");
+              sb.append("Center");
               sb.append('\n');
 
-              String s = String.format("%7.1f m", length);
+              // Length
+              String s = String.format("       %7.1f m", length);
               sb.append(s);
               sb.append(',');
               
+              // Area
               s = String.format("%7.1f km2", area);
+              sb.append(s);
+              sb.append(',');
+              
+              // Width
+              s = String.format("%7.1f km", width);
+              sb.append(s);
+              sb.append(',');
+              
+              // Height
+              s = String.format("%7.1f km", height);
+              sb.append(s);
+              sb.append(',');         
+                            
+              // Heading
+              s = String.format("%6.2f", heading.degrees);
+              sb.append(s);
+              sb.append(',');
+              
+              // Center
+              s = String.format("%,7.4f %,7.4f", center.getLatitude().degrees, center.getLongitude().degrees);
               sb.append(s);
               sb.append('\n');
 
+              
               writer.write(sb.toString());
 
               System.out.println("done!");
