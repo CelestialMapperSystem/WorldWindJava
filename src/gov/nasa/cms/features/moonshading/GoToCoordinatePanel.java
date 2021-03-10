@@ -150,7 +150,7 @@ public class GoToCoordinatePanel extends JPanel
                      BasicOrbitView view = (BasicOrbitView) wwd.getView();
                     double distance = view.getCenterPoint().distanceTo3(view.getEyePoint());
                     view.goTo(new Position(latLon, 0), distance);
-                    view.addPanToAnimator(new Position(latLon, 0),  Angle.fromDegrees(0), Angle.fromDegrees(0), 0.005, true);
+                    view.addPanToAnimator(new Position(latLon, 0),  Angle.fromDegrees(0), Angle.fromDegrees(70), 9e4, true);
 
 
                 }
