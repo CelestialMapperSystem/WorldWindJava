@@ -347,7 +347,7 @@ public class MoonShadingPanel extends JPanel
                     try
                     {
                         dateTimeDialog.getCalendar().add(Calendar.HOUR, 1); // Increment by 1 hour
-                        startDate.setTime(cal.getTimeInMillis()); // Set the start time to the new calendar time
+                        startDate.setTime(dateTimeDialog.getCalendar().getTimeInMillis()); // Set the start time to the new calendar time
                         dateTimeDialog.updatePosition(); // Update the position from DateTimePickerDialog
                         LatLon sunPos = dateTimeDialog.getPosition();  // Get the new LatLon sun position
                         sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3(); // Set the sun position from the LatLon                    
