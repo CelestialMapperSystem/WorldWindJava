@@ -42,11 +42,13 @@ public class DateTimePickerDialog extends JDialog
     private JLabel jLabel3;
     private JSpinner startDateTime;
     private Calendar calendar;
-    private Date date;
+    private Date startDate;
+    private Date endDate;
     private SpinnerDateModel model;
     
     private LatLon position;
-    private boolean isOKButtonSelected;
+    private Date startTime;
+    private Date endTime;
 
     public DateTimePickerDialog(WorldWindow wwdObject, Component component)
     {
@@ -80,8 +82,8 @@ public class DateTimePickerDialog extends JDialog
         
         model = new SpinnerDateModel();
         calendar = new GregorianCalendar();
-        date = calendar.getTime();
-        model.setValue(date);
+        startDate = calendar.getTime();
+        model.setValue(startDate);
         startDateTime = new JSpinner(model);
         startDateTime.setToolTipText("Select a start date/time");
         startDateTime.addChangeListener(new ChangeListener()
@@ -89,8 +91,9 @@ public class DateTimePickerDialog extends JDialog
             @Override
             public void stateChanged(ChangeEvent e)
             {
-                date = (Date) ((JSpinner) e.getSource()).getValue(); // Set date from the JSpinner user input
-                calendar.setTime(date); // Set calendar time from the date
+                startDate = (Date) ((JSpinner) e.getSource()).getValue(); // Set date from the JSpinner user input
+                calendar.setTime(startDate); // Set calendar time from the date
+                startTime=startDate;
             }
         });
    
@@ -116,7 +119,17 @@ public class DateTimePickerDialog extends JDialog
         getContentPane().add(jLabel1, gridBagConstraints);
 
         endDateTime.setModel(new SpinnerDateModel(new java.util.Date(), null, null, java.util.Calendar.MINUTE));
-        endDateTime.setToolTipText("Select a start date/time");
+        endDateTime.setToolTipText("Select a end date/time");
+        endDateTime.addChangeListener(new ChangeListener()
+        {
+            @Override
+            public void stateChanged(ChangeEvent e)
+            {
+                endDate = (Date) ((JSpinner) e.getSource()).getValue(); // Set date from the JSpinner user input
+                endTime = endDate;
+            }
+        });
+              
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
@@ -155,9 +168,14 @@ public class DateTimePickerDialog extends JDialog
 
     }
     
-    public Date getDate()
+    public Date getStartDate()
     {
-        return date;
+        return startDate;
+    }
+    
+    public Date getEndDate()
+    {
+        return endDate;
     }
     
     public Calendar getCalendar()
@@ -172,7 +190,7 @@ public class DateTimePickerDialog extends JDialog
     
     public synchronized LatLon getPosition()
     {
-        calendar.setTime(date);
+        calendar.setTime(startDate);
         return position;
     }
     

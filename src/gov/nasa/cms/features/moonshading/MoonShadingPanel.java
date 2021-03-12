@@ -16,17 +16,14 @@ import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Calendar;
+import java.util.Date;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JSlider;
 import javax.swing.Timer;
 import javax.swing.border.CompoundBorder;
@@ -35,31 +32,35 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
+ * Feature for viewing shading and illumination of the moon. Users can either
+ * modify the elevation and azimuth manually or use the
+ * {@link gov.nasa.cms.features.moonshading.DateTimePickerDialog} to set a start
+ * and end date and simulate the shading dynamically.
  *
+ * @see gov.nasa.cms.features.moonshading.MoonShadingDialog
  * @author kjdickin
  */
-// Creates the JPanel to be added to the dialog
 public class MoonShadingPanel extends JPanel
 {
 
     private WorldWindow wwd;
-    private JCheckBox enableCheckBox;
     private JButton colorButton;
     private JButton ambientButton;
     private JButton dateTimePickerButton;
     private JButton coordinatesButton;
-    private JRadioButton absoluteRadioButton;
     private JSlider azimuthSlider;
     private JSlider elevationSlider;
 
     private RectangularNormalTessellator tessellator;
 
     private LensFlareLayer lensFlareLayer;
-    private SunPositionProvider spp = new BasicSunPositionProvider();
     private Vec4 sun, light;
     private DateTimePickerDialog dateTimeDialog;
     private CelestialMapper cms;
     private CoordinatesDialog coordinatesDialog;
+
+    private Date startDate;
+    private Date endDate;
 
     public MoonShadingPanel(WorldWindow wwdObject)
     {
@@ -71,7 +72,7 @@ public class MoonShadingPanel extends JPanel
 
     }
 
-    // Reset moon shading in progress
+    // Reset moon shading properties (all buttons and layers)
     public void resetMoonShadingProperties()
     {
         this.colorButton.setEnabled(false);
@@ -110,7 +111,7 @@ public class MoonShadingPanel extends JPanel
                 {
                     // TO-DO: Find way to enable shading upon starting
                     // Including the update() function here changes the shading back to the eye position after user enters new date & time
-                   // update();
+                    // update();
                     eyePoint = getWwd().getView().getEyePoint();
                 }
             }
@@ -119,7 +120,7 @@ public class MoonShadingPanel extends JPanel
         // Color
         final JPanel colorPanel = new JPanel(new GridLayout(0, 3, 0, 0));
         colorPanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
-        
+
         JPanel controlPanel = new JPanel();
         controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.Y_AXIS));
         controlPanel.setBorder(new CompoundBorder(BorderFactory.createEmptyBorder(9, 9, 9, 9), new TitledBorder("Sun Light")));
@@ -223,6 +224,7 @@ public class MoonShadingPanel extends JPanel
                     dateTimeDialog.setVisible(false); // Display date/time picker dialog
                     dateTimePickerButton.setText("Date/Time Picker"); // Change the text in case the user wants to simulate again
 
+                    // Start the shading process
                     dateTimeDialog.updatePosition(); // Update the position from user input
                     LatLon sunPos = dateTimeDialog.getPosition(); // Change the LatLon position from user input
                     sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3(); // Set the sun position from the LatLon                    
@@ -231,13 +233,17 @@ public class MoonShadingPanel extends JPanel
                     // Change the tesselator and lensFalreLayer according to new light and sun direction
                     tessellator.setLightDirection(light);
                     lensFlareLayer.setSunDirection(sun);
+
+                    // Dynamically shade the moon until it reaches the end date/time
+                    startDynamicShading();
 
                 } // User wants to start another simulation
                 else if (!dateTimeDialog.isVisible())
                 {
                     dateTimeDialog.setVisible(true);
                     dateTimePickerButton.setText("Start Simulation");
-                    
+
+                    // Start the shading process
                     dateTimeDialog.updatePosition(); // Update the position from user input
                     LatLon sunPos = dateTimeDialog.getPosition(); // Change the LatLon position from user input
                     sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3(); // Set the sun position from the LatLon                    
@@ -247,11 +253,14 @@ public class MoonShadingPanel extends JPanel
                     tessellator.setLightDirection(light);
                     lensFlareLayer.setSunDirection(sun);
                     
+                    // Dynamically shade the moon until it reaches the end date/time
+                    startDynamicShading();
+
                 }
-               getWwd().redraw();    
+                getWwd().redraw();
             }
         });
-        
+
         //Coordinate Zoom-In Feature
         coordinatesButton = new JButton("Coordinates");
         coordinatesButton.setToolTipText("Enter the coordinates");
@@ -262,11 +271,11 @@ public class MoonShadingPanel extends JPanel
             {
                 if (coordinatesDialog == null)
                 {
-                    cms=new CelestialMapper();
+                    cms = new CelestialMapper();
                     coordinatesDialog = new CoordinatesDialog(wwd, cms);
-            
+
                     coordinatesDialog.setVisible(true);
-                } 
+                }
             }
         });
 
@@ -279,48 +288,85 @@ public class MoonShadingPanel extends JPanel
         this.add(controlPanel, BorderLayout.NORTH);
     }
 
-      //  update();
-
-    // Update worldwind
+    // Update light and sun direction
     public void update()
     {
-            // Enable UI controls
-            if (lensFlareLayer == null)
-            {
-                this.getWwd().getModel().getLayers().add(lensFlareLayer);
-            }
-            lensFlareLayer.setEnabled(true);
+        // Enable UI controls
+        if (lensFlareLayer == null)
+        {
+            this.getWwd().getModel().getLayers().add(lensFlareLayer);
+        }
+        lensFlareLayer.setEnabled(true);
 
-            this.colorButton.setEnabled(true);
-            this.azimuthSlider.setEnabled(true);
-            this.elevationSlider.setEnabled(true);
+        this.colorButton.setEnabled(true);
+        this.azimuthSlider.setEnabled(true);
+        this.elevationSlider.setEnabled(true);
 
-            // Update colors
-            this.tessellator.setLightColor(this.colorButton.getBackground());
-            this.tessellator.setAmbientColor(this.ambientButton.getBackground());
+        // Update colors
+        this.tessellator.setLightColor(this.colorButton.getBackground());
+        this.tessellator.setAmbientColor(this.ambientButton.getBackground());
 
-            // Enable UI controls
-            this.azimuthSlider.setEnabled(true);
-            this.elevationSlider.setEnabled(true);
-            // Compute Sun position relative to the eye position
-            Angle elevation = Angle.fromDegrees(this.elevationSlider.getValue());
-            Angle azimuth = Angle.fromDegrees(this.azimuthSlider.getValue());
-            Position eyePos = getWwd().getView().getEyePosition();
-            sun = Vec4.UNIT_Y;
-            sun = sun.transformBy3(Matrix.fromRotationX(elevation));
-            sun = sun.transformBy3(Matrix.fromRotationZ(azimuth.multiply(-1)));
-            sun = sun.transformBy3(getWwd().getModel().getGlobe().computeModelCoordinateOriginTransform(
-                    eyePos.getLatitude(), eyePos.getLongitude(), 0));
+        // Enable UI controls
+        this.azimuthSlider.setEnabled(true);
+        this.elevationSlider.setEnabled(true);
+        // Compute Sun position relative to the eye position
+        Angle elevation = Angle.fromDegrees(this.elevationSlider.getValue());
+        Angle azimuth = Angle.fromDegrees(this.azimuthSlider.getValue());
+        Position eyePos = getWwd().getView().getEyePosition();
+        sun = Vec4.UNIT_Y;
+        sun = sun.transformBy3(Matrix.fromRotationX(elevation));
+        sun = sun.transformBy3(Matrix.fromRotationZ(azimuth.multiply(-1)));
+        sun = sun.transformBy3(getWwd().getModel().getGlobe().computeModelCoordinateOriginTransform(
+                eyePos.getLatitude(), eyePos.getLongitude(), 0));
 
-            light = sun.getNegative3();
+        light = sun.getNegative3();
 
-            this.tessellator.setLightDirection(light);
-            this.lensFlareLayer.setSunDirection(sun);
-       
+        this.tessellator.setLightDirection(light);
+        this.lensFlareLayer.setSunDirection(sun);
+
         // Redraw
         this.getWwd().redraw();
     }
 
+    protected void startDynamicShading()
+    {
+        startDate = dateTimeDialog.getStartDate(); // Get the start date
+        endDate = dateTimeDialog.getEndDate(); // Get the end date
+        Calendar cal = dateTimeDialog.getCalendar(); // Get the calendar from DateTimePickerDialog
+        dateTimeDialog.getCalendar().setTime(startDate); // Set the calendar time to the start date time
+
+        // Start a new thread to display dynamic shading
+        Thread thread = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                // While the end date/time is after the calendar date/time
+                while (endDate.after(dateTimeDialog.getCalendar().getTime()))
+                {
+                    try
+                    {
+                        dateTimeDialog.getCalendar().add(Calendar.HOUR, 1); // Increment by 1 hour
+                        startDate.setTime(cal.getTimeInMillis()); // Set the start time to the new calendar time
+                        dateTimeDialog.updatePosition(); // Update the position from DateTimePickerDialog
+                        LatLon sunPos = dateTimeDialog.getPosition();  // Get the new LatLon sun position
+                        sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3(); // Set the sun position from the LatLon                    
+                        light = sun.getNegative3();
+
+                        // Change the tesselator and lensFalreLayer according to new light and sun direction
+                        tessellator.setLightDirection(light);
+                        lensFlareLayer.setSunDirection(sun);
+
+                        Thread.sleep(3000); // Wait 3 seconds
+                    } catch (InterruptedException ignore)
+                    {
+                    }
+                }
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
 
     protected WorldWindow getWwd()
     {
