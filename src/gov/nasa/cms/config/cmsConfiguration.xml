@@ -16,7 +16,7 @@
               value="gov.nasa.worldwind.globes.Moon"/>
     <!-- Elevation -->
     <Property name="gov.nasa.worldwind.avkey.EarthElevationModelConfigFile"
-              value="gov/nasa/cms/config/Moon/EarthElevations2.xml"/> 
+              value="cms-data/layers/EarthElevations2.xml"/> 
     <Property name="gov.nasa.worldwind.globes.GeographicProjectionClassName"
               value="gov.nasa.worldwind.globes.projections.ProjectionEquirectangular"/>
     <Property name="gov.nasa.worldwind.avkey.InitialLatitude" value="38"/>

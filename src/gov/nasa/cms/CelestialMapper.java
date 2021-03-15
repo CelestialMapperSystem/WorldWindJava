@@ -91,21 +91,16 @@ public class CelestialMapper extends AppFrame
         // create minimap
         createNewWML();
 
-//        createToolbar(this);
+        // create toolbar with buttons
         this.toolBar = new CMSToolBar(this);
         toolBar.createToolbar();
 
-        // Setup a select listener for the worldmap click-and-go feature
-//        this.wml = new WorldMapLayer();
-//        wml.setResizeBehavior(AVKey.RESIZE_STRETCH);
-//        wml.setPosition(AVKey.NORTHEAST);
-//        this.getWwd().addSelectListener(new ClickAndGoSelectListener(this.getWwd(), WorldMapLayer.class));
-////        this.wml.doRender(this.getWwd().getSceneController().getDrawContext());
-//        getWwd().getModel().getLayers().add(wml);
+        // Make the tool bar
+        this.toolBar = new CMSToolBar(this);
+        toolBar.createToolbar();
 
         // Import the lunar elevation data
         elevationModel = new MoonElevationModel(this.getWwd());
-        //layerManager = new LayerManagerDialog(this.getWwd(), this);
         
         // Display the ScreenImage CMS logo as a RenderableLayer
         this.renderLogo();
@@ -184,49 +179,10 @@ public class CelestialMapper extends AppFrame
         }
         menuBar.add(layers);
         
+        
         //======== "CMS Place Names" ========          
         cmsPlaceNamesMenu = new CMSPlaceNamesMenu(this, this.getWwd());
         menuBar.add(cmsPlaceNamesMenu);
-
-        //======== "Tools" ========        
-//        JMenu tools = new JMenu("Tools");
-        {
-            // Terrain Profiler
-//            profile = new CMSProfile(this.getWwd());
-//            tools.add(profile);
-//            menuBar.add(tools);
-
-            // Measure Tool
-//            measurementCheckBox = new JCheckBoxMenuItem("Measurement");
-//            measurementCheckBox.setSelected(isMeasureDialogOpen);
-//            measurementCheckBox.addActionListener((ActionEvent event) ->
-//            {
-//                isMeasureDialogOpen = !isMeasureDialogOpen;
-//                if (isMeasureDialogOpen)
-//                {
-//                    // Only open if the MeasureDialog has never been opened
-//                    if (measureDialog == null)
-//                    {
-//                        // Create the dialog from the WorldWindow, MeasureTool and AppFrame
-//                        measureDialog = new MeasureDialog(getWwd(), measureTool, this);
-//                    }
-//                    // Display on screen
-//                    measureDialog.setVisible(true);
-//                } else // Hide the dialog
-//                {
-//                    measureDialog.setVisible(false);
-//                }
-//            });
-//            tools.add(measurementCheckBox);
-        }
-//        menuBar.add(tools);
-
-        //======== "Apollo" ========
-        // This menu item is replaced by the CMSToolBar button
-//        apolloMenu = new ApolloMenu(this.getWwd());
-//        menuBar.add(apolloMenu);
-
-
 
         //======== "View" ========           
         JMenu view = new JMenu("View");
@@ -281,11 +237,6 @@ public class CelestialMapper extends AppFrame
 //                restartGlobeView();
             });
             view.add(flatGlobe);    
-            
-            //======== "Line of Sight" =========
-//            lineOfSight = new CMSLineOfSight(this, this.getWwd());
-//            view.add(lineOfSight);
-            
             
             //======== "Reset" =========
             reset = new JMenuItem("Reset");

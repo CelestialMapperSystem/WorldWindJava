@@ -21,13 +21,7 @@ import java.util.ArrayList;
 public class CMSToolBar
 {
     private final CelestialMapper frame;
-
-    // TODO - Create ENUM to hold various button names and any properties
-//    private final String LAYER_MANAGER = "Layer Manager";
-//    private final String MEASUREMENTS = "Measurements";
-//    private final String COORDINATES = "Coordinates";
-//    private final String PROFILER = "Profiler";
-//    private final String SIGHT_LINES = "Sight Lines";
+    
     private boolean isLayerManagerOpen = false;
     private boolean isMeasureDialogOpen = false;
     private boolean isCoordinatesDialogOpen = false;
