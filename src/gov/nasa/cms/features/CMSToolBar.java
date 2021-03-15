@@ -29,23 +29,22 @@ public class CMSToolBar
     private boolean isLineOfSightOpen = false;
     private boolean isLandingSitesOpen;
 
-    enum BUTTON {
-        LAYER_MANAGER("Layer Manager"),
-        MEASUREMENTS("Measurements"),
-        COORDINATES("Coordinates"),
-        PROFILER("Profiler"),
-        SIGHT_LINES("Sight Lines"),
-        LANDING_SITES("Landing Sites");
-
-        private JButton jButton;
-        private final String name;
-
-        BUTTON(String s) {
-            this.name = s;
-            this.jButton = new JButton(s);
-        }
-
-    }
+//    static enum BUTTON {
+//        LAYER_MANAGER("Layer Manager"),
+//        MEASUREMENTS("Measurements"),
+//        COORDINATES("Coordinates"),
+//        PROFILER("Profiler"),
+//        SIGHT_LINES("Sight Lines"),
+//        LANDING_SITES("Landing Sites");
+//
+//        private JButton jButton;
+//        private final String name;
+//
+//        BUTTON(String s) {
+//            this.name = s;
+//            this.jButton = new JButton(s);
+//        }
+//    }
 
     public CMSToolBar(CelestialMapper frame)
     {
@@ -57,7 +56,6 @@ public class CMSToolBar
         // on an XML based configuration and initialization.
         // Will attempt to create a new GradientToolBar() object without requiring the
         // same process
-//        this.createMouseListener();
         JToolBar toolBar = new JToolBar();
         toolBar.setLayout(new GridLayout(1, 5));
         toolBar.setRollover(false);
@@ -67,19 +65,12 @@ public class CMSToolBar
 //        toolBar.addSeparator(new Dimension(150, 0));
 
         ArrayList<JButton> buttons = new ArrayList<>(5);
-        buttons.add(BUTTON.LAYER_MANAGER.jButton);
-        buttons.add(BUTTON.MEASUREMENTS.jButton);
-        buttons.add(BUTTON.COORDINATES.jButton);
-        buttons.add(BUTTON.PROFILER.jButton);
-        buttons.add(BUTTON.SIGHT_LINES.jButton);
-        buttons.add(BUTTON.LANDING_SITES.jButton);
-
-//        ArrayList<BUTTON> buttons1 = new ArrayList<>(5);
-//        for (BUTTON value : BUTTON.values())
-//        {
-//            buttons1.add(value);
-//        }
-
+        buttons.add(new JButton("Layer Manager"));
+        buttons.add(new JButton("Measurements"));
+        buttons.add(new JButton("Coordinates"));
+        buttons.add(new JButton("Profiler"));
+        buttons.add(new JButton("Sight Lines"));
+        buttons.add(new JButton("Landing Sites"));
 
         try
         {
@@ -91,7 +82,6 @@ public class CMSToolBar
         }
 
         buttons.forEach(toolBar::add);
-//        buttons1.forEach(e -> toolBar.add(e.jButton));
         this.frame.getContentPane().add(toolBar,BorderLayout.PAGE_START);
 
     }
@@ -107,7 +97,10 @@ public class CMSToolBar
             button.setVerticalTextPosition(AbstractButton.BOTTOM);
 
             String buttonText = button.getText();
-//            System.out.println(buttonText);
+            System.out.println(buttonText);
+            // Strange, why does .getName() return null even though
+            // ...oh it's calling the getName method from Jbutton not from the Enum.
+//            System.out.println(button.getName());
 
             // Due to weird issues with the original Switch/Case code block here
             // Where the button was set according to the string value of it's name
@@ -115,7 +108,7 @@ public class CMSToolBar
             // convoluted If / Else tree to make sure that this first button
             // wasn't being given multiple ActionListeners AND that each button was
             //
-            if (BUTTON.LAYER_MANAGER.jButton.equals(button))
+            if (button.getText().equals("Layer Manager"))
             {
 //                System.out.println(buttonText + " = LAYER_MANAGER: " + buttonText.equals(BUTTON.LAYER_MANAGER.name));
                 setButtonIcon("cms-data/icons/icons8-layers-48.png", button);
@@ -123,7 +116,7 @@ public class CMSToolBar
                     showLayerManager();
                 });
             }
-            else if (BUTTON.MEASUREMENTS.jButton.equals(button))
+            else if (button.getText().equals("Measurements"))
             {
 //                System.out.println(buttonText + " = MEASUREMENTS: " + buttonText.equals(BUTTON.MEASUREMENTS.name));
                      setButtonIcon("cms-data/icons/icons8-measurement-tool-48.png",button);
@@ -131,23 +124,23 @@ public class CMSToolBar
                          showMeasureTool();
                      });
             }
-            else if (BUTTON.COORDINATES.jButton.equals(button))
+            else if (button.getText().equals("Coordinates"))
             {
                 setButtonIcon("cms-data/icons/icons8-grid-48.png", button);
                 button.addActionListener((ActionEvent e) -> showCoordinatesDialog());
 
             }
-            else if (BUTTON.PROFILER.jButton.equals(button))
+            else if (button.getText().equals("Profiler"))
             {
                 setButtonIcon("cms-data/icons/icons8-bell-curve-48.png", button);
                 button.addActionListener(e -> showProfiler());
 
             }
-            else if (BUTTON.SIGHT_LINES.jButton.equals(button))
+            else if (button.getText().equals("Sight Lines"))
             {
                 setButtonIcon("cms-data/icons/icons8-head-profile-48.png", button);
                 button.addActionListener(e -> showLineOfSight());
-            } else if (BUTTON.LANDING_SITES.jButton.equals(button))
+            } else if (button.getText().equals("Landing Sites"))
             {
                 setButtonIcon("cms-data/icons/icons8-launchpad-48.png", button);
                 button.addActionListener(e -> showLandingSites());
@@ -193,30 +186,6 @@ public class CMSToolBar
             frame.getProfile().setVisible(false);
         }
     }
-
-//    private void initializeButtons(ArrayList<BUTTON> buttons) throws IOException{
-//        for (BUTTON button: buttons)
-//        {
-//            button.jButton.setPreferredSize(new Dimension(50,80));
-//            button.jButton.setFocusPainted(false);
-//
-//            button.jButton.setHorizontalTextPosition(AbstractButton.CENTER);
-//            button.jButton.setVerticalTextPosition(AbstractButton.BOTTOM);
-//
-//            String buttonText = button.name;
-//            System.out.println(buttonText);
-//
-//            switch (button){
-//                case LAYER_MANAGER:
-//                    System.out.println(buttonText + " = LAYER_MANAGER: " + buttonText.equals(BUTTON.LAYER_MANAGER.name));
-//                    setButtonIcon("cms-data/icons/icons8-layers-48.png", button.jButton);
-//                    button.jButton.addActionListener((ActionEvent ev) -> {
-//                        showLayerManager();
-//                    });
-//            }
-//
-//        }
-//    }
 
     private void setButtonIcon(String path, AbstractButton button) throws IOException
     {
