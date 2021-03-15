@@ -856,10 +856,10 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
                     meanElevation = (minElevation + maxElevation) / 2;
                     
                     // Draw labels
-                    String label = String.format("min %.0fm   max %.0fm   mean %.0fm", this.minElevation, this.maxElevation, this.meanElevation);
+                    String label = String.format("min %.0fm   max %.0fm  ", this.minElevation, this.maxElevation);
                     if (this.unit.equals(UNIT_IMPERIAL)) {
                         label = String.format("min %.0fft   max %.0fft  mean %.0fft", this.minElevation * METER_TO_FEET,
-                                this.maxElevation * METER_TO_FEET, this.meanElevation * METER_TO_FEET);
+                                this.maxElevation * METER_TO_FEET);
                     }
                     gl.glLoadIdentity();
                     gl.glDisable(GL.GL_CULL_FACE);
@@ -870,7 +870,16 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
                         if (this.unit.equals(UNIT_IMPERIAL)) {
                             label = String.format("%.0fft", pickedElevation * METER_TO_FEET);
                         }
-                        drawLabel(dc, label, locationSW.add3(new Vec4(width, -12, 0)), 1); // right aligned
+                        if(this.getIsMaximized())
+                        {
+                            drawLabel(dc, label, locationSW.add3(new Vec4(width, 420, 0)), 1); // right aligned
+                            
+                        }
+                        else // Minimized
+                        {
+                            drawLabel(dc, label, locationSW.add3(new Vec4(width, 100, 0)), 1); // right aligned
+                        }
+                        
                     }
                 }
             } else {
@@ -1039,7 +1048,7 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
         }
         // Min elevation horizontal line
         if (this.minElevation != min) {
-            y = (this.minElevation);
+            y = (this.minElevation - min) * stepY;
             gl.glColor4d(colorRGB[0], colorRGB[1], colorRGB[2], this.getOpacity() * .5);  // medium transparency
             drawHorizontalLine(dc, dimension, y);
         }
