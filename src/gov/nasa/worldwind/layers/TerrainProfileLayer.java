@@ -852,7 +852,9 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
                     // Draw GUI buttons
                     drawGUI(dc, drawSize);
 
+                    // Compute mean elevation
                     meanElevation = (minElevation + maxElevation) / 2;
+                    
                     // Draw labels
                     String label = String.format("min %.0fm   max %.0fm   mean %.0fm", this.minElevation, this.maxElevation, this.meanElevation);
                     if (this.unit.equals(UNIT_IMPERIAL)) {
@@ -1037,7 +1039,7 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
         }
         // Min elevation horizontal line
         if (this.minElevation != min) {
-            y = this.minElevation ;
+            y = (this.minElevation);
             gl.glColor4d(colorRGB[0], colorRGB[1], colorRGB[2], this.getOpacity() * .5);  // medium transparency
             drawHorizontalLine(dc, dimension, y);
         }
