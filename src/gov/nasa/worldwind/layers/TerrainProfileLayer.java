@@ -856,10 +856,10 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
                     meanElevation = (minElevation + maxElevation) / 2;
                     
                     // Draw labels
-                    String label = String.format("min %.0fm   max %.0fm  ", this.minElevation, this.maxElevation);
+                    String label = String.format("min %.0fm   max %.0fm  mean %.0fm ", this.minElevation, this.maxElevation, this.meanElevation);
                     if (this.unit.equals(UNIT_IMPERIAL)) {
                         label = String.format("min %.0fft   max %.0fft  mean %.0fft", this.minElevation * METER_TO_FEET,
-                                this.maxElevation * METER_TO_FEET);
+                                this.maxElevation * METER_TO_FEET, this.meanElevation * METER_TO_FEET);
                     }
                     gl.glLoadIdentity();
                     gl.glDisable(GL.GL_CULL_FACE);
