@@ -2,10 +2,13 @@ package gov.nasa.cms.features.layermanager;
 
 import gov.nasa.cms.CelestialMapper;
 import gov.nasa.cms.features.CMSPlaceNamesMenu;
+import gov.nasa.cms.layers.WorldMapLayer;
 import gov.nasa.cms.util.PanelTitle;
 import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.layers.placename.PlaceNameLayer;
+import gov.nasa.worldwindx.examples.ClickAndGoSelectListener;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -31,6 +34,7 @@ public class LayerPanel extends JPanel
 
      // Font problem : too thin, use the textfield one
      private Font font_ = UIManager.getFont("Textfield.font");
+     private WorldMapLayer wml;
 
      public LayerPanel(WorldWindow wwd)
      {
@@ -51,7 +55,7 @@ public class LayerPanel extends JPanel
      {
           this.setLayout(new BorderLayout());
 
-          tree_ = this.fill(wwd);
+          tree_ = this.fill(this.wwd);
 
           // Put the tree in a scroll bar.
           this.scrollPane = new JScrollPane(tree_);
@@ -136,7 +140,8 @@ public class LayerPanel extends JPanel
                     resourceMapsCategory.add(new CheckBoxNode("Resource Maps", name, layer.isEnabled()));
                } 
                // Tools
-               else if (name.startsWith("Lat") || name.startsWith("GARS") || name.startsWith("View") || name.startsWith("Scale"))
+               else if (name.startsWith("Lat") || name.startsWith("GARS") ||
+                   name.startsWith("View") || name.startsWith("Scale") || name.startsWith("Mini"))
                {
                     toolsCategory.add(new CheckBoxNode("Tools", name, layer.isEnabled()));
                } 

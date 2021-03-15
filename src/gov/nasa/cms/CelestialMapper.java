@@ -9,6 +9,7 @@ import gov.nasa.cms.features.*;
 import gov.nasa.cms.features.coordinates.CoordinatesDialog;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
 import gov.nasa.cms.features.LineOfSightController;
+import gov.nasa.cms.layers.WorldMapLayer;
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 import gov.nasa.worldwind.layers.*;
@@ -21,6 +22,7 @@ import gov.nasa.worldwind.globes.MoonFlat;
 import gov.nasa.worldwind.render.ScreenImage;
 import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwindx.applications.worldwindow.core.*;
+import gov.nasa.worldwindx.examples.ClickAndGoSelectListener;
 
 import java.awt.*;
 import javax.swing.*;
@@ -68,6 +70,7 @@ public class CelestialMapper extends AppFrame
     private MouseListener mouseListener;
     private CoordinatesDialog coordinatesDialog;
     private ApolloDialog apolloDialog;
+    private WorldMapLayer wml;
 
     public void restart()
     {
@@ -75,6 +78,7 @@ public class CelestialMapper extends AppFrame
         getContentPane().remove(wwjPanel); //removing component's parent must be JPanel
         this.initialize();
     }
+
 
     @Override
     public void initialize()
@@ -84,11 +88,20 @@ public class CelestialMapper extends AppFrame
         // Make the menu bar
         makeMenuBar(this, this.controller);
 
+        // create minimap
+        createNewWML();
+
 //        createToolbar(this);
         this.toolBar = new CMSToolBar(this);
         toolBar.createToolbar();
 
-
+        // Setup a select listener for the worldmap click-and-go feature
+//        this.wml = new WorldMapLayer();
+//        wml.setResizeBehavior(AVKey.RESIZE_STRETCH);
+//        wml.setPosition(AVKey.NORTHEAST);
+//        this.getWwd().addSelectListener(new ClickAndGoSelectListener(this.getWwd(), WorldMapLayer.class));
+////        this.wml.doRender(this.getWwd().getSceneController().getDrawContext());
+//        getWwd().getModel().getLayers().add(wml);
 
         // Import the lunar elevation data
         elevationModel = new MoonElevationModel(this.getWwd());
@@ -262,9 +275,10 @@ public class CelestialMapper extends AppFrame
                     Configuration.setValue(AVKey.GLOBE_CLASS_NAME, MoonFlat.class.getName());
                 } else 
                 {
-                    Configuration.setValue(AVKey.GLOBE_CLASS_NAME, "gov.nasa.worldwind.globes.Earth");
+                    Configuration.setValue(AVKey.GLOBE_CLASS_NAME, "gov.nasa.worldwind.globes.Moon");
                 }
                 restart();
+//                restartGlobeView();
             });
             view.add(flatGlobe);    
             
@@ -281,6 +295,7 @@ public class CelestialMapper extends AppFrame
                 resetWindow = !resetWindow;
                 if (resetWindow)
                 {
+//                    Configuration.setValue(AVKey.GLOBE_CLASS_NAME, "gov.nasa.worldwind.globes.Moon");
                     restart(); //resets window to launch status
                 } 
             });
@@ -597,5 +612,35 @@ public class CelestialMapper extends AppFrame
     public void setLandingSites(ApolloDialog dialog)
     {
         this.apolloDialog = dialog;
+    }
+
+    public void createNewWML(){
+        this.wml = new WorldMapLayer();
+
+        // IMPORTANT - the constructor doesn't provide a name
+        // Which the layertree needs later to label the checkbox
+        this.wml.setName("Mini Map");
+        this.wml.setIconFilePath("cms-data/icons/lunar_minimap_ldem_3_8bit.jpg");
+        System.out.println(this.wml.getName());
+        this.wml.setResizeBehavior(AVKey.RESIZE_STRETCH);
+
+        // set location of minimap
+        this.wml.setPosition(AVKey.NORTHEAST);
+
+        // enable globe navigation by clicking the minimap
+        this.getWwd().addSelectListener(new ClickAndGoSelectListener(this.getWwd(), WorldMapLayer.class));
+
+        // add minimap to screen
+        this.getWwd().getModel().getLayers().add(wml);
+    }
+
+    public void setWML(WorldMapLayer worldMapLayer)
+    {
+        this.wml = worldMapLayer;
+    }
+
+    public WorldMapLayer getWML()
+    {
+        return this.wml;
     }
 }
