@@ -125,6 +125,11 @@ public class ExportKML
     {
         return new SurfaceEllipse(LatLon.fromDegrees(20, 30), 1e4, 2e4, Angle.ZERO);
     }
+    
+    protected static SurfaceCircle makeSurfaceCircle()
+    {
+        return new SurfaceCircle(LatLon.fromDegrees(36, -104), 1e5);
+    }
 
     /**
      * Generate sample PointPlacemarks, Paths, and Polygons, and write the KML
@@ -145,15 +150,15 @@ public class ExportKML
             highlightShapeAttributes.setOutlineMaterial(Material.BLACK);
 
             // Create a new FileOutputStream to the user's home directory
-            OutputStream os = new FileOutputStream(Configuration.getUserHomeDirectory() + "/ExportKMLTest2.kml");
+            OutputStream os = new FileOutputStream(Configuration.getUserHomeDirectory() + "/ExportKML.kml");
 
             // Build the KML document from the file stream
             KMLDocumentBuilder kmlBuilder = new KMLDocumentBuilder(os);
 //
             // Export the objects
             kmlBuilder.writeObjects(
-                    makeSurfaceQuad(),
-                    makeSurfaceEllipse());
+                    makeSurfaceEllipse(),
+                    makeSurfaceCircle());
 
             kmlBuilder.close();
         } catch (Exception e)
