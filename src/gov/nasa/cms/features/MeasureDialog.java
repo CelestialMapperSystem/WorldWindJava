@@ -5,6 +5,12 @@ import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.layers.TerrainProfileLayer;
+import gov.nasa.worldwind.render.SurfaceCircle;
+import gov.nasa.worldwind.render.SurfaceEllipse;
+import gov.nasa.worldwind.render.SurfacePolygon;
+import gov.nasa.worldwind.render.SurfaceQuad;
+import gov.nasa.worldwind.render.SurfaceShape;
+import gov.nasa.worldwind.render.SurfaceSquare;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 import gov.nasa.worldwind.util.measure.MeasureToolController;
 import gov.nasa.worldwindx.examples.kml.KMLDocumentBuilder;
@@ -203,7 +209,7 @@ public class MeasureDialog
             {
 
                 // Create a new FileOutputStream to where the user chose to save the file
-                OutputStream os = new FileOutputStream(fileChooser.getSelectedFile());
+                OutputStream os = new FileOutputStream(fileToSave);
 
                 // Build the KML document from the file stream
                 KMLDocumentBuilder kmlBuilder = new KMLDocumentBuilder(os);
@@ -214,7 +220,72 @@ public class MeasureDialog
                 kmlBuilder.close();
             }
             
-
+            // Get the SurfaceShape from the current MeasureTool
+            SurfaceShape shape = mt.getSurfaceShape();
+            
+            // Condition statements to check what shape the Measure Tool is
+            if(mt.getSurfaceShape() instanceof SurfaceQuad)
+            {
+                // Cast an instance of SurfaceQuad to the MeasureTool SurfaceShape
+                SurfaceQuad quad = ((SurfaceQuad) shape);
+                
+                OutputStream os = new FileOutputStream(fileToSave);
+                
+                KMLDocumentBuilder kmlBuilder = new KMLDocumentBuilder(os);
+                kmlBuilder.writeObjects(
+                        quad);
+                
+                kmlBuilder.close();
+            }
+            else if(mt.getSurfaceShape() instanceof SurfaceSquare)
+            {
+                SurfaceSquare square = ((SurfaceSquare) shape);
+                
+                OutputStream os = new FileOutputStream(fileToSave);
+                
+                KMLDocumentBuilder kmlBuilder = new KMLDocumentBuilder(os);
+                kmlBuilder.writeObjects(
+                        square);
+                
+                kmlBuilder.close();
+            }
+            // TO-DO: Fix Circle and Ellipse not filling inside the shape
+            else if(mt.getSurfaceShape() instanceof SurfaceEllipse)
+            {
+                SurfaceEllipse ellipse = ((SurfaceEllipse) shape);
+                
+                OutputStream os = new FileOutputStream(fileToSave);
+                
+                KMLDocumentBuilder kmlBuilder = new KMLDocumentBuilder(os);
+                kmlBuilder.writeObjects(
+                        ellipse);
+                
+                kmlBuilder.close();
+            }
+            else if(mt.getSurfaceShape() instanceof SurfaceCircle)
+            {
+                SurfaceCircle circle = ((SurfaceCircle) shape);
+                
+                OutputStream os = new FileOutputStream(fileToSave);
+                
+                KMLDocumentBuilder kmlBuilder = new KMLDocumentBuilder(os);
+                kmlBuilder.writeObjects(
+                        circle);
+                
+                kmlBuilder.close();
+            }
+            else // Polygon
+            {
+                SurfacePolygon poly = ((SurfacePolygon) shape);
+                
+                OutputStream os = new FileOutputStream(fileToSave);
+                
+                KMLDocumentBuilder kmlBuilder = new KMLDocumentBuilder(os);
+                kmlBuilder.writeObjects(
+                        poly);
+                
+                kmlBuilder.close();
+            }
         }
     }
 
