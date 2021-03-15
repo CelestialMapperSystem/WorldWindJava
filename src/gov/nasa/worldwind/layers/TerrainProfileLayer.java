@@ -87,6 +87,7 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
     protected int samples = 200;              // Number of position samples
     protected double minElevation = -9000;            // Minimum elevation along the profile
     protected double maxElevation = 10700;            // Maximum elevation along the profile
+    protected double meanElevation;
     protected double length;                  // Profile length along great circle in meter
     protected Position positions[];           // Position list
 
@@ -839,6 +840,7 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
             gl.glTranslated(locationSW.x(), locationSW.y(), locationSW.z());
             gl.glScaled(scale, scale, 1d);
 
+            
             if (!dc.isPickingMode()) {
                 // Draw grid - Set color using current layer opacity
                 this.drawGrid(dc, drawSize);
@@ -850,11 +852,14 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
                     // Draw GUI buttons
                     drawGUI(dc, drawSize);
 
+                    // Compute mean elevation
+                    meanElevation = (minElevation + maxElevation) / 2;
+                    
                     // Draw labels
-                    String label = String.format("min %.0fm   max %.0fm", this.minElevation, this.maxElevation);
+                    String label = String.format("min %.0fm   max %.0fm   mean %.0fm", this.minElevation, this.maxElevation, this.meanElevation);
                     if (this.unit.equals(UNIT_IMPERIAL)) {
-                        label = String.format("min %.0fft   max %.0fft", this.minElevation * METER_TO_FEET,
-                                this.maxElevation * METER_TO_FEET);
+                        label = String.format("min %.0fft   max %.0fft  mean %.0fft", this.minElevation * METER_TO_FEET,
+                                this.maxElevation * METER_TO_FEET, this.meanElevation * METER_TO_FEET);
                     }
                     gl.glLoadIdentity();
                     gl.glDisable(GL.GL_CULL_FACE);
@@ -1034,7 +1039,7 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
         }
         // Min elevation horizontal line
         if (this.minElevation != min) {
-            y = (this.minElevation - min) * stepY;
+            y = (this.minElevation);
             gl.glColor4d(colorRGB[0], colorRGB[1], colorRGB[2], this.getOpacity() * .5);  // medium transparency
             drawHorizontalLine(dc, dimension, y);
         }
