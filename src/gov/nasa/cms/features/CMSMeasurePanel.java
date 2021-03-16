@@ -21,8 +21,10 @@ import java.awt.event.*;
 import java.beans.*;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,9 +34,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Measure Tool Control panel for MeasureDialog.java
+ * Measure Tool control panel for <code>{@link gov.nasa.cms.features.MeasureDialog}</code>.
+ * Allows users to pick from 8 different shape drawing options. Also has the ability
+ * to export Measure Tool statistics to a CSV file.
  *
  * @see gov.nasa.worldwind.util.measure.MeasureTool
+ * @author kjdickin
  */
 public class CMSMeasurePanel extends JPanel
 {
@@ -429,98 +434,109 @@ public class CMSMeasurePanel extends JPanel
         centerLabel = new JLabel();
         metricPanel.add(centerLabel);
         
-        // Export at CSV functionality
+        //======== Export as CSV ========    
         JButton exportButton = new JButton("Export as CSV");
         exportButton.addActionListener((ActionEvent actionEvent) ->
         {             
-            try (PrintWriter writer = new PrintWriter(new File("MeasureStatistics.csv"))) 
+            JFrame parentFrame = new JFrame(); // Create the frame for the save dialog
+
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Specify a file to save");
+
+            int userSelection = fileChooser.showSaveDialog(parentFrame); // Show the JFileChoose in the popup frame
+
+            // If user approves, set the file save location and start writing to CSV file
+            if (userSelection == JFileChooser.APPROVE_OPTION)
             {
-                StringBuilder sb = new StringBuilder();
-
-                double length = measureTool.getLength();
-                double area = measureTool.getArea();
-                double width = measureTool.getWidth();
-                double height = measureTool.getHeight();
-                Angle heading = measureTool.getOrientation();
-                Position center = measureTool.getCenterPosition();
-
-                // Header
-                sb.append("Length,");
-                sb.append("Area,");
-                sb.append("Width,");
-                sb.append("Height,");
-                sb.append("Heading,");
-                sb.append("Center");
-                sb.append('\n');
-
-                // Length
-                String s = String.format("%7.1f m", length);
-                sb.append(s);
-                sb.append(',');
-
-                // Area
-                if (area < 0)
+                File fileToSave = fileChooser.getSelectedFile();
+                try ( PrintWriter writer = new PrintWriter(fileToSave))
                 {
-                    s = "na";
-                } else
+                    StringBuilder sb = new StringBuilder();
+
+                    double length = measureTool.getLength();
+                    double area = measureTool.getArea();
+                    double width = measureTool.getWidth();
+                    double height = measureTool.getHeight();
+                    Angle heading = measureTool.getOrientation();
+                    Position center = measureTool.getCenterPosition();
+
+                    // Header
+                    sb.append("Length,");
+                    sb.append("Area,");
+                    sb.append("Width,");
+                    sb.append("Height,");
+                    sb.append("Heading,");
+                    sb.append("Center");
+                    sb.append('\n');
+
+                    // Length
+                    String s = String.format("%7.1f m", length);
+                    sb.append(s);
+                    sb.append(',');
+
+                    // Area
+                    if (area < 0)
+                    {
+                        s = "na";
+                    } else
+                    {
+                        s = String.format("%7.1f km2", area);
+                    }
+                    sb.append(s);
+                    sb.append(',');
+
+                    // Width
+                    if (width < 0)
+                    {
+                        s = "na";
+                    } else
+                    {
+                        s = String.format("%7.1f km", width);
+                    }
+                    sb.append(s);
+                    sb.append(',');
+
+                    // Height
+                    if (height < 0)
+                    {
+                        s = "na";
+                    } else
+                    {
+                        s = String.format("%7.1f km", height);
+                    }
+                    sb.append(s);
+                    sb.append(',');
+
+                    // Heading
+                    if (heading == null)
+                    {
+                        s = "na";
+                    } else
+                    {
+                        s = String.format("%6.2f", heading.degrees);
+                    }
+                    sb.append(s);
+                    sb.append(',');
+
+                    // Center
+                    if (center == null)
+                    {
+                        s = "na";
+                    } else
+                    {
+                        s = String.format("%,7.4f %,7.4f", center.getLatitude().degrees, center.getLongitude().degrees);
+                    }
+
+                    sb.append(s);
+                    sb.append('\n');
+
+                    writer.write(sb.toString());
+
+                    System.out.println("File has been exported");
+                } catch (FileNotFoundException ex)
                 {
-                    s = String.format("%7.1f km2", area);
+                    Logger.getLogger(CMSMeasurePanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                sb.append(s);
-                sb.append(',');
-
-                // Width
-                if (width < 0)
-                {
-                    s = "na";
-                } else
-                {
-                    s = String.format("%7.1f km", width);
-                }
-                sb.append(s);
-                sb.append(',');
-
-                // Height
-                if (height < 0)
-                {
-                    s = "na";
-                } else
-                {
-                    s = String.format("%7.1f km", height);
-                }
-                sb.append(s);
-                sb.append(',');
-
-                // Heading
-                if (heading == null)
-                {
-                    s = "na";
-                } else
-                {
-                    s = String.format("%6.2f", heading.degrees);
-                }
-                sb.append(s);
-                sb.append(',');
-
-                // Center
-                if (center == null)
-                {
-                    s = "na";
-                } else
-                {
-                    s = String.format("%,7.4f %,7.4f", center.getLatitude().degrees, center.getLongitude().degrees);
-                }
-
-                sb.append(s);
-                sb.append('\n');
-
-                writer.write(sb.toString());
-
-                System.out.println("done!");
-
-            } catch (FileNotFoundException e)
-            {
-                System.out.println(e.getMessage());
             }
         });
         metricPanel.add(exportButton);
