@@ -357,7 +357,8 @@ public class MoonShadingPanel extends JPanel
                         tessellator.setLightDirection(light);
                         lensFlareLayer.setSunDirection(sun);
 
-                        Thread.sleep(3000); // Wait 3 seconds
+                        Thread.sleep(1000); // Wait 3 seconds
+                        getWwd().redraw();
                     } catch (InterruptedException ignore)
                     {
                     }
