@@ -49,6 +49,7 @@ public class DateTimePickerDialog extends JDialog
     private LatLon position;
     private Date startTime;
     private Date endTime;
+    private int animationDuration;
 
     public DateTimePickerDialog(WorldWindow wwdObject, Component component)
     {
@@ -148,14 +149,18 @@ public class DateTimePickerDialog extends JDialog
         gridBagConstraints.insets = new java.awt.Insets(18, 6, 0, 0);
         getContentPane().add(jLabel3, gridBagConstraints);
 
+        animationSpeedSlider = new JSlider(0,20,10);
+        animationSpeedSlider.setPaintTicks(true);
+        animationSpeedSlider.setPaintLabels(true);
+        animationSpeedSlider.setMajorTickSpacing(2);
         // Action listener for the animation speed
-        animationSpeedSlider.addChangeListener(new javax.swing.event.ChangeListener()
-        {
-            public void stateChanged(javax.swing.event.ChangeEvent evt)
-            {
-                
-            }
-        });
+       // animationSpeedSlider.addChangeListener(new javax.swing.event.ChangeListener()
+       // {
+           // public void stateChanged(javax.swing.event.ChangeEvent evt)
+            //{
+                 this.animationDuration = animationSpeedSlider.getValue();
+           // }
+      //  });
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -193,7 +198,12 @@ public class DateTimePickerDialog extends JDialog
         calendar.setTime(startDate);
         return position;
     }
+    public int getDuration(){
+        return this.animationDuration;
+    }
     
     
 
 }
+
+
