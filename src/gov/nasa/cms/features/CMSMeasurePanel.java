@@ -438,106 +438,7 @@ public class CMSMeasurePanel extends JPanel
         JButton exportButton = new JButton("Export as CSV");
         exportButton.addActionListener((ActionEvent actionEvent) ->
         {             
-            JFrame parentFrame = new JFrame(); // Create the frame for the save dialog
-
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Specify a file to save");
-
-            int userSelection = fileChooser.showSaveDialog(parentFrame); // Show the JFileChoose in the popup frame
-
-            // If user approves, set the file save location and start writing to CSV file
-            if (userSelection == JFileChooser.APPROVE_OPTION)
-            {
-                File fileToSave = fileChooser.getSelectedFile();
-                try ( PrintWriter writer = new PrintWriter(fileToSave))
-                {
-                    StringBuilder sb = new StringBuilder();
-
-                    double length = measureTool.getLength();
-                    double area = measureTool.getArea();
-                    double width = measureTool.getWidth();
-                    double height = measureTool.getHeight();
-                    Angle heading = measureTool.getOrientation();
-                    Position center = measureTool.getCenterPosition();
-
-                    // Header
-                    sb.append("Length,");
-                    sb.append("Area,");
-                    sb.append("Width,");
-                    sb.append("Height,");
-                    sb.append("Heading,");
-                    sb.append("Center");
-                    sb.append('\n');
-
-                    // Length
-                    String s = String.format("%7.1f m", length);
-                    sb.append(s);
-                    sb.append(',');
-
-                    // Area
-                    if (area < 0)
-                    {
-                        s = "na";
-                    } else
-                    {
-                        s = String.format("%7.1f km2", area);
-                    }
-                    sb.append(s);
-                    sb.append(',');
-
-                    // Width
-                    if (width < 0)
-                    {
-                        s = "na";
-                    } else
-                    {
-                        s = String.format("%7.1f km", width);
-                    }
-                    sb.append(s);
-                    sb.append(',');
-
-                    // Height
-                    if (height < 0)
-                    {
-                        s = "na";
-                    } else
-                    {
-                        s = String.format("%7.1f km", height);
-                    }
-                    sb.append(s);
-                    sb.append(',');
-
-                    // Heading
-                    if (heading == null)
-                    {
-                        s = "na";
-                    } else
-                    {
-                        s = String.format("%6.2f", heading.degrees);
-                    }
-                    sb.append(s);
-                    sb.append(',');
-
-                    // Center
-                    if (center == null)
-                    {
-                        s = "na";
-                    } else
-                    {
-                        s = String.format("%,7.4f %,7.4f", center.getLatitude().degrees, center.getLongitude().degrees);
-                    }
-
-                    sb.append(s);
-                    sb.append('\n');
-
-                    writer.write(sb.toString());
-
-                    System.out.println("File has been exported");
-                } catch (FileNotFoundException ex)
-                {
-                    Logger.getLogger(CMSMeasurePanel.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
+            exportAsCSV();
         });
         metricPanel.add(exportButton);
 
@@ -667,6 +568,111 @@ public class CMSMeasurePanel extends JPanel
         centerLabel.setText(s);
     }
 
+    // Exports the current Measure Tool statistics to a CSV file
+    protected void exportAsCSV()
+    {
+        JFrame parentFrame = new JFrame(); 
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Specify a file to save");
+
+        int userSelection = fileChooser.showSaveDialog(parentFrame); 
+
+        // If user approves, set the file save location and start writing to CSV file
+        if (userSelection == JFileChooser.APPROVE_OPTION)
+        {
+            File fileToSave = fileChooser.getSelectedFile();
+            try ( PrintWriter writer = new PrintWriter(fileToSave))
+            {
+                StringBuilder sb = new StringBuilder();
+
+                double length = measureTool.getLength();
+                double area = measureTool.getArea();
+                double width = measureTool.getWidth();
+                double height = measureTool.getHeight();
+                Angle heading = measureTool.getOrientation();
+                Position center = measureTool.getCenterPosition();
+
+                // Header
+                sb.append("Length,");
+                sb.append("Area,");
+                sb.append("Width,");
+                sb.append("Height,");
+                sb.append("Heading,");
+                sb.append("Center");
+                sb.append('\n');
+
+                // Length
+                String s = String.format("%7.1f m", length);
+                sb.append(s);
+                sb.append(',');
+
+                // Area
+                if (area < 0)
+                {
+                    s = "na";
+                } else
+                {
+                    s = String.format("%7.1f km2", area);
+                }
+                sb.append(s);
+                sb.append(',');
+
+                // Width
+                if (width < 0)
+                {
+                    s = "na";
+                } else
+                {
+                    s = String.format("%7.1f km", width);
+                }
+                sb.append(s);
+                sb.append(',');
+
+                // Height
+                if (height < 0)
+                {
+                    s = "na";
+                } else
+                {
+                    s = String.format("%7.1f km", height);
+                }
+                sb.append(s);
+                sb.append(',');
+
+                // Heading
+                if (heading == null)
+                {
+                    s = "na";
+                } else
+                {
+                    s = String.format("%6.2f", heading.degrees);
+                }
+                sb.append(s);
+                sb.append(',');
+
+                // Center
+                if (center == null)
+                {
+                    s = "na";
+                } else
+                {
+                    s = String.format("%,7.4f %,7.4f", center.getLatitude().degrees, center.getLongitude().degrees);
+                }
+
+                sb.append(s);
+                sb.append('\n');
+
+                writer.write(sb.toString());
+
+                System.out.println("File has been exported");
+            } catch (FileNotFoundException ex)
+            {
+                Logger.getLogger(CMSMeasurePanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
     public void deletePanel()
     {
         this.disposeCurrentMeasureTool();
@@ -692,8 +698,6 @@ public class CMSMeasurePanel extends JPanel
         return this.measureTool;
     }
     
-    
-
     public WorldWindow getWwd()
     {
         return this.wwd;
