@@ -334,8 +334,8 @@ public class MoonShadingPanel extends JPanel
         endDate = dateTimeDialog.getEndDate(); // Get the end date
         Calendar cal = dateTimeDialog.getCalendar(); // Get the calendar from DateTimePickerDialog
         dateTimeDialog.getCalendar().setTime(startDate); // Set the calendar time to the start date time
-        int duration = dateTimeDialog.getDuration(); //duration of animation 
-        long totalTime= (endDate.getTime()-startDate.getTime())/1000; //total time in milliseconds
+        int value = dateTimeDialog.getDuration(); //speed of animation 
+        //long totalTime= (endDate.getTime()-startDate.getTime())/1000; //total time in seconds
 
         // Start a new thread to display dynamic shading
         Thread thread = new Thread(new Runnable()
@@ -348,7 +348,8 @@ public class MoonShadingPanel extends JPanel
                 {
                     try
                     {
-                        dateTimeDialog.getCalendar().add(Calendar.SECOND, (int)(totalTime/duration)); // Increment calendar
+                        //dateTimeDialog.getCalendar().add(Calendar.SECOND, (int)(totalTime/duration)); // Increment calendar for animation duration
+                        dateTimeDialog.getCalendar().add(Calendar.HOUR, 1); // Increment calendar
                         startDate.setTime(cal.getTimeInMillis()); // Set the start time to the new calendar time
                         dateTimeDialog.updatePosition(); // Update the position from DateTimePickerDialog
                         LatLon sunPos = dateTimeDialog.getPosition();  // Get the new LatLon sun position
@@ -359,7 +360,8 @@ public class MoonShadingPanel extends JPanel
                         tessellator.setLightDirection(light);
                         lensFlareLayer.setSunDirection(sun);
                         getWwd().redraw();
-                        Thread.sleep(1000); // Wait 1 second
+                        //System.out.println(value);
+                        Thread.sleep(value*1000); //animation speed
                     } catch (InterruptedException ignore)
                     {
                     }

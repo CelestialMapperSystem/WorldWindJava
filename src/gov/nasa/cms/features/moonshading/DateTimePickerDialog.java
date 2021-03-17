@@ -154,13 +154,13 @@ public class DateTimePickerDialog extends JDialog
         animationSpeedSlider.setPaintLabels(true);
         animationSpeedSlider.setMajorTickSpacing(2);
         // Action listener for the animation speed
-       // animationSpeedSlider.addChangeListener(new javax.swing.event.ChangeListener()
-       // {
-           // public void stateChanged(javax.swing.event.ChangeEvent evt)
-            //{
-                 this.animationDuration = animationSpeedSlider.getValue();
-           // }
-      //  });
+       animationSpeedSlider.addChangeListener(new javax.swing.event.ChangeListener()
+        {
+            public void stateChanged(javax.swing.event.ChangeEvent evt)
+            {
+                 animationDuration = animationSpeedSlider.getValue();
+            }
+       });
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 3;
