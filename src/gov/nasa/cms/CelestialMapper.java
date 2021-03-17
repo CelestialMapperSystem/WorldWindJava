@@ -9,11 +9,11 @@ import gov.nasa.cms.features.*;
 import gov.nasa.cms.features.coordinates.CoordinatesDialog;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
 import gov.nasa.cms.features.LineOfSightController;
+import gov.nasa.cms.features.wms.WMSLegendRetriever;
 import gov.nasa.cms.layers.WorldMapLayer;
-import gov.nasa.worldwind.Configuration;
+import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 import gov.nasa.worldwind.layers.*;
-import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.Position;
@@ -29,6 +29,7 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -71,11 +72,13 @@ public class CelestialMapper extends AppFrame
     private CoordinatesDialog coordinatesDialog;
     private ApolloDialog apolloDialog;
     private WorldMapLayer wml;
+    private WMSLegendRetriever legendRetriever;
 
     public void restart()
     {
         getWwd().shutdown();
-        getContentPane().remove(wwjPanel); //removing component's parent must be JPanel
+//        getContentPane().remove(wwjPanel); //removing component's parent must be JPanel
+
         this.initialize();
     }
 
@@ -104,6 +107,20 @@ public class CelestialMapper extends AppFrame
         
         // Display the ScreenImage CMS logo as a RenderableLayer
         this.renderLogo();
+
+        this.legendRetriever = new WMSLegendRetriever(this);
+        try
+        {
+            legendRetriever.contactWMSServer("https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/earth/moon_simp_cyl.map");
+            System.out.println(legendRetriever.hasNetworkActivity());
+            legendRetriever.contactWMSServer(legendRetriever.getServerAddress());
+            System.out.println(legendRetriever.hasNetworkActivity());
+        }
+        catch (URISyntaxException e)
+        {
+            e.printStackTrace();
+        }
+        this.add(legendRetriever.getWmsPanel());
     }
 
 
@@ -572,7 +589,7 @@ public class CelestialMapper extends AppFrame
         // Which the layertree needs later to label the checkbox
         this.wml.setName("Mini Map");
         this.wml.setIconFilePath("cms-data/icons/lunar_minimap_ldem_3_8bit.jpg");
-        System.out.println(this.wml.getName());
+//        System.out.println(this.wml.getName());
         this.wml.setResizeBehavior(AVKey.RESIZE_STRETCH);
 
         // set location of minimap

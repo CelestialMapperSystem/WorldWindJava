@@ -97,7 +97,7 @@ public class CMSToolBar
             button.setVerticalTextPosition(AbstractButton.BOTTOM);
 
             String buttonText = button.getText();
-            System.out.println(buttonText);
+//            System.out.println(buttonText);
             // Strange, why does .getName() return null even though
             // ...oh it's calling the getName method from Jbutton not from the Enum.
 //            System.out.println(button.getName());
