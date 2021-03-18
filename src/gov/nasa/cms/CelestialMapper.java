@@ -9,11 +9,11 @@ import gov.nasa.cms.features.*;
 import gov.nasa.cms.features.coordinates.CoordinatesDialog;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
 import gov.nasa.cms.features.LineOfSightController;
+import gov.nasa.cms.features.wms.WMSLegendRetriever;
 import gov.nasa.cms.layers.WorldMapLayer;
-import gov.nasa.worldwind.Configuration;
+import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 import gov.nasa.worldwind.layers.*;
-import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.Position;
@@ -29,6 +29,8 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.*;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -71,12 +73,16 @@ public class CelestialMapper extends AppFrame
     private CoordinatesDialog coordinatesDialog;
     private ApolloDialog apolloDialog;
     private WorldMapLayer wml;
+    private WMSLegendRetriever legendRetriever;
 
     public void restart()
     {
+
+//        Arrays.stream(getContentPane().getComponents()).forEach(System.out::println);
         getWwd().shutdown();
         getContentPane().remove(wwjPanel); //removing component's parent must be JPanel
         this.initialize();
+
     }
 
 
@@ -93,17 +99,14 @@ public class CelestialMapper extends AppFrame
 
         // create toolbar with buttons
         this.toolBar = new CMSToolBar(this);
-        toolBar.createToolbar();
-
-        // Make the tool bar
-        this.toolBar = new CMSToolBar(this);
-        toolBar.createToolbar();
+        this.toolBar.createToolbar();
 
         // Import the lunar elevation data
         elevationModel = new MoonElevationModel(this.getWwd());
         
         // Display the ScreenImage CMS logo as a RenderableLayer
         this.renderLogo();
+
     }
 
 
@@ -234,7 +237,7 @@ public class CelestialMapper extends AppFrame
                     Configuration.setValue(AVKey.GLOBE_CLASS_NAME, "gov.nasa.worldwind.globes.Moon");
                 }
                 restart();
-//                restartGlobeView();
+
             });
             view.add(flatGlobe);    
             
@@ -572,7 +575,7 @@ public class CelestialMapper extends AppFrame
         // Which the layertree needs later to label the checkbox
         this.wml.setName("Mini Map");
         this.wml.setIconFilePath("cms-data/icons/lunar_minimap_ldem_3_8bit.jpg");
-        System.out.println(this.wml.getName());
+//        System.out.println(this.wml.getName());
         this.wml.setResizeBehavior(AVKey.RESIZE_STRETCH);
 
         // set location of minimap

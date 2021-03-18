@@ -9,7 +9,6 @@ package gov.nasa.cms.features;
 import gov.nasa.cms.*;
 import gov.nasa.cms.features.coordinates.CoordinatesDialog;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
-import gov.nasa.cms.features.LineOfSightController;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -18,6 +17,10 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.ArrayList;
 
+
+/*
+@author: Geoff Norman - Ames Intern - 03/2021
+*/
 public class CMSToolBar
 {
     private final CelestialMapper frame;
@@ -28,27 +31,12 @@ public class CMSToolBar
     private boolean isProfilerOpen = false;
     private boolean isLineOfSightOpen = false;
     private boolean isLandingSitesOpen;
-
-//    static enum BUTTON {
-//        LAYER_MANAGER("Layer Manager"),
-//        MEASUREMENTS("Measurements"),
-//        COORDINATES("Coordinates"),
-//        PROFILER("Profiler"),
-//        SIGHT_LINES("Sight Lines"),
-//        LANDING_SITES("Landing Sites");
-//
-//        private JButton jButton;
-//        private final String name;
-//
-//        BUTTON(String s) {
-//            this.name = s;
-//            this.jButton = new JButton(s);
-//        }
-//    }
+    private JToolBar toolBar;
 
     public CMSToolBar(CelestialMapper frame)
     {
         this.frame = frame;
+        this.toolBar = null;
     }
 
     public void createToolbar() {
@@ -56,13 +44,11 @@ public class CMSToolBar
         // on an XML based configuration and initialization.
         // Will attempt to create a new GradientToolBar() object without requiring the
         // same process
-        JToolBar toolBar = new JToolBar();
+        this.toolBar = new JToolBar();
         toolBar.setLayout(new GridLayout(1, 5));
         toolBar.setRollover(false);
         toolBar.setFloatable(false);
         toolBar.setOpaque(false);
-
-//        toolBar.addSeparator(new Dimension(150, 0));
 
         ArrayList<JButton> buttons = new ArrayList<>(5);
         buttons.add(new JButton("Layer Manager"));
@@ -82,8 +68,21 @@ public class CMSToolBar
         }
 
         buttons.forEach(toolBar::add);
-        this.frame.getContentPane().add(toolBar,BorderLayout.PAGE_START);
 
+        // Have to add this as a child of AppPanel, the parent of CelestialMapper
+        // so it gets removed at the same time as wwjPanel when reset is called
+        this.frame.getWwjPanel().add(toolBar,BorderLayout.PAGE_START);
+
+    }
+
+    public JToolBar getToolBar()
+    {
+        return toolBar;
+    }
+
+    public void setToolBar(JToolBar toolBar)
+    {
+        this.toolBar = toolBar;
     }
 
     private void initializeButtons(ArrayList<JButton> buttons) throws IOException
@@ -97,10 +96,6 @@ public class CMSToolBar
             button.setVerticalTextPosition(AbstractButton.BOTTOM);
 
             String buttonText = button.getText();
-            System.out.println(buttonText);
-            // Strange, why does .getName() return null even though
-            // ...oh it's calling the getName method from Jbutton not from the Enum.
-//            System.out.println(button.getName());
 
             // Due to weird issues with the original Switch/Case code block here
             // Where the button was set according to the string value of it's name
