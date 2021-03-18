@@ -30,6 +30,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -76,10 +77,12 @@ public class CelestialMapper extends AppFrame
 
     public void restart()
     {
-        getWwd().shutdown();
-//        getContentPane().remove(wwjPanel); //removing component's parent must be JPanel
 
+//        Arrays.stream(getContentPane().getComponents()).forEach(System.out::println);
+        getWwd().shutdown();
+        getContentPane().remove(wwjPanel); //removing component's parent must be JPanel
         this.initialize();
+
     }
 
 
@@ -96,11 +99,7 @@ public class CelestialMapper extends AppFrame
 
         // create toolbar with buttons
         this.toolBar = new CMSToolBar(this);
-        toolBar.createToolbar();
-
-        // Make the tool bar
-        this.toolBar = new CMSToolBar(this);
-        toolBar.createToolbar();
+        this.toolBar.createToolbar();
 
         // Import the lunar elevation data
         elevationModel = new MoonElevationModel(this.getWwd());
@@ -108,19 +107,6 @@ public class CelestialMapper extends AppFrame
         // Display the ScreenImage CMS logo as a RenderableLayer
         this.renderLogo();
 
-        this.legendRetriever = new WMSLegendRetriever(this);
-        try
-        {
-            legendRetriever.contactWMSServer("https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/earth/moon_simp_cyl.map");
-            System.out.println(legendRetriever.hasNetworkActivity());
-            legendRetriever.contactWMSServer(legendRetriever.getServerAddress());
-            System.out.println(legendRetriever.hasNetworkActivity());
-        }
-        catch (URISyntaxException e)
-        {
-            e.printStackTrace();
-        }
-        this.add(legendRetriever.getWmsPanel());
     }
 
 
@@ -251,7 +237,7 @@ public class CelestialMapper extends AppFrame
                     Configuration.setValue(AVKey.GLOBE_CLASS_NAME, "gov.nasa.worldwind.globes.Moon");
                 }
                 restart();
-//                restartGlobeView();
+
             });
             view.add(flatGlobe);    
             
