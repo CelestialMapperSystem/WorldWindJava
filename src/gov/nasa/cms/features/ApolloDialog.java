@@ -1,23 +1,20 @@
 package gov.nasa.cms.features;
 
-import gov.nasa.worldwind.Factory;
-import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.cms.CelestialMapper;
+import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.geom.Angle;
-import gov.nasa.worldwind.geom.LatLon;
-import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.layers.Layer;
-import gov.nasa.worldwind.layers.LayerList;
+import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.view.orbit.BasicOrbitView;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
+
+import javax.swing.*;
+import javax.swing.border.*;
+import java.awt.*;
+import java.awt.event.*;
 
 /**
  * Apollo Menu bar created from a JMenu. The menu uses
- * {@link gov.nasa.cms.features.ApolloAnnotations} to display the Annotations
+ * {@link ApolloAnnotations} to display the Annotations
  * feature and six Apollo landing sites as JCheckBoxMenuItems. The landing
  * sites use approximate Apollo landing coordinates to place the user in a good
  * location for viewing surroundings.
@@ -27,7 +24,7 @@ import javax.swing.JMenu;
  *
  * @author kjdickin
  */
-public class ApolloMenu extends JMenu
+public class ApolloDialog
 {
 
     private WorldWindow wwd;
@@ -41,13 +38,36 @@ public class ApolloMenu extends JMenu
     private Layer apollo16;
     private Layer apollo17;
     private final CMSColladaViewer colladaViewer;
+    private JDialog dialog;
+    private JPanel panel;
+    private Border titledBorder;
+    private ApolloAnnotationsCheckBox apolloAnnotations;
 
-    public ApolloMenu(WorldWindow Wwd)
+    public ApolloDialog(WorldWindow wwd, CelestialMapper cms)
     {
-        super("Apollo");
-        this.setWwd(Wwd);
+        this.panel = new JPanel(new GridLayout(0, 1, 0, 0));
+        this.titledBorder = new TitledBorder("Show Apollo Locations");
+//        super("Apollo");
+        dialog = new JDialog((Frame) cms);
+        this.dialog.setPreferredSize(new Dimension(200, 250));
+        this.dialog.getContentPane().setLayout(new BorderLayout());
+        this.dialog.setResizable(true);
+        this.dialog.setModal(false);
+        this.dialog.setTitle("Apollo Landing Sites");
+        dialog.getContentPane().add(panel, BorderLayout.CENTER);
+        Rectangle bounds = cms.getBounds();
+        dialog.setLocation(bounds.x + 860, bounds.y + 60);
+        dialog.setResizable(true); // Set false to resizable until we can expand panels with dialog
+
+
+        this.setWwd(wwd);
         setupApolloMenu();
         colladaViewer = new CMSColladaViewer(this.getWwd());
+
+        // Set dialog to be visible always
+        dialog.setVisible(true);
+        dialog.pack();
+
     }
 
     // Sets up the ApolloMenu bar by creating the 6 Apollo landing sites and Apollo annotations layer as JCheckBoxMenuItems
@@ -58,17 +78,17 @@ public class ApolloMenu extends JMenu
         Factory factory = (Factory) WorldWind.createConfigurationComponent(AVKey.LAYER_FACTORY);
 
         //======== Annotations ========   
-        apollo = new ApolloAnnotations(this.getWwd());
-        this.add(apollo);
+        this.apolloAnnotations = new ApolloAnnotationsCheckBox(this.getWwd());
+        panel.add(apolloAnnotations);
 
         //======== Apollo 11 ========   
-        JCheckBoxMenuItem apolloMenuItem = new JCheckBoxMenuItem("Apollo 11");
+        JCheckBox apolloMenuItem = new JCheckBox("Apollo 11");
         apolloMenuItem.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent event)
             {
                 // Enable and disable when clicked 
-                isItemEnabled = ((JCheckBoxMenuItem) event.getSource()).getState();
+                isItemEnabled = ((JCheckBox) event.getSource()).isSelected();
 
                 if (isItemEnabled)
                 {
@@ -79,7 +99,8 @@ public class ApolloMenu extends JMenu
 
                     colladaViewer.createObjects("Apollo 11");
                     // Zoom to a close up view of the Apollo landing site
-                    zoomTo(LatLon.fromDegrees(172.93, 23.97), Angle.fromDegrees(0), Angle.fromDegrees(0), 2100);                   
+//                    zoomTo(LatLon.fromDegrees(172.93, 23.97), Angle.fromDegrees(0), Angle.fromDegrees(0), 2100);
+                    zoomTo(LatLon.fromDegrees(0.6687, 23.4943), Angle.fromDegrees(20), Angle.fromDegrees(75), 2000);
                 } else
                 {
                     getWwd().getModel().getLayers().remove(apollo11); // Removes Apollo 11 from LayerList
@@ -90,15 +111,15 @@ public class ApolloMenu extends JMenu
 
             }
         });
-        this.add(apolloMenuItem);
+        panel.add(apolloMenuItem);
 
         //======== Apollo 12 ========   
-        apolloMenuItem = new JCheckBoxMenuItem("Apollo 12");
+        apolloMenuItem = new JCheckBox("Apollo 12");
         apolloMenuItem.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent event)
             {
-                isItemEnabled = ((JCheckBoxMenuItem) event.getSource()).getState();
+                isItemEnabled = ((JCheckBox) event.getSource()).isSelected();
 
                 if (isItemEnabled)
                 {
@@ -116,15 +137,15 @@ public class ApolloMenu extends JMenu
 
             }
         });
-        this.add(apolloMenuItem);
+        panel.add(apolloMenuItem);
 
         //======== Apollo 14 ========   
-        apolloMenuItem = new JCheckBoxMenuItem("Apollo 14");
+        apolloMenuItem = new JCheckBox("Apollo 14");
         apolloMenuItem.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent event)
             {
-                isItemEnabled = ((JCheckBoxMenuItem) event.getSource()).getState();
+                isItemEnabled = ((JCheckBox) event.getSource()).isSelected();
 
                 if (isItemEnabled)
                 {
@@ -144,15 +165,15 @@ public class ApolloMenu extends JMenu
 
             }
         });
-        this.add(apolloMenuItem);
+        panel.add(apolloMenuItem);
 
         //======== Apollo 15 ========   
-        apolloMenuItem = new JCheckBoxMenuItem("Apollo 15");
+        apolloMenuItem = new JCheckBox("Apollo 15");
         apolloMenuItem.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent event)
             {
-                isItemEnabled = ((JCheckBoxMenuItem) event.getSource()).getState();
+                isItemEnabled = ((JCheckBox) event.getSource()).isSelected();
 
                 if (isItemEnabled)
                 {
@@ -172,16 +193,16 @@ public class ApolloMenu extends JMenu
 
             }
         });
-        this.add(apolloMenuItem);
+        panel.add(apolloMenuItem);
 
         //======== Apollo 16 ========   
-        apolloMenuItem = new JCheckBoxMenuItem("Apollo 16");
+        apolloMenuItem = new JCheckBox("Apollo 16");
         apolloMenuItem.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent event)
             {
                 // Enable and disable when clicked 
-                isItemEnabled = ((JCheckBoxMenuItem) event.getSource()).getState();
+                isItemEnabled = ((JCheckBox) event.getSource()).isSelected();
 
                 if (isItemEnabled)
                 {
@@ -201,15 +222,15 @@ public class ApolloMenu extends JMenu
 
             }
         });
-        this.add(apolloMenuItem);
+        panel.add(apolloMenuItem);
 
         //======== Apollo 17 ========   
-        apolloMenuItem = new JCheckBoxMenuItem("Apollo 17");
+        apolloMenuItem = new JCheckBox("Apollo 17");
         apolloMenuItem.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent event)
             {
-                isItemEnabled = ((JCheckBoxMenuItem) event.getSource()).getState();
+                isItemEnabled = ((JCheckBox) event.getSource()).isSelected();
 
                 if (isItemEnabled)
                 {
@@ -229,7 +250,9 @@ public class ApolloMenu extends JMenu
 
             }
         });
-        this.add(apolloMenuItem);
+        panel.add(apolloMenuItem);
+        panel.setBorder(
+            new CompoundBorder(BorderFactory.createEmptyBorder(9, 9, 9, 9), this.titledBorder));
         
     }
     
@@ -251,4 +274,8 @@ public class ApolloMenu extends JMenu
         return this.wwd;
     }
 
+    public void setVisible(boolean b)
+    {
+        dialog.setVisible(b);
+    }
 }
