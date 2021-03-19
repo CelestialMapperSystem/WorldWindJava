@@ -5,18 +5,31 @@
  */
 package gov.nasa.worldwind.render;
 
+import gov.nasa.worldwind.Configuration;
+import gov.nasa.worldwind.Exportable;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.ogc.kml.KMLConstants;
+import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
 import gov.nasa.worldwind.util.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
 
 import java.util.*;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * @author dcollins
  * @version $Id: SurfaceEllipse.java 2406 2014-10-29 23:39:29Z dcollins $
  */
-public class SurfaceEllipse extends AbstractSurfaceShape
+public class SurfaceEllipse extends AbstractSurfaceShape implements Exportable
 {
+
     protected static final int MIN_NUM_INTERVALS = 8;
     protected static final int DEFAULT_NUM_INTERVALS = 32;
 
@@ -26,9 +39,13 @@ public class SurfaceEllipse extends AbstractSurfaceShape
     protected Angle heading = Angle.ZERO;
     private int intervals = DEFAULT_NUM_INTERVALS;
 
+    protected boolean extrude;
+    protected boolean followTerrain; // true if altitude mode indicates terrain following
+    protected int altitudeMode = WorldWind.ABSOLUTE;
+
     /**
-     * Constructs a new surface ellipse with the default attributes, default center location, default radii, and default
-     * heading.
+     * Constructs a new surface ellipse with the default attributes, default
+     * center location, default radii, and default heading.
      */
     public SurfaceEllipse()
     {
@@ -51,11 +68,13 @@ public class SurfaceEllipse extends AbstractSurfaceShape
     }
 
     /**
-     * Constructs a new surface ellipse with the specified normal (as opposed to highlight) attributes, default center
-     * location, default radii, and default heading. Modifying the attribute reference after calling this constructor
-     * causes this shape's appearance to change accordingly.
+     * Constructs a new surface ellipse with the specified normal (as opposed to
+     * highlight) attributes, default center location, default radii, and
+     * default heading. Modifying the attribute reference after calling this
+     * constructor causes this shape's appearance to change accordingly.
      *
-     * @param normalAttrs the normal attributes. May be null, in which case default attributes are used.
+     * @param normalAttrs the normal attributes. May be null, in which case
+     * default attributes are used.
      */
     public SurfaceEllipse(ShapeAttributes normalAttrs)
     {
@@ -63,14 +82,15 @@ public class SurfaceEllipse extends AbstractSurfaceShape
     }
 
     /**
-     * Constructs a new surface ellipse with the default attributes, the specified center location and radii (in
-     * meters).
+     * Constructs a new surface ellipse with the default attributes, the
+     * specified center location and radii (in meters).
      *
-     * @param center      the ellipse's center location.
+     * @param center the ellipse's center location.
      * @param majorRadius the ellipse's major radius, in meters.
      * @param minorRadius the ellipse's minor radius, in meters.
      *
-     * @throws IllegalArgumentException if the center is null, or if either radii is negative.
+     * @throws IllegalArgumentException if the center is null, or if either
+     * radii is negative.
      */
     public SurfaceEllipse(LatLon center, double majorRadius, double minorRadius)
     {
@@ -101,15 +121,17 @@ public class SurfaceEllipse extends AbstractSurfaceShape
     }
 
     /**
-     * Constructs a new surface ellipse with the default attributes, the specified center location, radii (in meters),
-     * and heading clockwise from North.
+     * Constructs a new surface ellipse with the default attributes, the
+     * specified center location, radii (in meters), and heading clockwise from
+     * North.
      *
-     * @param center      the ellipse's center location.
+     * @param center the ellipse's center location.
      * @param majorRadius the ellipse's major radius, in meters.
      * @param minorRadius the ellipse's minor radius, in meters.
-     * @param heading     the ellipse's heading, clockwise from North.
+     * @param heading the ellipse's heading, clockwise from North.
      *
-     * @throws IllegalArgumentException if the center or heading are null, or if either radii is negative.
+     * @throws IllegalArgumentException if the center or heading are null, or if
+     * either radii is negative.
      */
     public SurfaceEllipse(LatLon center, double majorRadius, double minorRadius, Angle heading)
     {
@@ -126,17 +148,19 @@ public class SurfaceEllipse extends AbstractSurfaceShape
     }
 
     /**
-     * Constructs a new surface ellipse with the default attributes, the specified center location, radii (in meters),
-     * heading clockwise from North, and initial number of geometry intervals.
+     * Constructs a new surface ellipse with the default attributes, the
+     * specified center location, radii (in meters), heading clockwise from
+     * North, and initial number of geometry intervals.
      *
-     * @param center      the ellipse's center location.
+     * @param center the ellipse's center location.
      * @param majorRadius the ellipse's major radius, in meters.
      * @param minorRadius the ellipse's minor radius, in meters.
-     * @param heading     the ellipse's heading, clockwise from North.
-     * @param intervals   the initial number of intervals (or slices) defining the ellipse's geometry.
+     * @param heading the ellipse's heading, clockwise from North.
+     * @param intervals the initial number of intervals (or slices) defining the
+     * ellipse's geometry.
      *
-     * @throws IllegalArgumentException if the center or heading are null, if either radii is negative, or if the number
-     *                                  of intervals is less than 8.
+     * @throws IllegalArgumentException if the center or heading are null, if
+     * either radii is negative, or if the number of intervals is less than 8.
      */
     public SurfaceEllipse(LatLon center, double majorRadius, double minorRadius, Angle heading, int intervals)
     {
@@ -153,16 +177,19 @@ public class SurfaceEllipse extends AbstractSurfaceShape
     }
 
     /**
-     * Constructs a new surface ellipse with the specified normal (as opposed to highlight) attributes, the specified
-     * center location, and radii (in meters). Modifying the attribute reference after calling this constructor causes
-     * this shape's appearance to change accordingly.
+     * Constructs a new surface ellipse with the specified normal (as opposed to
+     * highlight) attributes, the specified center location, and radii (in
+     * meters). Modifying the attribute reference after calling this constructor
+     * causes this shape's appearance to change accordingly.
      *
-     * @param normalAttrs the normal attributes. May be null, in which case default attributes are used.
-     * @param center      the ellipse's center location.
+     * @param normalAttrs the normal attributes. May be null, in which case
+     * default attributes are used.
+     * @param center the ellipse's center location.
      * @param majorRadius the ellipse's major radius, in meters.
      * @param minorRadius the ellipse's minor radius, in meters.
      *
-     * @throws IllegalArgumentException if the center is null, or if either radii is negative.
+     * @throws IllegalArgumentException if the center is null, or if either
+     * radii is negative.
      */
     public SurfaceEllipse(ShapeAttributes normalAttrs, LatLon center, double majorRadius, double minorRadius)
     {
@@ -195,20 +222,24 @@ public class SurfaceEllipse extends AbstractSurfaceShape
     }
 
     /**
-     * Constructs a new surface ellipse with the specified normal (as opposed to highlight) attributes, the specified
-     * center location, radii (in meters), and heading clockwise from North. Modifying the attribute reference after
-     * calling this constructor causes this shape's appearance to change accordingly.
+     * Constructs a new surface ellipse with the specified normal (as opposed to
+     * highlight) attributes, the specified center location, radii (in meters),
+     * and heading clockwise from North. Modifying the attribute reference after
+     * calling this constructor causes this shape's appearance to change
+     * accordingly.
      *
-     * @param normalAttrs the normal attributes. May be null, in which case default attributes are used.
-     * @param center      the ellipse's center location.
+     * @param normalAttrs the normal attributes. May be null, in which case
+     * default attributes are used.
+     * @param center the ellipse's center location.
      * @param majorRadius the ellipse's major radius, in meters.
      * @param minorRadius the ellipse's minor radius, in meters.
-     * @param heading     the ellipse's heading, clockwise from North.
+     * @param heading the ellipse's heading, clockwise from North.
      *
-     * @throws IllegalArgumentException if the center or heading are null, or if either radii is negative.
+     * @throws IllegalArgumentException if the center or heading are null, or if
+     * either radii is negative.
      */
     public SurfaceEllipse(ShapeAttributes normalAttrs, LatLon center, double majorRadius, double minorRadius,
-        Angle heading)
+            Angle heading)
     {
         this(normalAttrs, center, majorRadius, minorRadius);
 
@@ -223,23 +254,26 @@ public class SurfaceEllipse extends AbstractSurfaceShape
     }
 
     /**
-     * Constructs a new surface ellipse with the specified normal (as opposed to highlight) attributes, the specified
-     * center location, radii (in meters), heading clockwise from North, and initial number of geometry intervals.
-     * Modifying the attribute reference after calling this constructor causes this shape's appearance to change
-     * accordingly.
+     * Constructs a new surface ellipse with the specified normal (as opposed to
+     * highlight) attributes, the specified center location, radii (in meters),
+     * heading clockwise from North, and initial number of geometry intervals.
+     * Modifying the attribute reference after calling this constructor causes
+     * this shape's appearance to change accordingly.
      *
-     * @param normalAttrs the normal attributes. May be null, in which case default attributes are used.
-     * @param center      the ellipse's center location.
+     * @param normalAttrs the normal attributes. May be null, in which case
+     * default attributes are used.
+     * @param center the ellipse's center location.
      * @param majorRadius the ellipse's major radius, in meters.
      * @param minorRadius the ellipse's minor radius, in meters.
-     * @param heading     the ellipse's heading, clockwise from North.
-     * @param intervals   the initial number of intervals (or slices) defining the ellipse's geometry.
+     * @param heading the ellipse's heading, clockwise from North.
+     * @param intervals the initial number of intervals (or slices) defining the
+     * ellipse's geometry.
      *
-     * @throws IllegalArgumentException if the center or heading are null, if either radii is negative, or if the number
-     *                                  of intervals is less than 8.
+     * @throws IllegalArgumentException if the center or heading are null, if
+     * either radii is negative, or if the number of intervals is less than 8.
      */
     public SurfaceEllipse(ShapeAttributes normalAttrs, LatLon center, double majorRadius, double minorRadius,
-        Angle heading, int intervals)
+            Angle heading, int intervals)
     {
         this(normalAttrs, center, majorRadius, minorRadius, heading);
 
@@ -361,7 +395,7 @@ public class SurfaceEllipse extends AbstractSurfaceShape
     {
         // Store a copy of the active attributes to insulate the key from changes made to the shape's active attributes.
         return new SurfaceShapeStateKey(this.getUniqueId(), this.lastModifiedTime, this.getActiveAttributes().copy(),
-            dc.getGlobe().getStateKey(dc));
+                dc.getGlobe().getStateKey(dc));
     }
 
     public Iterable<? extends LatLon> getLocations(Globe globe)
@@ -393,7 +427,7 @@ public class SurfaceEllipse extends AbstractSurfaceShape
         List<LatLon> locations = new ArrayList<LatLon>(1);
         locations.add(this.getCenter());
         List<LatLon> newLocations = LatLon.computeShiftedLocations(globe, oldReferencePosition, newReferencePosition,
-            locations);
+                locations);
         this.setCenter(newLocations.get(0));
     }
 
@@ -407,7 +441,9 @@ public class SurfaceEllipse extends AbstractSurfaceShape
         }
 
         if (this.majorRadius == 0 && this.minorRadius == 0)
+        {
             return null;
+        }
 
         int numLocations = 1 + Math.max(MIN_NUM_INTERVALS, intervals);
         double da = (2 * Math.PI) / (numLocations - 1);
@@ -423,7 +459,7 @@ public class SurfaceEllipse extends AbstractSurfaceShape
             double distance = Math.sqrt(xLength * xLength + yLength * yLength);
             // azimuth runs positive clockwise from north and through 360 degrees.
             double azimuth = (Math.PI / 2.0) - (Math.acos(xLength / distance) * Math.signum(yLength)
-                - this.heading.radians);
+                    - this.heading.radians);
 
             locations[i] = LatLon.greatCircleEndPosition(this.center, azimuth, distance / globeRadius);
         }
@@ -437,7 +473,9 @@ public class SurfaceEllipse extends AbstractSurfaceShape
 
         List<LatLon> drawLocations = this.computeLocations(globe, intervals);
         if (drawLocations == null)
+        {
             return null;
+        }
 
         ArrayList<List<LatLon>> geom = new ArrayList<List<LatLon>>();
         geom.add(drawLocations);
@@ -473,7 +511,7 @@ public class SurfaceEllipse extends AbstractSurfaceShape
         Angle edgePathLength = Angle.fromRadians(da * radius / globe.getRadiusAt(this.center));
 
         double edgeIntervals = WWMath.clamp(edgeIntervalsPerDegree * edgePathLength.degrees,
-            this.minEdgeIntervals, this.maxEdgeIntervals);
+                this.minEdgeIntervals, this.maxEdgeIntervals);
 
         return (int) Math.ceil(edgeIntervals);
     }
@@ -481,7 +519,6 @@ public class SurfaceEllipse extends AbstractSurfaceShape
     //**************************************************************//
     //******************** Restorable State  ***********************//
     //**************************************************************//
-
     protected void doGetRestorableState(RestorableSupport rs, RestorableSupport.StateObject context)
     {
         super.doGetRestorableState(rs, context);
@@ -499,23 +536,33 @@ public class SurfaceEllipse extends AbstractSurfaceShape
 
         LatLon ll = rs.getStateValueAsLatLon(context, "center");
         if (ll != null)
+        {
             this.setCenter(ll);
+        }
 
         Double d = rs.getStateValueAsDouble(context, "majorRadius");
         if (d != null)
+        {
             this.setMajorRadius(d);
+        }
 
         d = rs.getStateValueAsDouble(context, "minorRadius");
         if (d != null)
+        {
             this.setMinorRadius(d);
+        }
 
         d = rs.getStateValueAsDouble(context, "headingDegrees");
         if (d != null)
+        {
             this.setHeading(Angle.fromDegrees(d));
+        }
 
         Integer i = rs.getStateValueAsInteger(context, "intervals");
         if (d != null)
+        {
             this.setIntervals(i);
+        }
     }
 
     protected void legacyRestoreState(RestorableSupport rs, RestorableSupport.StateObject context)
@@ -527,20 +574,223 @@ public class SurfaceEllipse extends AbstractSurfaceShape
         //Double minor = rs.getStateValueAsDouble(context, "minorRadius");
         //if (major != null && minor != null)
         //    this.setAxisLengths(major, minor);
-
         // This property has not changed since the last version, but it's shown here for reference.
         //LatLon center = rs.getStateValueAsLatLon(context, "center");
         //if (center != null)
         //    this.setCenter(center);
-
         // This property has not changed since the last version, but it's shown here for reference.
         //Integer intervals = rs.getStateValueAsInteger(context, "intervals");
         //if (intervals != null)
         //    this.setIntervals(intervals);
-
         Double od = rs.getStateValueAsDouble(context, "orientationDegrees");
         if (od != null)
+        {
             this.setHeading(Angle.fromDegrees(od));
+        }
     }
-}
 
+    /**
+     * Indicates whether to extrude this path. Extruding the path extends a
+     * filled interior from the path to the terrain.
+     *
+     * @return true to extrude this path, otherwise false.
+     *
+     * @see #setExtrude(boolean)
+     */
+    public boolean isExtrude()
+    {
+        return extrude;
+    }
+
+    /**
+     * Specifies whether to extrude this path. Extruding the path extends a
+     * filled interior from the path to the terrain.
+     *
+     * @param extrude true to extrude this path, otherwise false. The default
+     * value is false.
+     */
+    public void setExtrude(final boolean extrude)
+    {
+        this.extrude = extrude;
+    }
+
+    /**
+     * Indicates whether this path is terrain following.
+     *
+     * @return true if terrain following, otherwise false.
+     *
+     * @see #setFollowTerrain(boolean)
+     */
+    public boolean isFollowTerrain()
+    {
+        return this.followTerrain;
+    }
+
+    /**
+     * Specifies whether this path is terrain following.
+     *
+     * @param followTerrain true if terrain following, otherwise false. The
+     * default value is false.
+     */
+    public void setFollowTerrain(final boolean followTerrain)
+    {
+        this.followTerrain = followTerrain;
+    }
+
+    /**
+     * Returns this shape's altitude mode.
+     *
+     * @return this shape's altitude mode.
+     *
+     * @see #setAltitudeMode(int)
+     */
+    public int getAltitudeMode()
+    {
+        return altitudeMode;
+    }
+
+    /**
+     * Export the polygon to KML as a {@code <Placemark>} element. The
+     * {@code output} object will receive the data. This object must be one of:
+     * java.io.Writer java.io.OutputStream javax.xml.stream.XMLStreamWriter
+     *
+     * @param output Object to receive the generated KML.
+     *
+     * @throws javax.xml.stream.XMLStreamException If an exception occurs while
+     * writing the KML
+     * @throws java.io.IOException if an exception occurs while exporting the
+     * data.
+     * @see #export(String, Object)
+     */
+    @Override
+    protected void exportAsKML(Object output) throws IOException, XMLStreamException
+    {
+        XMLStreamWriter xmlWriter = null;
+        final XMLOutputFactory factory = XMLOutputFactory.newInstance();
+        boolean closeWriterWhenFinished = true;
+
+        if (output instanceof XMLStreamWriter)
+        {
+            xmlWriter = (XMLStreamWriter) output;
+            closeWriterWhenFinished = false;
+        } else if (output instanceof Writer)
+        {
+            xmlWriter = factory.createXMLStreamWriter((Writer) output);
+        } else if (output instanceof OutputStream)
+        {
+            xmlWriter = factory.createXMLStreamWriter((OutputStream) output);
+        }
+
+        if (xmlWriter == null)
+        {
+            final String message = Logging.getMessage("Export.UnsupportedOutputObject");
+            Logging.logger().warning(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        xmlWriter.writeStartElement("Placemark");
+
+        final String property = (String) getValue(AVKey.DISPLAY_NAME);
+        if (property != null)
+        {
+            xmlWriter.writeStartElement("name");
+            xmlWriter.writeCharacters(property);
+            xmlWriter.writeEndElement();
+        }
+
+        xmlWriter.writeStartElement("visibility");
+        xmlWriter.writeCharacters(KMLExportUtil.kmlBoolean(this.isVisible()));
+        xmlWriter.writeEndElement();
+
+        final String shortDescription = (String) getValue(AVKey.SHORT_DESCRIPTION);
+        if (shortDescription != null)
+        {
+            xmlWriter.writeStartElement("Snippet");
+            xmlWriter.writeCharacters(shortDescription);
+            xmlWriter.writeEndElement();
+        }
+
+        final String description = (String) getValue(AVKey.BALLOON_TEXT);
+        if (description != null)
+        {
+            xmlWriter.writeStartElement("description");
+            xmlWriter.writeCharacters(description);
+            xmlWriter.writeEndElement();
+        }
+
+        // KML does not allow separate attributes for cap and side, so just use the side attributes.
+        final ShapeAttributes normalAttributes = getAttributes();
+        final ShapeAttributes highlightAttributes = getHighlightAttributes();
+
+        // Write style map
+        if (normalAttributes != null || highlightAttributes != null)
+        {
+            xmlWriter.writeStartElement("StyleMap");
+            KMLExportUtil.exportAttributesAsKML(xmlWriter, KMLConstants.NORMAL, normalAttributes);
+            KMLExportUtil.exportAttributesAsKML(xmlWriter, KMLConstants.HIGHLIGHT, highlightAttributes);
+            xmlWriter.writeEndElement(); // StyleMap
+        }
+
+        // Write geometry
+        xmlWriter.writeStartElement("Polygon");
+
+        xmlWriter.writeStartElement("extrude");
+        xmlWriter.writeCharacters("0");
+        xmlWriter.writeEndElement();
+
+        xmlWriter.writeStartElement("altitudeMode");
+        xmlWriter.writeCharacters("clampToGround");
+        xmlWriter.writeEndElement();
+
+
+        // Outer boundary
+        String globeName = Configuration.getStringValue(AVKey.GLOBE_CLASS_NAME, "gov.nasa.worldwind.globes.Earth");
+        Globe globe = (Globe) WorldWind.createComponent(globeName);
+
+        Iterable<? extends LatLon> outerBoundary = this.getLocations(globe);
+        if (outerBoundary != null)
+        {
+            xmlWriter.writeStartElement("outerBoundaryIs");
+            KMLExportUtil.exportBoundaryAsLinearRing(xmlWriter, outerBoundary, null);
+            xmlWriter.writeEndElement(); // outerBoundaryIs
+        }
+        exportCoordinatesAsKML(xmlWriter);
+
+        xmlWriter.writeEndElement(); 
+
+        // Write geometry
+        xmlWriter.writeEndElement(); // Placemark
+
+        xmlWriter.flush();
+        if (closeWriterWhenFinished)
+        {
+            xmlWriter.close();
+        }
+    }
+
+    /**
+     * Exports the coordinates to KML.
+     *
+     * @param xmlWriter The XML Writer
+     * @throws XMLStreamException If an exception occurs
+     */
+    private void exportCoordinatesAsKML(final XMLStreamWriter xmlWriter) throws XMLStreamException
+    {
+        final String globeName = Configuration
+                .getStringValue(AVKey.GLOBE_CLASS_NAME, "gov.nasa.worldwind.globes.Earth");
+        final Globe globe = (Globe) WorldWind.createComponent(globeName);
+        final Iterable<? extends LatLon> it = this.computeLocations(globe, 360);
+        if (it != null)
+        {
+            xmlWriter.writeStartElement("coordinates");
+            for (final LatLon ll : it)
+            {
+                final double lat = ll.getLatitude().degrees;
+                final double lon = ll.getLongitude().degrees;
+                xmlWriter.writeCharacters(String.format(Locale.US, "%f,%f,%f ", lon, lat, 0.0));
+            }
+            xmlWriter.writeEndElement();
+        }
+    }
+
+}
