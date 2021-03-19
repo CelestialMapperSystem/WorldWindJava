@@ -10,16 +10,19 @@ import gov.nasa.cms.CelestialMapper;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.ogc.wms.*;
+import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.wms.*;
-import gov.nasa.worldwindx.applications.worldwindow.core.Controller;
+import gov.nasa.worldwindx.applications.worldwindow.core.*;
 import gov.nasa.worldwindx.applications.worldwindow.features.*;
 import gov.nasa.worldwindx.applications.worldwindow.features.swinglayermanager.*;
 import gov.nasa.worldwindx.applications.worldwindow.util.Util;
 import gov.nasa.worldwindx.examples.WMSLayersPanel;
+import org.w3c.dom.*;
 //import gov.nasa.worldwindx.examples.WMSLayersPanel;
 
 import javax.swing.*;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.xpath.XPathConstants;
 import java.awt.*;
 import java.net.*;
 import java.util.*;
@@ -204,6 +207,81 @@ public class WMSLegendRetriever implements NetworkActivitySignal.NetworkUser
     {
         String title = caps.getServiceInformation().getServiceTitle();
         return title != null ? title : this.serverURI.getHost();
+    }
+
+    // Registers the objects in the configuration.
+    protected void registerConfiguration(String config) throws Exception
+    {
+        // TODO: this call can return null
+        Document doc = WWXML.openDocumentFile(config, this.getClass());
+        NodeList emNodes = (NodeList) WWXML.makeXPath().evaluate("//Feature", doc, XPathConstants.NODESET);
+        ArrayList<Object> objects = new ArrayList<Object>();
+
+        for (int i = 0; i < emNodes.getLength(); i++)
+        {
+            String featureID = null;
+            String className = null;
+            String actuate = null;
+
+            try
+            {
+                Element element = (Element) emNodes.item(i);
+
+                featureID = WWXML.getText(element, "@featureID");
+                className = WWXML.getText(element, "@className");
+                actuate = WWXML.getText(element, "@actuate");
+
+                if (className == null || className.length() == 0)
+                {
+                    Util.getLogger().log(Level.WARNING,
+                        "Configuration entry in {0} missing feature ID ({1})or classname ({2})",
+                        new Object[]
+                            {config, featureID != null ? featureID : "null", className != null ? className : "null"});
+                    continue;
+                }
+
+                if (!WWUtil.isEmpty(featureID))
+                {
+                    if (actuate != null && actuate.equals("onDemand"))
+                        this.controller.registerObject(featureID, Class.forName(className));
+                    else
+                        objects.add(this.controller.createAndRegisterObject(featureID, className));
+                }
+                else
+                {
+                    objects.add(this.controller.createRegistryObject(className));
+                }
+
+                String accelerator = WWXML.getText(element, "@accelerator");
+                if (accelerator != null && accelerator.length() > 0)
+                    this.controller.registerObject(className + Constants.ACCELERATOR_SUFFIX, accelerator);
+            }
+            catch (Exception e)
+            {
+                String msg = String.format(
+                    "Error creating configuration entry in %s for feature ID (%s), classname (%s), activate (%s)",
+                    config, featureID != null ? featureID : "null",
+                    className != null ? className : "null",
+                    actuate != null ? actuate : "null");
+                Util.getLogger().log(Level.WARNING, msg, e);
+                //noinspection UnnecessaryContinue
+                continue;
+            }
+        }
+
+        for (Object o : objects)
+        {
+            try
+            {
+                if (o instanceof Initializable)
+                    ((Initializable) o).initialize(this.controller);
+            }
+            catch (Exception e)
+            {
+                String msg = String.format("Error initializing object %s", o.getClass().getName());
+                Util.getLogger().log(Level.WARNING, msg, e);
+            }
+        }
     }
 
 
