@@ -732,24 +732,31 @@ public class SurfaceEllipse extends AbstractSurfaceShape implements Exportable
         }
 
         // Write geometry
-        xmlWriter.writeStartElement("LineString");
+        xmlWriter.writeStartElement("Polygon");
 
         xmlWriter.writeStartElement("extrude");
-        xmlWriter.writeCharacters(KMLExportUtil.kmlBoolean(isExtrude()));
+        xmlWriter.writeCharacters("0");
         xmlWriter.writeEndElement();
 
-        xmlWriter.writeStartElement("tessellate");
-        xmlWriter.writeCharacters(KMLExportUtil.kmlBoolean(isFollowTerrain()));
-        xmlWriter.writeEndElement();
-
-        final String altitudeMode = KMLExportUtil.kmlAltitudeMode(getAltitudeMode());
         xmlWriter.writeStartElement("altitudeMode");
-        xmlWriter.writeCharacters(altitudeMode);
+        xmlWriter.writeCharacters("clampToGround");
         xmlWriter.writeEndElement();
 
+
+        // Outer boundary
+        String globeName = Configuration.getStringValue(AVKey.GLOBE_CLASS_NAME, "gov.nasa.worldwind.globes.Earth");
+        Globe globe = (Globe) WorldWind.createComponent(globeName);
+
+        Iterable<? extends LatLon> outerBoundary = this.getLocations(globe);
+        if (outerBoundary != null)
+        {
+            xmlWriter.writeStartElement("outerBoundaryIs");
+            KMLExportUtil.exportBoundaryAsLinearRing(xmlWriter, outerBoundary, null);
+            xmlWriter.writeEndElement(); // outerBoundaryIs
+        }
         exportCoordinatesAsKML(xmlWriter);
 
-        xmlWriter.writeEndElement(); // LineString
+        xmlWriter.writeEndElement(); 
 
         // Write geometry
         xmlWriter.writeEndElement(); // Placemark

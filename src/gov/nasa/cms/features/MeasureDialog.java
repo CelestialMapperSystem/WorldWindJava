@@ -1,7 +1,6 @@
 package gov.nasa.cms.features;
 
 import static gov.nasa.cms.AppFrame.insertBeforePlacenames;
-import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.layers.TerrainProfileLayer;
@@ -15,8 +14,6 @@ import gov.nasa.worldwind.util.measure.MeasureTool;
 import gov.nasa.worldwind.util.measure.MeasureToolController;
 import gov.nasa.worldwindx.examples.kml.KMLDocumentBuilder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -31,7 +28,6 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
