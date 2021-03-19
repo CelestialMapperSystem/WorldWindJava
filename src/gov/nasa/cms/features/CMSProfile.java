@@ -85,6 +85,7 @@ public class CMSProfile extends JCheckBoxMenuItem
         } else {
             this.selectedLayer.setEnabled(false);
         }
+        wwd.redraw();
     }
 
     private void setCMS(CelestialMapper cms)
