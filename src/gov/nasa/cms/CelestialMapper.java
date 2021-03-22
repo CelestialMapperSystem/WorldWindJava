@@ -123,7 +123,7 @@ public class CelestialMapper extends AppFrame
 
         // TODO - Decide whether to use pack or not, to accommodate the space that the cmsToolBar overlaps WorldWindow.
         // this.pack();
-        
+
     }
 
 
