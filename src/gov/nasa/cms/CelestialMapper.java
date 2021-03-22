@@ -4,9 +4,18 @@
  * All Rights Reserved.
  */
 package gov.nasa.cms;
-
+        
+import gov.nasa.cms.features.CMSPlaceNamesMenu;
 import gov.nasa.cms.features.*;
 import gov.nasa.cms.features.coordinates.*;
+import gov.nasa.cms.features.ApolloMenu;
+import gov.nasa.cms.features.ApolloDialog;
+import gov.nasa.cms.features.CMSProfile;
+import gov.nasa.cms.features.CMSToolBar;
+import gov.nasa.cms.features.ImportKML;
+import gov.nasa.cms.features.MeasureDialog;
+import gov.nasa.cms.features.MoonElevationModel;
+import gov.nasa.cms.features.WMSLayerManager;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
 import gov.nasa.cms.features.LineOfSightController;
 import gov.nasa.cms.features.wms.WMSLegendRetriever;
@@ -35,6 +44,7 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * CelestialMapper.java
@@ -45,13 +55,14 @@ public class CelestialMapper extends AppFrame
     protected ActionListener controller;
     private CMSPlaceNamesMenu cmsPlaceNamesMenu;
     private ApolloMenu apolloMenu;
-    private MoonElevationModel elevationModel;
     private CMSProfile profile;
     private MeasureDialog measureDialog;
     private MeasureTool measureTool;
     private LineOfSightController lineOfSight;
     private LayerManagerDialog layerManager;
     private WMSLayerManager wmsLayerManager;
+    private MoonElevationModel elevationModel;
+    private ImportKML kmlImporter;
     
     private boolean stereo;
     private boolean flat;
@@ -67,6 +78,8 @@ public class CelestialMapper extends AppFrame
     private JCheckBoxMenuItem wmsCheckBox;
     private JCheckBoxMenuItem layerManagerCheckBox;
     private JMenuItem reset;
+    private JMenuItem exportMeasureTool;
+    
     private CMSToolBar toolBar;
 
     private MouseListener mouseListener;
@@ -169,7 +182,7 @@ public class CelestialMapper extends AppFrame
         JMenuBar menuBar = new JMenuBar();
 
         //========"File"=========
-        JMenu layers = new JMenu("File");
+        JMenu file = new JMenu("File");
         {
            // WMS Layer Manager
             wmsCheckBox = new JCheckBoxMenuItem("WMS Layer Panel");
@@ -190,11 +203,30 @@ public class CelestialMapper extends AppFrame
                     wmsLayerManager.setVisible(false);
                 }
             });
-            layers.add(wmsCheckBox);
+            file.add(wmsCheckBox);
+            
+                        
+            exportMeasureTool = new JMenuItem("Export Measure Tool");
+            exportMeasureTool.addActionListener((ActionEvent event) ->
+            {
+                try
+                {
+                    measureDialog.exportMeasureTool();
+                } catch (XMLStreamException ex)
+                {
+                    Logger.getLogger(CelestialMapper.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex)
+                {
+                    Logger.getLogger(CelestialMapper.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            file.add(exportMeasureTool);
+            
+            // KML Importer
+            kmlImporter = new ImportKML(this, this.getWwd(), file);
         }
-        menuBar.add(layers);
-        
-        
+        menuBar.add(file);
+                    
         //======== "CMS Place Names" ========          
         cmsPlaceNamesMenu = new CMSPlaceNamesMenu(this, this.getWwd());
         menuBar.add(cmsPlaceNamesMenu);

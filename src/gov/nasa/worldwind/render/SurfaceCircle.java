@@ -5,8 +5,20 @@
  */
 package gov.nasa.worldwind.render;
 
+import gov.nasa.worldwind.Configuration;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.ogc.kml.KMLConstants;
+import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
 import gov.nasa.worldwind.util.Logging;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * @author dcollins
@@ -121,4 +133,5 @@ public class SurfaceCircle extends SurfaceEllipse
 
         this.setRadii(radius, radius);
     }
+    
 }
