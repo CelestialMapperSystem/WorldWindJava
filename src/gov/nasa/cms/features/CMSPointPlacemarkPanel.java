@@ -5,12 +5,9 @@
  */
 package gov.nasa.cms.features;
 
-import gov.nasa.worldwind.Disposable;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.layers.Layer;
-import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.util.UnitsFormat;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 
@@ -19,29 +16,19 @@ import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 /**
- * Measure Tool control panel for <code>{@link gov.nasa.cms.features.MeasureDialog}</code>.
+ * Measure Tool control panel for <code>{@link MeasureDialog}</code>.
  * Allows users to pick from 8 different shape drawing options. Also has the ability
  * to export Measure Tool statistics to a CSV file.
  *
- * @see gov.nasa.worldwind.util.measure.MeasureTool
- * @author kjdickin
+ * @see CMSMeasurePanel
+ * @author Geoff Norman, based on CMSMeasurePanel by kjdickin and MeasureTool by Patrick Murris
  */
-public class CMSMeasurePanel extends JPanel
+public class CMSPointPlacemarkPanel extends JPanel
 {
 
     private WorldWindow wwd;
@@ -88,7 +75,7 @@ public class CMSMeasurePanel extends JPanel
         POLYGON.add(Position.fromDegrees(44, 7, 0));
     }
 
-    public CMSMeasurePanel(WorldWindow wwdObject, MeasureTool measureToolObject)
+    public CMSPointPlacemarkPanel(WorldWindow wwdObject, MeasureTool measureToolObject)
     {
         super(new BorderLayout());
         this.wwd = wwdObject;
@@ -668,7 +655,7 @@ public class CMSMeasurePanel extends JPanel
                 System.out.println("File has been exported");
             } catch (FileNotFoundException ex)
             {
-                Logger.getLogger(CMSMeasurePanel.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(CMSPointPlacemarkPanel.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
