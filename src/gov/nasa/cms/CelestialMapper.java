@@ -18,7 +18,6 @@ import gov.nasa.cms.features.MoonElevationModel;
 import gov.nasa.cms.features.WMSLayerManager;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
 import gov.nasa.cms.features.LineOfSightController;
-import gov.nasa.cms.features.wms.WMSLegendRetriever;
 import gov.nasa.cms.layers.WorldMapLayer;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.util.measure.MeasureTool;
@@ -31,8 +30,6 @@ import gov.nasa.worldwind.globes.MoonFlat;
 import gov.nasa.worldwind.render.ScreenImage;
 import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwindx.applications.worldwindow.util.WWOUnitsFormat;
-//import gov.nasa.worldwindx.applications.worldwindow.core.*;
-//import gov.nasa.worldwindx.examples.ClickAndGoSelectListener;
 
 import java.awt.*;
 import javax.swing.*;
@@ -86,14 +83,11 @@ public class CelestialMapper extends AppFrame
     private CoordinatesDialog coordinatesDialog;
     private ApolloDialog apolloDialog;
     private WorldMapLayer wml;
-    private WMSLegendRetriever legendRetriever;
     private CoordinatesDisplay coordDisplay;
     private WWOUnitsFormat unitsFormat;
 
     public void restart()
     {
-
-//        Arrays.stream(getContentPane().getComponents()).forEach(System.out::println);
         getWwd().shutdown();
         getContentPane().remove(wwjPanel); //removing component's parent must be JPanel
         this.initialize();
@@ -129,9 +123,7 @@ public class CelestialMapper extends AppFrame
 
         // TODO - Decide whether to use pack or not, to accommodate the space that the cmsToolBar overlaps WorldWindow.
         // this.pack();
-
-
-
+        
     }
 
 
