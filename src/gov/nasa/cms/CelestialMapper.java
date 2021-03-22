@@ -20,12 +20,10 @@ import gov.nasa.cms.features.layermanager.LayerManagerDialog;
 import gov.nasa.cms.features.LineOfSightController;
 import gov.nasa.cms.layers.WorldMapLayer;
 import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.geom.Angle;
-import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.MoonFlat;
 import gov.nasa.worldwind.render.ScreenImage;
 import gov.nasa.worldwind.util.Logging;
@@ -306,9 +304,8 @@ public class CelestialMapper extends AppFrame
             cmsLogo.setImageSource(ImageIO.read(new File("cms-data/cms-logo.png")));
             Rectangle view = getWwd().getView().getViewport();
             // Set the screen location to different points to offset the image size
-//            cmsLogo.setScreenLocation(new Point(view.x + 55, view.y + 70));
-            cmsLogo.setScreenLocation(new Point(view.x + 1000, view.y + 800));
-//            cmsLogo.setPosition
+            cmsLogo.setScreenLocation(new Point(view.x + 70, view.y + 70));
+//            cmsLogo.setScreenLocation(new Point(view.x + 1000, view.y + 800));
         } catch (IOException ex) 
         {
             Logger.getLogger(CelestialMapper.class.getName()).log(Level.SEVERE, null, ex);
@@ -597,7 +594,13 @@ public class CelestialMapper extends AppFrame
         this.wml.setResizeBehavior(AVKey.RESIZE_STRETCH);
 
         // set location of minimap
-        this.wml.setPosition(AVKey.NORTHWEST);
+        // Use these two lines if pairing with logo in top left.
+//        this.wml.setPosition(AVKey.NORTHWEST);
+//        this.wml.setLocationOffset(new Vec4(0,-30));
+
+        //
+        this.wml.setPosition(AVKey.NORTHEAST);
+//        this.wml.setLocationOffset(new Vec4(0,-30));
 
         // enable globe navigation by clicking the minimap
         this.getWwd().addSelectListener(new ClickAndGoSelectListener(this.getWwd(), WorldMapLayer.class));

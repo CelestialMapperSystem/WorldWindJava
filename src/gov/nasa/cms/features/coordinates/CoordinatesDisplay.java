@@ -102,15 +102,18 @@ public class CoordinatesDisplay
         attrs.setLeader(AVKey.SHAPE_NONE);
         attrs.setBackgroundColor(Color.BLACK);
         attrs.setBorderColor(new Color(0.1f, 0.1f, 0.1f, 0f));
-        attrs.setBorderWidth(0d);
+        attrs.setBorderWidth(1d);
         attrs.setCornerRadius(5);
         attrs.setInsets(new Insets(10, 0, 0, 10));
 
+
         int width = 340, height = 200;
         attrs.setSize(new Dimension(width, height));
-        attrs.setTextAlign(AVKey.RIGHT);
+//        attrs.setTextAlign(AVKey.RIGHT);
+        attrs.setTextAlign(AVKey.LEFT);
         attrs.setAdjustWidthToText(AVKey.SIZE_FIXED);
-        attrs.setDrawOffset(new Point(-width / 2, -height - 100));
+//        attrs.setDrawOffset(new Point(-width / 2, -height - 100));
+        attrs.setDrawOffset(new Point(-width -665, -height - 140));
 
         CoordAnnotationLayer layer = new CoordAnnotationLayer();
         layer.setValue(Constants.SCREEN_LAYER, true);
