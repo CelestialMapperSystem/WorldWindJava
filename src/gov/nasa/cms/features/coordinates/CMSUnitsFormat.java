@@ -1170,8 +1170,17 @@ public class CMSUnitsFormat extends AVListImpl
             symbol = CMSUnitsFormat.SYMBOL_FEET;
         }
 
+        // Updated return call that excludes the verticalExaggeration field.
+        // There isn't a placeholder for it in the setDefaultFormats() method anymore
+        // this.setFormat(FORMAT_TERRAIN_HEIGHT, " %,6d %s");
         return String.format(this.getLabel(LABEL_TERRAIN_HEIGHT) + getFormat(FORMAT_TERRAIN_HEIGHT),
             (int) Math.round((metersElevation / verticalExaggeration) * multiplier), symbol);
+
+        // The original return method that includes verticalExaggeration
+        // which matches the original setDefaultFormats() line
+        // this.setFormat(FORMAT_TERRAIN_HEIGHT, " (ve %3.1f): %,6d %s");
+//        return String.format(this.getLabel(LABEL_TERRAIN_HEIGHT) + getFormat(FORMAT_TERRAIN_HEIGHT), verticalExaggeration,
+//            (int) Math.round((metersElevation / verticalExaggeration) * multiplier), symbol);
     }
 
     /**
