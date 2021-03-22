@@ -4,21 +4,21 @@
  * All Rights Reserved.
  */
 
-package gov.nasa.worldwindx.applications.worldwindow.util;
+package gov.nasa.cms.features.coordinates;
 
-import gov.nasa.cms.features.coordinates.CMSUnitsFormat;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.util.UnitsFormat;
 
 /**
  * @author tag
  * @version $Id: WWOUnitsFormat.java 1171 2013-02-11 21:45:02Z dcollins $
  */
-public class WWOUnitsFormat extends UnitsFormat
+public class CMSWWOUnitsFormat extends CMSUnitsFormat
 {
     private boolean showUTM = true;
     private boolean showWGS84 = true;
 
-    public WWOUnitsFormat()
+    public CMSWWOUnitsFormat()
     {
         super(CMSUnitsFormat.KILOMETERS, UnitsFormat.SQUARE_KILOMETERS, false);
     }

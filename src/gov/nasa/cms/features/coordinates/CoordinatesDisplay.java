@@ -36,12 +36,11 @@ import gov.nasa.worldwind.geom.coords.UTMCoord;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.pick.PickedObject;
 import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.UnitsFormat;
+//import gov.nasa.worldwind.util.CMSUnitsFormat;
+import gov.nasa.cms.features.coordinates.CMSUnitsFormat;
 import gov.nasa.worldwind.view.orbit.OrbitView;
-import gov.nasa.worldwindx.applications.worldwindow.core.*;
-import gov.nasa.worldwindx.applications.worldwindow.core.layermanager.LayerPath;
-import gov.nasa.worldwindx.applications.worldwindow.features.AbstractOnDemandLayerFeature;
-import gov.nasa.worldwindx.applications.worldwindow.util.WWOUnitsFormat;
+//import gov.nasa.worldwindx.applications.worldwindow.core.Constants;
+
 
 import java.awt.*;
 import java.util.Iterator;
@@ -116,7 +115,7 @@ public class CoordinatesDisplay
         attrs.setDrawOffset(new Point(-width -665, -height - 140));
 
         CoordAnnotationLayer layer = new CoordAnnotationLayer();
-        layer.setValue(Constants.SCREEN_LAYER, true);
+        layer.setValue(WorldWindowConstants.SCREEN_LAYER, true);
         layer.setPickEnabled(false);
         layer.addAnnotation(anno);
         layer.setName("Coordinates Display");
@@ -158,20 +157,20 @@ public class CoordinatesDisplay
         Position eyePosition = dc.getView().getEyePosition();
         if (eyePosition != null)
         {
-            WWOUnitsFormat units = this.cms.getUnits();
-            String origFormat = units.getFormat(UnitsFormat.FORMAT_EYE_ALTITUDE);
+            CMSWWOUnitsFormat units = this.cms.getUnits();
+            String origFormat = units.getFormat(CMSUnitsFormat.FORMAT_EYE_ALTITUDE);
             String tempFormat = origFormat;
 
             if (Math.abs(eyePosition.getElevation() * units.getLengthUnitsMultiplier()) < 10)
             {
                 tempFormat = " %,6.3f %s";
-                units.setFormat(UnitsFormat.FORMAT_EYE_ALTITUDE, tempFormat);
+                units.setFormat(CMSUnitsFormat.FORMAT_EYE_ALTITUDE, tempFormat);
             }
 
             sb.append(this.cms.getUnits().eyeAltitudeNL(eyePosition.getElevation()));
 
             if (!tempFormat.equals(origFormat))
-                units.setFormat(UnitsFormat.FORMAT_EYE_ALTITUDE, origFormat);
+                units.setFormat(CMSUnitsFormat.FORMAT_EYE_ALTITUDE, origFormat);
         }
         else
         {
@@ -188,9 +187,9 @@ public class CoordinatesDisplay
         }
         else
         {
-            sb.append(this.cms.getUnits().getStringValue(UnitsFormat.LABEL_LATITUDE)).append("\n");
-            sb.append(this.cms.getUnits().getStringValue(UnitsFormat.LABEL_LONGITUDE)).append("\n");
-            sb.append(this.cms.getUnits().getStringValue(UnitsFormat.LABEL_TERRAIN_HEIGHT)).append("\n");
+            sb.append(this.cms.getUnits().getStringValue(CMSUnitsFormat.LABEL_LATITUDE)).append("\n");
+            sb.append(this.cms.getUnits().getStringValue(CMSUnitsFormat.LABEL_LONGITUDE)).append("\n");
+            sb.append(this.cms.getUnits().getStringValue(CMSUnitsFormat.LABEL_TERRAIN_HEIGHT)).append("\n");
         }
 
         sb.append(this.cms.getUnits().pitchNL(computePitch(dc.getView())));
@@ -200,7 +199,7 @@ public class CoordinatesDisplay
 
         if (cms.getUnits().isShowUTM())
         {
-            sb.append(datum);
+//            sb.append(datum);
             if (currentPosition != null)
             {
                 try
@@ -215,27 +214,27 @@ public class CoordinatesDisplay
                 catch (Exception e)
                 {
                     sb.append(String.format(
-                        this.cms.getUnits().getStringValue(UnitsFormat.LABEL_UTM_ZONE) + "\n"));
+                        this.cms.getUnits().getStringValue(CMSUnitsFormat.LABEL_UTM_ZONE) + "\n"));
                     sb.append(String.format(
-                        this.cms.getUnits().getStringValue(UnitsFormat.LABEL_UTM_EASTING) + "\n"));
+                        this.cms.getUnits().getStringValue(CMSUnitsFormat.LABEL_UTM_EASTING) + "\n"));
                     sb.append(String.format(
-                        this.cms.getUnits().getStringValue(UnitsFormat.LABEL_UTM_NORTHING) + "\n"));
+                        this.cms.getUnits().getStringValue(CMSUnitsFormat.LABEL_UTM_NORTHING) + "\n"));
                 }
             }
             else
             {
                 sb.append(
-                    String.format(this.cms.getUnits().getStringValue(UnitsFormat.LABEL_UTM_ZONE) + "\n"));
+                    String.format(this.cms.getUnits().getStringValue(CMSUnitsFormat.LABEL_UTM_ZONE) + "\n"));
                 sb.append(String.format(
-                    this.cms.getUnits().getStringValue(UnitsFormat.LABEL_UTM_EASTING) + "\n"));
+                    this.cms.getUnits().getStringValue(CMSUnitsFormat.LABEL_UTM_EASTING) + "\n"));
                 sb.append(String.format(
-                    this.cms.getUnits().getStringValue(UnitsFormat.LABEL_UTM_NORTHING) + "\n"));
+                    this.cms.getUnits().getStringValue(CMSUnitsFormat.LABEL_UTM_NORTHING) + "\n"));
             }
         }
-        else
-        {
-            sb.append(datum);
-        }
+//        else
+//        {
+//            sb.append(datum);
+//        }
 
         return sb.toString();
     }

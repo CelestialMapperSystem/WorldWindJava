@@ -6,7 +6,6 @@
 package gov.nasa.cms;
         
 import gov.nasa.cms.features.CMSPlaceNamesMenu;
-import gov.nasa.cms.features.*;
 import gov.nasa.cms.features.coordinates.*;
 import gov.nasa.cms.features.ApolloMenu;
 import gov.nasa.cms.features.ApolloDialog;
@@ -27,15 +26,12 @@ import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.globes.MoonFlat;
 import gov.nasa.worldwind.render.ScreenImage;
 import gov.nasa.worldwind.util.Logging;
-import gov.nasa.worldwindx.applications.worldwindow.util.WWOUnitsFormat;
 
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.*;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -82,7 +78,7 @@ public class CelestialMapper extends AppFrame
     private ApolloDialog apolloDialog;
     private WorldMapLayer wml;
     private CoordinatesDisplay coordDisplay;
-    private WWOUnitsFormat unitsFormat;
+    private CMSWWOUnitsFormat unitsFormat;
 
     public void restart()
     {
@@ -108,9 +104,9 @@ public class CelestialMapper extends AppFrame
         this.toolBar.createToolbar();
 
         // create coordinates display layer
-        this.unitsFormat = new WWOUnitsFormat();
+        this.unitsFormat = new CMSWWOUnitsFormat();
         this.unitsFormat.setShowUTM(true);
-        this.unitsFormat.setShowWGS84(true);
+        this.unitsFormat.setShowWGS84(false);
         this.coordDisplay = new CoordinatesDisplay(this);
 
         // Import the lunar elevation data
@@ -619,7 +615,7 @@ public class CelestialMapper extends AppFrame
         return this.wml;
     }
 
-    public WWOUnitsFormat getUnits()
+    public CMSWWOUnitsFormat getUnits()
     {
         return this.unitsFormat;
     }
