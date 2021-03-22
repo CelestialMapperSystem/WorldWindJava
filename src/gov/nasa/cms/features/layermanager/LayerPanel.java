@@ -141,7 +141,7 @@ public class LayerPanel extends JPanel
                } 
                // Tools
                else if (name.startsWith("Lat") || name.startsWith("GARS") ||
-                   name.startsWith("View") || name.startsWith("Scale") || name.startsWith("Mini"))
+                   name.startsWith("View") || name.startsWith("Scale") || name.startsWith("Mini") || name.startsWith("Coordinates"))
                {
                     toolsCategory.add(new CheckBoxNode("Tools", name, layer.isEnabled()));
                } 
