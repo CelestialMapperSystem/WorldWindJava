@@ -62,6 +62,7 @@ public class CelestialMapper extends AppFrame
     private WMSLayerManager wmsLayerManager;
     private MoonElevationModel elevationModel;
     private ImportKML kmlImporter;
+    private ImportedDataDialog importedDataDialog;
     
     private boolean stereo;
     private boolean flat;
@@ -70,12 +71,14 @@ public class CelestialMapper extends AppFrame
     private boolean resetWindow;
     private boolean sight;
     private boolean isLayerManagerOpen;
+    private boolean isImportedDataDialogOpen;
 
     private JCheckBoxMenuItem stereoCheckBox;
     private JCheckBoxMenuItem flatGlobe;
     private JCheckBoxMenuItem measurementCheckBox;
     private JCheckBoxMenuItem wmsCheckBox;
     private JCheckBoxMenuItem layerManagerCheckBox;
+    private JCheckBoxMenuItem importedDataCheckBox;
     private JMenuItem reset;
     private JMenuItem exportMeasureTool;
     
@@ -193,7 +196,28 @@ public class CelestialMapper extends AppFrame
             });
             file.add(wmsCheckBox);
             
-                        
+            // Imported Data Dialog
+            importedDataCheckBox = new JCheckBoxMenuItem("Import Imagery & Elevations");
+            importedDataCheckBox.setSelected(isImportedDataDialogOpen);
+            importedDataCheckBox.addActionListener((ActionEvent event) ->
+            {
+                isImportedDataDialogOpen = !isImportedDataDialogOpen;
+                if (isImportedDataDialogOpen)
+                {
+                    if (importedDataDialog == null)
+                    {
+                        importedDataDialog = new ImportedDataDialog(this.getWwd(), this);
+                    }
+                    importedDataDialog.setVisible(true);
+                }
+                else
+                {
+                    importedDataDialog.setVisible(false);
+                }
+            });
+            file.add(importedDataCheckBox);
+            
+            // KML Measurement Export            
             exportMeasureTool = new JMenuItem("Export Measure Tool");
             exportMeasureTool.addActionListener((ActionEvent event) ->
             {

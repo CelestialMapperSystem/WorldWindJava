@@ -38,9 +38,9 @@ public class AppPanel extends JPanel {
 
         this.add((Component) this.wwd, BorderLayout.CENTER);
         //if (includeStatusBar) {
-        this.statusBar = new StatusBar();
-        this.add(statusBar, BorderLayout.PAGE_END);
-        this.statusBar.setEventSource(wwd);
+        //this.statusBar = new StatusBar();
+        //this.add(statusBar, BorderLayout.PAGE_END);
+       // this.statusBar.setEventSource(wwd);
         //}
 
         // Add controllers to manage highlighting and tool tips.
