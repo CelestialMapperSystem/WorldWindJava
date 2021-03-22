@@ -98,21 +98,24 @@ public class CelestialMapper extends AppFrame
         // create minimap
         createNewWML();
 
+        // create toolbar with buttons
+        this.toolBar = new CMSToolBar(this);
+        this.toolBar.createToolbar();
+
         // create coordinates display layer
         this.unitsFormat = new WWOUnitsFormat();
         this.unitsFormat.setShowUTM(true);
         this.unitsFormat.setShowWGS84(true);
         this.coordDisplay = new CoordinatesDisplay(this);
 
-        // create toolbar with buttons
-        this.toolBar = new CMSToolBar(this);
-        this.toolBar.createToolbar();
-
         // Import the lunar elevation data
         elevationModel = new MoonElevationModel(this.getWwd());
         
         // Display the ScreenImage CMS logo as a RenderableLayer
         this.renderLogo();
+
+        // TODO - Decide whether to use pack or not, to accommodate the space that the cmsToolBar overlaps WorldWindow.
+        // this.pack();
 
 
 

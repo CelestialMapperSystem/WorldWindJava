@@ -62,8 +62,7 @@ public class CoordinatesDisplay
 
     public void initialize(CelestialMapper cms){
         this.coordinatesLayer = this.createLayer();
-        this.coordinatesLayer.
-            setScreenLocation(new Point(view.x + 1000, view.y + 800));
+//        this.coordinatesLayer.setScreenLocation(new Point(view.x + 1000, view.y + 800));
         cms.getWwd().getModel().getLayers().add(coordinatesLayer);
         this.coordinatesLayer.setEnabled(true);
     }
@@ -111,7 +110,7 @@ public class CoordinatesDisplay
         attrs.setSize(new Dimension(width, height));
         attrs.setTextAlign(AVKey.RIGHT);
         attrs.setAdjustWidthToText(AVKey.SIZE_FIXED);
-        attrs.setDrawOffset(new Point(-width / 2, -height));
+        attrs.setDrawOffset(new Point(-width / 2, -height - 100));
 
         CoordAnnotationLayer layer = new CoordAnnotationLayer();
         layer.setValue(Constants.SCREEN_LAYER, true);
