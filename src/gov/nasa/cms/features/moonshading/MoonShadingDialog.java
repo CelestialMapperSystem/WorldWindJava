@@ -24,10 +24,12 @@ public class MoonShadingDialog
      private JDialog dialog;
      private MoonShadingPanel moonShadingPanel;
      private WorldWindow wwd;
+     private TimeFrame timeFrame;
      
 
      public MoonShadingDialog(WorldWindow wwdObject, Component component)
      {
+        timeFrame = new TimeFrame(wwdObject, component);
         moonShadingPanel = new MoonShadingPanel(wwdObject);
         
         this.wwd = wwdObject; 
