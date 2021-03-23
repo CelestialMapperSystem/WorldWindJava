@@ -6,6 +6,7 @@
 
 package gov.nasa.worldwindx.applications.worldwindow.util;
 
+import gov.nasa.cms.features.coordinates.CMSUnitsFormat;
 import gov.nasa.worldwind.util.UnitsFormat;
 
 /**
@@ -19,7 +20,7 @@ public class WWOUnitsFormat extends UnitsFormat
 
     public WWOUnitsFormat()
     {
-        super(UnitsFormat.KILOMETERS, UnitsFormat.SQUARE_KILOMETERS, false);
+        super(CMSUnitsFormat.KILOMETERS, UnitsFormat.SQUARE_KILOMETERS, false);
     }
 
     public boolean isShowUTM()

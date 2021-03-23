@@ -9,7 +9,7 @@ import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.layers.TerrainProfileLayer;
 import gov.nasa.worldwind.util.measure.*;
-import gov.nasa.cms.features.LayerManagerLayer;
+import gov.nasa.worldwindx.examples.util.LayerManagerLayer;
 
 import javax.swing.*;
 import javax.swing.event.*;

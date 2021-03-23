@@ -4,6 +4,7 @@ import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.cms.features.moonshading.RectangularNormalTessellator;
 import javax.swing.JFrame;
+import java.nio.file.*;
 
 /**
  *
@@ -21,6 +22,10 @@ public class CelestialMappingSystem
         if (Configuration.isMacOS()) {
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", APP_NAME);
         }
+//        Path path = Paths.get("C:\\Users\\gknorman\\cms-main\\WorldWindJava-cms"
+//            + "\\security\\cacerts"); // Or wherever you created your local cacerts file
+//        System.setProperty ("javax.net.ssl.trustStore", String.valueOf(path));
+//        System.setProperty ("javax.net.ssl.trustStorePassword", "changeit");
 
         try {
             CelestialMapper cms = new CelestialMapper();

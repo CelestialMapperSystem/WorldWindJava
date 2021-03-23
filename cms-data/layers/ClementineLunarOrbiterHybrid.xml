@@ -7,7 +7,7 @@
 
 <!-- Clementine 750nm pan-sharpened with the Lunar Orbiter mosaic. Both mosaics and blend created by USGS. -->
 <Layer version="1" layerType="TiledImageLayer">
-    <DisplayName>Clementine and Lunar Orbiter Hybrid Global Mosaic</DisplayName>
+    <DisplayName>Clementine Lunar Orbiter Hybrid Global Mosaic</DisplayName>
     <Service serviceName="OGC:WMS" version="1.3">
         <GetCapabilitiesURL>https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/earth/moon_simp_cyl.map</GetCapabilitiesURL>
         <GetMapURL>https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/earth/moon_simp_cyl.map</GetMapURL>

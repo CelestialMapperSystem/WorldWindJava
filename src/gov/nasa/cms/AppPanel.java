@@ -37,10 +37,12 @@ public class AppPanel extends JPanel {
         this.wwd.setModel(m);
 
         this.add((Component) this.wwd, BorderLayout.CENTER);
+
+        // TODO - Add option back in to tell constructor whether to include status bar instead of hard coding.
         //if (includeStatusBar) {
-        this.statusBar = new StatusBar();
-        this.add(statusBar, BorderLayout.PAGE_END);
-        this.statusBar.setEventSource(wwd);
+//        this.statusBar = new StatusBar();
+//        this.add(statusBar, BorderLayout.PAGE_END);
+//        this.statusBar.setEventSource(wwd);
         //}
 
         // Add controllers to manage highlighting and tool tips.
