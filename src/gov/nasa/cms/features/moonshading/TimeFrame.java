@@ -10,6 +10,11 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -25,6 +30,7 @@ public class TimeFrame extends JDialog
 {
     private JSlider timeFrameSlider;
     private JButton settingsButton;
+    private JButton playPauseButton;
     private JLabel startDateTime;
     private JLabel endDateTime;
     private JLabel currentDateTime;
@@ -32,81 +38,108 @@ public class TimeFrame extends JDialog
     
     public TimeFrame(WorldWindow wwd, Component component)
     {
-        //this.setSize(400, 60);
-        this.setMaximumSize(new Dimension(400, 100)); // Why won't these change?
-        this.setLocation(640, 770);
-        this.setUndecorated(true);
-        this.getRootPane().setOpaque(false);
-        this.getContentPane().setBackground(Color.darkGray);
-        this.setOpacity(0.6F);
-        this.setAlwaysOnTop(true);
-        this.setVisible(true);
-  
         GridBagConstraints gridBagConstraints;
-        this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
         timeFrameSlider = new JSlider();
         settingsButton = new JButton();
-        settingsButton.setToolTipText("Date/Time Settings");
+        playPauseButton = new JButton();
         startDateTime = new JLabel();
         endDateTime = new JLabel();
         currentDateTime = new JLabel();
         
-        this.getContentPane().setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.ipadx = 250;
-        gridBagConstraints.ipady = 40;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 19, 0);
-        timeFrameSlider.setBackground(Color.darkGray);
+        //======== Dialog ========  
+        this.setBackground(new Color(51, 51, 51));
+        Rectangle bounds = component.getBounds();
+        this.setLocation(bounds.x + 140, bounds.y + 720);
+        this.setAlwaysOnTop(true);
+        this.setUndecorated(true);
+        this.setOpacity((float) .70);
+        this.getContentPane().setBackground(new Color(51, 51, 51));
+        this.getContentPane().setLayout(new GridBagLayout());
+
+        //======== Time Frame Slider ========  
+        timeFrameSlider.setBackground(new Color(51, 51, 51));
+        timeFrameSlider.setForeground(new Color(255, 255, 255));
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.ipadx = 611;
+        gridBagConstraints.ipady = 16;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new Insets(6, 1, 22, 0);
         this.getContentPane().add(timeFrameSlider, gridBagConstraints);
 
+        //======== Settings ========  
+        settingsButton.setForeground(new Color(255, 255, 255));
         settingsButton.setBorderPainted(false); 
         settingsButton.setContentAreaFilled(false); 
         settingsButton.setFocusPainted(false); 
         settingsButton.setOpaque(false);
-        settingsButton.setIcon(new ImageIcon("cms-data/icons/settings-icon.png"));
-        settingsButton.addActionListener(new java.awt.event.ActionListener()
+        settingsButton.setText("Settings");
+        settingsButton.addActionListener(new ActionListener()
         {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
+            public void actionPerformed(ActionEvent evt)
             {
-               
             }
         });
-        
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(30, 10, 0, 10);
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         this.getContentPane().add(settingsButton, gridBagConstraints);
 
-        startDateTime.setText("Start Time");
-        startDateTime.setForeground(Color.WHITE);
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        //======== Play/Pause ========  
+        playPauseButton.setForeground(new java.awt.Color(255, 255, 255));
+        playPauseButton.setForeground(new java.awt.Color(255, 255, 255));
+        playPauseButton.setBorderPainted(false); 
+        playPauseButton.setContentAreaFilled(false); 
+        playPauseButton.setFocusPainted(false); 
+        playPauseButton.setOpaque(false);
+        playPauseButton.setText("Start");
+        playPauseButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent evt)
+            {
+            }
+        });
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(49, 19, 19, 0);
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new Insets(0, 6, 0, 0);
+        this.getContentPane().add(playPauseButton, gridBagConstraints);
+
+        //======== Start Date/Time ========  
+        startDateTime.setForeground(new Color(255, 255, 255));
+        startDateTime.setText("Start Time");
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new Insets(22, 0, 22, 0);
         this.getContentPane().add(startDateTime, gridBagConstraints);
 
+        //======== End Date/Time ========  
+        endDateTime.setForeground(new Color(255, 255, 255));
         endDateTime.setText("End Time");
-        endDateTime.setForeground(Color.WHITE);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(49, 20, 19, 10);
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new Insets(22, 6, 22, 6);
         this.getContentPane().add(endDateTime, gridBagConstraints);
 
+        //======== Current Date/Time ========  
+        currentDateTime.setForeground(new Color(255, 255, 255));
         currentDateTime.setText("Current Time");
-        currentDateTime.setForeground(Color.WHITE);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(9, 200, 0, 0);
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new Insets(16, 370, 0, 0);
         this.getContentPane().add(currentDateTime, gridBagConstraints);
 
         this.pack();

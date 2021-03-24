@@ -30,6 +30,7 @@ public class MoonShadingDialog
      public MoonShadingDialog(WorldWindow wwdObject, Component component)
      {
         timeFrame = new TimeFrame(wwdObject, component);
+        timeFrame.setVisible(true);
         moonShadingPanel = new MoonShadingPanel(wwdObject);
         
         this.wwd = wwdObject; 
