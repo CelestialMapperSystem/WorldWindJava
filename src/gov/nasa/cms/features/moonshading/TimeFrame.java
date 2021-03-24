@@ -6,6 +6,9 @@
 package gov.nasa.cms.features.moonshading;
 
 import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -15,6 +18,8 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Calendar;
+import java.util.Date;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -38,10 +43,24 @@ public class TimeFrame extends JDialog
     
     private DateTimePickerDialog dateTimeDialog;
     private boolean isPlaySelected;
+    private Vec4 sun;
+    private Vec4 light;
+    private RectangularNormalTessellator tessellator;
+    private LensFlareLayer lensFlareLayer;
+    private WorldWindow wwd;
+    
+    private Date startDate;
+    private Date endDate;
    
     
     public TimeFrame(WorldWindow wwd, Component component, MoonShadingPanel panel)
     {
+        this.wwd = wwd;
+        sun = panel.getSun();
+        light = panel.getLight();
+        tessellator = panel.getTessellator();
+        lensFlareLayer = panel.getLensFlareLayer();
+                    
         GridBagConstraints gridBagConstraints;
 
         timeFrameSlider = new JSlider();
@@ -111,11 +130,21 @@ public class TimeFrame extends JDialog
             public void actionPerformed(ActionEvent evt)
             {
                 isPlaySelected = !isPlaySelected;
-                if(isPlaySelected)
+                if(isPlaySelected) // Start animating
                 {
                     playPauseButton.setIcon(new ImageIcon("cms-data/icons/pause-icon.png"));
+                    dateTimeDialog.updatePosition();
+                    LatLon sunPos = dateTimeDialog.getPosition();
+                    
+                    sun = wwd.getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3(); 
+                    light = sun.getNegative3();
+                    
+                    tessellator.setLightDirection(light);
+                    lensFlareLayer.setSunDirection(sun);
+                    
+                    startDynamicShading();
                 }
-                else
+                else // Pause animation
                 {
                     playPauseButton.setIcon(new ImageIcon("cms-data/icons/play-icon.png"));
                 }             
@@ -161,5 +190,48 @@ public class TimeFrame extends JDialog
         this.getContentPane().add(currentDateTime, gridBagConstraints);
 
         this.pack();
+    }
+    
+    protected void startDynamicShading()
+    {
+        startDate = dateTimeDialog.getStartDate(); // Get the start date
+        endDate = dateTimeDialog.getEndDate(); // Get the end date
+        Calendar cal = dateTimeDialog.getCalendar(); // Get the calendar from DateTimePickerDialog
+        dateTimeDialog.getCalendar().setTime(startDate); // Set the calendar time to the start date time
+        int value = dateTimeDialog.getDuration(); //speed of animation 
+
+        // Start a new thread to display dynamic shading
+        Thread thread = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                // While the end date/time is after the calendar date/time
+                while (endDate.after(dateTimeDialog.getCalendar().getTime()))
+                {
+                    try
+                    {
+                        //dateTimeDialog.getCalendar().add(Calendar.SECOND, (int)(totalTime/duration)); // Increment calendar for animation duration
+                        dateTimeDialog.getCalendar().add(Calendar.HOUR, 1); // Increment calendar
+                        startDate.setTime(cal.getTimeInMillis()); // Set the start time to the new calendar time
+                        dateTimeDialog.updatePosition(); // Update the position from DateTimePickerDialog
+                        LatLon sunPos = dateTimeDialog.getPosition();  // Get the new LatLon sun position
+                        sun = wwd.getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3(); // Set the sun position from the LatLon                    
+                        light = sun.getNegative3();
+
+                        // Change the tesselator and lensFalreLayer according to new light and sun direction
+                        tessellator.setLightDirection(light);
+                        lensFlareLayer.setSunDirection(sun);
+                        
+                        Thread.sleep(value*1000); //animation speed
+                        wwd.redraw();
+                    } catch (InterruptedException ignore)
+                    {
+                    }
+                }
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
     }
 }

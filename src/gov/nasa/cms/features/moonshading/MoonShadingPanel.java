@@ -359,9 +359,9 @@ public class MoonShadingPanel extends JPanel
                         // Change the tesselator and lensFalreLayer according to new light and sun direction
                         tessellator.setLightDirection(light);
                         lensFlareLayer.setSunDirection(sun);
-                        getWwd().redraw();
-                        //System.out.println(value);
+                        
                         Thread.sleep(value*1000); //animation speed
+                        getWwd().redraw();
                     } catch (InterruptedException ignore)
                     {
                     }
@@ -372,6 +372,7 @@ public class MoonShadingPanel extends JPanel
         thread.start();
     }
 
+    
     protected WorldWindow getWwd()
     {
         return this.wwd;
@@ -385,6 +386,21 @@ public class MoonShadingPanel extends JPanel
     public Vec4 getSun()
     {
         return sun;
+    }
+    
+    public Vec4 getLight()
+    {
+        return light;
+    }
+    
+    public RectangularNormalTessellator getTessellator()
+    {
+        return tessellator;
+    }
+    
+    public LensFlareLayer getLensFlareLayer()
+    {
+        return lensFlareLayer;
     }
 }
 
