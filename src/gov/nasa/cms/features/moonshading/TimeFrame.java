@@ -15,6 +15,7 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -34,9 +35,12 @@ public class TimeFrame extends JDialog
     private JLabel startDateTime;
     private JLabel endDateTime;
     private JLabel currentDateTime;
+    
+    private DateTimePickerDialog dateTimeDialog;
+    private boolean isPlaySelected;
    
     
-    public TimeFrame(WorldWindow wwd, Component component)
+    public TimeFrame(WorldWindow wwd, Component component, MoonShadingPanel panel)
     {
         GridBagConstraints gridBagConstraints;
 
@@ -76,11 +80,16 @@ public class TimeFrame extends JDialog
         settingsButton.setContentAreaFilled(false); 
         settingsButton.setFocusPainted(false); 
         settingsButton.setOpaque(false);
-        settingsButton.setText("Settings");
+        settingsButton.setIcon(new ImageIcon("cms-data/icons/settings-icon.png"));
         settingsButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent evt)
             {
+                if(dateTimeDialog == null)
+                {
+                    dateTimeDialog = new DateTimePickerDialog(wwd, component);             
+                }
+                dateTimeDialog.setVisible(true);
             }
         });
         gridBagConstraints = new GridBagConstraints();
@@ -90,17 +99,26 @@ public class TimeFrame extends JDialog
         this.getContentPane().add(settingsButton, gridBagConstraints);
 
         //======== Play/Pause ========  
-        playPauseButton.setForeground(new java.awt.Color(255, 255, 255));
-        playPauseButton.setForeground(new java.awt.Color(255, 255, 255));
+        playPauseButton.setForeground(new Color(255, 255, 255));
+        playPauseButton.setIcon(new ImageIcon("cms-data/icons/play-icon.png"));
         playPauseButton.setBorderPainted(false); 
         playPauseButton.setContentAreaFilled(false); 
         playPauseButton.setFocusPainted(false); 
         playPauseButton.setOpaque(false);
-        playPauseButton.setText("Start");
+        isPlaySelected = false;
         playPauseButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent evt)
             {
+                isPlaySelected = !isPlaySelected;
+                if(isPlaySelected)
+                {
+                    playPauseButton.setIcon(new ImageIcon("cms-data/icons/pause-icon.png"));
+                }
+                else
+                {
+                    playPauseButton.setIcon(new ImageIcon("cms-data/icons/play-icon.png"));
+                }             
             }
         });
         gridBagConstraints = new GridBagConstraints();
