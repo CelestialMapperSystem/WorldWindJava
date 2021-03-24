@@ -21,6 +21,7 @@ import java.awt.event.ActionListener;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Hashtable;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -53,11 +54,24 @@ public class TimeFrame extends JDialog
     private Date startDate;
     private Date endDate;
     private Date currentDate;
-    private DateTimeFormatter dtf;
+    
+    private JLabel jan = new JLabel("Jan");
+    private JLabel feb = new JLabel("Feb");
+    private JLabel mar = new JLabel("Mar");
+    private JLabel apr = new JLabel("Apr");
+    private JLabel may = new JLabel("May");
+    private JLabel jun = new JLabel("Jun");
+    private JLabel jul = new JLabel("Jul");
+    private JLabel aug = new JLabel("Aug");
+    private JLabel sep = new JLabel("Sep");
+    private JLabel oct = new JLabel("Oct");
+    private JLabel nov = new JLabel("Nov");
+    private JLabel dec = new JLabel("Dec");
    
     
     public TimeFrame(WorldWindow wwd, Component component, MoonShadingPanel panel)
     {
+        this.initSlider(); // Initialize the slider with months in white text
         dateTimeDialog = new DateTimePickerDialog(wwd, component);    
         this.wwd = wwd;
         sun = panel.getSun();
@@ -66,8 +80,7 @@ public class TimeFrame extends JDialog
         lensFlareLayer = panel.getLensFlareLayer();
                     
         GridBagConstraints gridBagConstraints;
-
-        timeFrameSlider = new JSlider();
+        
         settingsButton = new JButton();
         playPauseButton = new JButton();
         startDateTime = new JLabel();
@@ -253,5 +266,40 @@ public class TimeFrame extends JDialog
         });
         thread.setDaemon(true);
         thread.start();
+    }
+    
+    protected void initSlider()
+    {
+        jan.setForeground(Color.WHITE);
+        feb.setForeground(Color.WHITE);
+        mar.setForeground(Color.WHITE);
+        apr.setForeground(Color.WHITE);
+        may.setForeground(Color.WHITE);
+        jun.setForeground(Color.WHITE);
+        jul.setForeground(Color.WHITE);
+        aug.setForeground(Color.WHITE);
+        sep.setForeground(Color.WHITE);
+        oct.setForeground(Color.WHITE);
+        nov.setForeground(Color.WHITE);
+        dec.setForeground(Color.WHITE);
+        
+        timeFrameSlider = new JSlider(0, 11, 0);
+        timeFrameSlider.setPaintTicks(true);
+        timeFrameSlider.setPaintLabels(true);
+        timeFrameSlider.setMajorTickSpacing(1);
+        Hashtable<Integer, JLabel> table = new Hashtable<Integer, JLabel>();
+        table.put (0, jan);
+        table.put (1, feb);
+        table.put (2, mar);
+        table.put (3, apr);
+        table.put (4, may);
+        table.put (5, jun);
+        table.put (6, jul);
+        table.put (7, aug);
+        table.put (8, sep);
+        table.put (9, oct);
+        table.put (10, nov);
+        table.put (11, dec);
+        timeFrameSlider.setLabelTable (table);
     }
 }
