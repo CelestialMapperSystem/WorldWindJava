@@ -211,7 +211,10 @@ public class TimeFrame extends JDialog
                 {
                     try
                     {
-                        //dateTimeDialog.getCalendar().add(Calendar.SECOND, (int)(totalTime/duration)); // Increment calendar for animation duration
+                        if (!isPlaySelected)
+                        {
+                            break;
+                        }
                         dateTimeDialog.getCalendar().add(Calendar.HOUR, 1); // Increment calendar
                         startDate.setTime(cal.getTimeInMillis()); // Set the start time to the new calendar time
                         dateTimeDialog.updatePosition(); // Update the position from DateTimePickerDialog

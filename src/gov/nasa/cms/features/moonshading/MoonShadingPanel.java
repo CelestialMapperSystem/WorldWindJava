@@ -204,63 +204,6 @@ public class MoonShadingPanel extends JPanel
         });
         elevationPanel.add(elevationSlider);
 
-        // Date Time Picker
-        dateTimePickerButton = new JButton("Date/Time Picker");
-        dateTimePickerButton.setToolTipText("Select a date and time for simulation");
-        dateTimePickerButton.addActionListener(new ActionListener()
-        {
-
-            public void actionPerformed(ActionEvent event)
-            {
-                // DateTimePickerDialog has never been opened
-                if (dateTimeDialog == null)
-                {
-                    dateTimeDialog = new DateTimePickerDialog(wwd, cms);
-                    dateTimePickerButton.setText("Start Simulation");
-                    dateTimeDialog.setVisible(true);
-                } // User wants to start a simulation
-                else if (dateTimeDialog.isVisible())
-                {
-                    dateTimeDialog.setVisible(false); // Display date/time picker dialog
-                    dateTimePickerButton.setText("Date/Time Picker"); // Change the text in case the user wants to simulate again
-
-                    // Start the shading process
-                    dateTimeDialog.updatePosition(); // Update the position from user input
-                    LatLon sunPos = dateTimeDialog.getPosition(); // Change the LatLon position from user input
-                    sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3(); // Set the sun position from the LatLon                    
-                    light = sun.getNegative3();
-
-                    // Change the tesselator and lensFalreLayer according to new light and sun direction
-                    tessellator.setLightDirection(light);
-                    lensFlareLayer.setSunDirection(sun);
-
-                    // Dynamically shade the moon until it reaches the end date/time
-                    startDynamicShading();
-
-                } // User wants to start another simulation
-                else if (!dateTimeDialog.isVisible())
-                {
-                    dateTimeDialog.setVisible(true);
-                    dateTimePickerButton.setText("Start Simulation");
-
-                    // Start the shading process
-                    dateTimeDialog.updatePosition(); // Update the position from user input
-                    LatLon sunPos = dateTimeDialog.getPosition(); // Change the LatLon position from user input
-                    sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3(); // Set the sun position from the LatLon                    
-                    light = sun.getNegative3();
-
-                    // Change the tesselator and lensFalreLayer according to new light and sun direction
-                    tessellator.setLightDirection(light);
-                    lensFlareLayer.setSunDirection(sun);
-                    
-                    // Dynamically shade the moon until it reaches the end date/time
-                    startDynamicShading();
-
-                }
-                getWwd().redraw();
-            }
-        });
-
         //Coordinate Zoom-In Feature
         coordinatesButton = new JButton("Coordinates");
         coordinatesButton.setToolTipText("Enter the coordinates");
@@ -283,7 +226,6 @@ public class MoonShadingPanel extends JPanel
         controlPanel.add(colorPanel);
         controlPanel.add(azimuthPanel);
         controlPanel.add(elevationPanel);
-        controlPanel.add(dateTimePickerButton);
         controlPanel.add(coordinatesButton);
         this.add(controlPanel, BorderLayout.NORTH);
     }
@@ -327,51 +269,6 @@ public class MoonShadingPanel extends JPanel
         // Redraw
         this.getWwd().redraw();
     }
-
-    protected void startDynamicShading()
-    {
-        startDate = dateTimeDialog.getStartDate(); // Get the start date
-        endDate = dateTimeDialog.getEndDate(); // Get the end date
-        Calendar cal = dateTimeDialog.getCalendar(); // Get the calendar from DateTimePickerDialog
-        dateTimeDialog.getCalendar().setTime(startDate); // Set the calendar time to the start date time
-        int value = dateTimeDialog.getDuration(); //speed of animation 
-        //long totalTime= (endDate.getTime()-startDate.getTime())/1000; //total time in seconds
-
-        // Start a new thread to display dynamic shading
-        Thread thread = new Thread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                // While the end date/time is after the calendar date/time
-                while (endDate.after(dateTimeDialog.getCalendar().getTime()))
-                {
-                    try
-                    {
-                        //dateTimeDialog.getCalendar().add(Calendar.SECOND, (int)(totalTime/duration)); // Increment calendar for animation duration
-                        dateTimeDialog.getCalendar().add(Calendar.HOUR, 1); // Increment calendar
-                        startDate.setTime(cal.getTimeInMillis()); // Set the start time to the new calendar time
-                        dateTimeDialog.updatePosition(); // Update the position from DateTimePickerDialog
-                        LatLon sunPos = dateTimeDialog.getPosition();  // Get the new LatLon sun position
-                        sun = getWwd().getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3(); // Set the sun position from the LatLon                    
-                        light = sun.getNegative3();
-
-                        // Change the tesselator and lensFalreLayer according to new light and sun direction
-                        tessellator.setLightDirection(light);
-                        lensFlareLayer.setSunDirection(sun);
-                        
-                        Thread.sleep(value*1000); //animation speed
-                        getWwd().redraw();
-                    } catch (InterruptedException ignore)
-                    {
-                    }
-                }
-            }
-        });
-        thread.setDaemon(true);
-        thread.start();
-    }
-
     
     protected WorldWindow getWwd()
     {
