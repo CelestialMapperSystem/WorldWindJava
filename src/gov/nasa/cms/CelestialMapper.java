@@ -107,8 +107,8 @@ public class CelestialMapper extends AppFrame
         // Display the ScreenImage CMS logo as a RenderableLayer
         this.renderLogo();
 
-//        this.pointPlacemarkDialog = new PointPlacemarkDialog(this.getWwd(), this.getMeasureTool(), this);
-//        this.pointPlacemarkDialog.setVisible(true);
+       this.pointPlacemarkDialog = new PointPlacemarkDialog(this.getWwd(), this);
+       this.pointPlacemarkDialog.setVisible(true);
 
         // TODO - Decide whether to use pack or not, to accommodate the space that the cmsToolBar overlaps WorldWindow.
         // this.pack();
