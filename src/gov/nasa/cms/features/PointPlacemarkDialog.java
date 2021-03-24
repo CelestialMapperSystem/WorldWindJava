@@ -17,7 +17,7 @@ public class PointPlacemarkDialog
     {
         CMSPointPlacemarkPanel measurePanel = new CMSPointPlacemarkPanel(wwdObject);
 
-
+        //dialog.setSize(new Dimension(200, 400));
         // Create the dialog from a Frame and set the bounds
         dialog = new JDialog((Frame) component);
         Rectangle bounds = component.getBounds();
