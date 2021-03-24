@@ -7,12 +7,17 @@ package gov.nasa.cms.features;
 
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.layers.RenderableLayer;
+import gov.nasa.worldwind.render.PointPlacemark;
+import gov.nasa.worldwind.render.PointPlacemarkAttributes;
 
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import static gov.nasa.cms.features.coordinates.GoToCoordinatePanel.computeLatLonFromString;
 
@@ -31,15 +36,16 @@ public class CMSPointPlacemarkPanel extends JPanel
 
     private JComboBox colorCombo;
     private JTextField coordinatesTextField;
+    private JTextField latTextField;
+    private JTextField lonTextField;
+    private JTextField elevTextField;
     private JTextField labelTextField;
     private JTextField scaleTextField;
-    private JButton lineColorButton;
-    private JButton pointColorButton;
     private JButton labelColorButton;
-    private JCheckBox showControlsCheck;
     private JCheckBox showLabelCheck;
     private JButton addButton;
     private JButton viewButton;
+
     private JButton endButton;
     private JCheckBox followCheck;
     private JButton deleteButton;
@@ -56,6 +62,17 @@ public class CMSPointPlacemarkPanel extends JPanel
     private JButton flyToCoordinates;
     private ActionListener flyToCoordinatesListener;
 
+    
+    private PointPlacemark placemark;
+    private RenderableLayer layer;
+    private PointPlacemarkAttributes attrs;
+    
+    private double latLocation;
+    private double lonLocation;
+    private double elevLocation;
+    private Position validPosition;
+    private boolean isValidInput;
+
     public CMSPointPlacemarkPanel(WorldWindow wwdObject)
     {
         super(new BorderLayout());
@@ -68,7 +85,10 @@ public class CMSPointPlacemarkPanel extends JPanel
 
     private void makePanel(JPanel panel)
     {
-
+        placemark = new PointPlacemark(Position.fromDegrees(0, 0, 1e4));
+        layer = new RenderableLayer();
+        attrs = new PointPlacemarkAttributes();
+        
         //======== Measurement Panel ========  
         JPanel colorPanel = new JPanel(new GridLayout(1, 2, 5, 5));
         colorPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
@@ -83,22 +103,31 @@ public class CMSPointPlacemarkPanel extends JPanel
             switch (item)
             {
                 case "Red":
+                    attrs.setImageAddress("images/pushpins/plain-red.png");
                     break;
                 case "Orange":
+                    attrs.setImageAddress("images/pushpins/plain-orange.png");
                     break;
                 case "Yellow":
+                    attrs.setImageAddress("images/pushpins/plain-yellow.png");
                     break;
                 case "Green":
+                    attrs.setImageAddress("images/pushpins/plain-green.png");
                     break;
                 case "Blue":
+                    attrs.setImageAddress("images/pushpins/plain-blue.png");
                     break;
                 case "Purple":
+                    attrs.setImageAddress("images/pushpins/plain-purple.png");
                     break;
                 case "White":
+                    attrs.setImageAddress("images/pushpins/plain-white.png");
                     break;
                 case "Black":
+                    attrs.setImageAddress("images/pushpins/plain-black.png");
                     break;
                 case "Gray":
+                    attrs.setImageAddress("images/pushpins/plain-gray.png");
                     break;
                 default:
                     break;
@@ -107,51 +136,90 @@ public class CMSPointPlacemarkPanel extends JPanel
         colorPanel.add(colorCombo);
 
         //======== Coordinates Panel ========
-        JPanel coordinatesLabelPanel = new JPanel(new GridLayout(1, 1, 5, 5));
-        coordinatesLabelPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        coordinatesLabelPanel.add(new JLabel("Coordinates (lat, lon):"));
-
-        this.coordinatesPanel = new JPanel(new GridBagLayout());
-        coordinatesPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        GridBagConstraints gbc;
-
-        this.coordinatesTextField = new JTextField();
-        gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridwidth = 2;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.insets = new Insets(0, 0, 0, 5);
-        gbc.weightx = .7;
-        gbc.ipadx = 15;
-        gbc.anchor = GridBagConstraints.LINE_START;
-        coordinatesPanel.add(coordinatesTextField, gbc);
-
-        this.flyToCoordinates = new JButton("Validate");
-//        flyToCoordinates.setPreferredSize(new Dimension(30,15));
-        gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridwidth = 1;
-        gbc.gridx = 4;
-        gbc.gridy = 0;
-        gbc.insets = new Insets(0, 0, 0, 0);
-        gbc.weightx = .05;
-//        gbc.ipadx = 10;
-        gbc.anchor = GridBagConstraints.LINE_END;
-        coordinatesPanel.add(flyToCoordinates, gbc);
+//        JPanel coordinatesLabelPanel = new JPanel(new GridLayout(1, 1, 5, 5));
+//        coordinatesLabelPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+//        coordinatesLabelPanel.add(new JLabel("Coordinates (lat, lon):"));
+//
+//        this.coordinatesPanel = new JPanel(new GridBagLayout());
+//        coordinatesPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+//        GridBagConstraints gbc;
+//
+//        this.coordinatesTextField = new JTextField();
+//        gbc = new GridBagConstraints();
+//        gbc.fill = GridBagConstraints.HORIZONTAL;
+//        gbc.gridwidth = 2;
+//        gbc.gridx = 0;
+//        gbc.gridy = 0;
+//        gbc.insets = new Insets(0, 0, 0, 5);
+//        gbc.weightx = .7;
+//        gbc.ipadx = 15;
+//        gbc.anchor = GridBagConstraints.LINE_START;
+//        coordinatesPanel.add(coordinatesTextField, gbc);
+//
+//        this.flyToCoordinates = new JButton("Validate");
+////        flyToCoordinates.setPreferredSize(new Dimension(30,15));
+//        gbc = new GridBagConstraints();
+//        gbc.fill = GridBagConstraints.HORIZONTAL;
+//        gbc.gridwidth = 1;
+//        gbc.gridx = 4;
+//        gbc.gridy = 0;
+//        gbc.insets = new Insets(0, 0, 0, 0);
+//        gbc.weightx = .05;
+////        gbc.ipadx = 10;
+//        gbc.anchor = GridBagConstraints.LINE_END;
+//        coordinatesPanel.add(flyToCoordinates, gbc);
 
         this.createCoordinateValidationListener();
-        this.coordinatesTextField.addActionListener(flyToCoordinatesListener);
-        this.flyToCoordinates.addActionListener(flyToCoordinatesListener);
+//        this.coordinatesTextField.addActionListener(flyToCoordinatesListener);
+//        this.flyToCoordinates.addActionListener(flyToCoordinatesListener);
+//
+//        this.resultPanel = new JPanel(new GridLayout(0,1,5,5));
+//        resultPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+//        this.resultLabel = new JLabel("-90°<=Lat<=90°, -180°<=Long<=180°");
+////        this.resultLabel = new JLabel("1");
+//        this.resultLabel.setHorizontalTextPosition(JLabel.CENTER);
+//        this.resultLabel.setVerticalTextPosition(JLabel.CENTER);
+//
+//        resultPanel.add(resultLabel);
 
-        this.resultPanel = new JPanel(new GridLayout(0,1,5,5));
-        resultPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        this.resultLabel = new JLabel("-90°<=Lat<=90°, -180°<=Long<=180°");
-//        this.resultLabel = new JLabel("1");
-        this.resultLabel.setHorizontalTextPosition(JLabel.CENTER);
-        this.resultLabel.setVerticalTextPosition(JLabel.CENTER);
+        //======== Coordinates Panel ========
+        JPanel coordinatesPanel = new JPanel(new GridLayout(1, 3, 5, 5));
+        coordinatesPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        coordinatesPanel.add(new JLabel("Coordinates (lat, lon, elev):"));
 
-        resultPanel.add(resultLabel);
+        latTextField = new JTextField(5);
+        latTextField.addActionListener(new java.awt.event.ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent event)
+            {
+                String latInput = latTextField.getText();
+                latLocation = Double.parseDouble(latInput);
+            }
+        });
+        lonTextField = new JTextField(5);
+        lonTextField.addActionListener(new java.awt.event.ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent event)
+            {
+                String latInput = lonTextField.getText();
+                lonLocation = Double.parseDouble(latInput);
+            }
+        });
+        elevTextField = new JTextField(5);
+        elevTextField.addActionListener(new java.awt.event.ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent event)
+            {
+                String latInput = elevTextField.getText();
+                elevLocation = Double.parseDouble(latInput);
+            }
+        });
+        coordinatesPanel.add(latTextField);
+        coordinatesPanel.add(lonTextField);
+        coordinatesPanel.add(elevTextField);
 
 
         //======== Label Panel ========  
@@ -159,26 +227,45 @@ public class CMSPointPlacemarkPanel extends JPanel
         labelPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         labelPanel.add(new JLabel("Label:"));
         labelTextField = new JTextField();
+        labelTextField.addActionListener(new java.awt.event.ActionListener() 
+        {
+            @Override
+            public void actionPerformed(ActionEvent event) 
+            {
+                String labelInput = labelTextField.getText();
+                placemark.setLabelText(labelInput);
+            }
+        });
         labelPanel.add(labelTextField);
-
+              
         //======== Scale Panel ========  
         JPanel scalePanel = new JPanel(new GridLayout(1, 2, 5, 5));
         scalePanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         scalePanel.add(new JLabel("Scale (1 is default):"));
         scaleTextField = new JTextField();
-        scalePanel.add(scaleTextField);
+        scaleTextField.addActionListener(new java.awt.event.ActionListener() 
+        {
+            @Override
+            public void actionPerformed(ActionEvent event) 
+            {
+               String scaleInput = scaleTextField.getText();
+               double scale = Double.parseDouble(scaleInput);
+               attrs.setScale(scale);
+            }
+        });
+        scalePanel.add(scaleTextField);           
 
         //======== Check Boxes Panel ========  
         JPanel checkPanel = new JPanel(new GridLayout(1, 2, 2, 2));
         checkPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 
         showLabelCheck = new JCheckBox("Label");
+        showLabelCheck.setSelected(true);
         showLabelCheck.addActionListener((ActionEvent event) ->
         {
             JCheckBox cb = (JCheckBox) event.getSource();
             wwd.redraw();
         });
-        showLabelCheck.setSelected(true);
         checkPanel.add(showLabelCheck);
 
         //======== Label Color Button ========  
@@ -198,7 +285,18 @@ public class CMSPointPlacemarkPanel extends JPanel
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 5, 5));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         addButton = new JButton("Add Placemark");
-        addButton.addActionListener(flyToCoordinatesListener);
+//<<<<<<< HEAD
+//        addButton.addActionListener(flyToCoordinatesListener);
+//=======
+        addButton.addActionListener((ActionEvent actionEvent) ->
+        {
+            placemark.setAttributes(attrs);
+            placemark.setPosition(Position.fromDegrees(latLocation, lonLocation, elevLocation));
+            layer.addRenderable(placemark);
+            getWwd().getModel().getLayers().add(layer);
+//            wwd.redraw();
+        });
+//>>>>>>> 3af6bac581d46c5fd21337b97871f9a252d126c9
         buttonPanel.add(addButton);
         addButton.setEnabled(true);
 
@@ -219,16 +317,13 @@ public class CMSPointPlacemarkPanel extends JPanel
         outerPanel.add(colorPanel);
         outerPanel.add(colorPanel);
         outerPanel.add(coordinatesPanel);
-        outerPanel.add(resultPanel);
+//        outerPanel.add(resultPanel);
         outerPanel.add(labelPanel);
         outerPanel.add(scalePanel);
         outerPanel.add(checkPanel);
         outerPanel.add(buttonPanel);
 
-
-
         this.add(outerPanel, BorderLayout.NORTH);
-
     }
 
     public void createCoordinateValidationListener()
@@ -243,22 +338,48 @@ public class CMSPointPlacemarkPanel extends JPanel
                 {
                     View view = wwd.getView();
                     double distance = view.getCenterPoint().distanceTo3(view.getEyePoint());
-                    view.goTo(new Position(latLon, 0), distance);
+                    setValidPosition(new Position(latLon,0));
+                    view.goTo(validPosition, distance);
+                } else {
+                    setValidPosition(null);
                 }
             }
         };
+    }
+
+    public Position getValidPosition()
+    {
+        return validPosition;
+    }
+
+    public void setValidPosition(Position validPosition)
+    {
+        this.validPosition = validPosition;
+    }
+
+    public boolean isValidInput()
+    {
+        return isValidInput;
+    }
+
+    public void setValidInput(boolean validInput)
+    {
+        isValidInput = validInput;
     }
 
     public void updateResult(LatLon latLon)
     {
         if (latLon != null)
         {
+            this.isValidInput = true;
             coordinatesTextField.setText(coordinatesTextField.getText().toUpperCase());
             this.resultLabel.setText(String.format("Lat %7.4f\u00B0,  Lon %7.4f\u00B0",
                 latLon.getLatitude().degrees,  latLon.getLongitude().degrees));
         }
         else
             this.resultLabel.setText("Invalid coordinates");
+
+            this.isValidInput = false;
 
     }
     

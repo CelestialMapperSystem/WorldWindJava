@@ -39,6 +39,7 @@ public class Placemarks extends ApplicationTemplate
             final RenderableLayer layer = new RenderableLayer();
 
             PointPlacemark pp = new PointPlacemark(Position.fromDegrees(28, -102, 1e4));
+            pp.setPosition(Position.ZERO);
             pp.setLabelText("Placemark A");
             pp.setValue(AVKey.DISPLAY_NAME, "Clamp to ground, Label, Semi-transparent, Audio icon");
             pp.setLineEnabled(false);
