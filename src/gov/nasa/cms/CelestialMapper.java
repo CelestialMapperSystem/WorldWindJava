@@ -5,18 +5,9 @@
  */
 package gov.nasa.cms;
         
-import gov.nasa.cms.features.CMSPlaceNamesMenu;
+import gov.nasa.cms.features.*;
 import gov.nasa.cms.features.coordinates.*;
-import gov.nasa.cms.features.ApolloMenu;
-import gov.nasa.cms.features.ApolloDialog;
-import gov.nasa.cms.features.CMSProfile;
-import gov.nasa.cms.features.CMSToolBar;
-import gov.nasa.cms.features.ImportKML;
-import gov.nasa.cms.features.MeasureDialog;
-import gov.nasa.cms.features.MoonElevationModel;
-import gov.nasa.cms.features.WMSLayerManager;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
-import gov.nasa.cms.features.LineOfSightController;
 import gov.nasa.cms.layers.WorldMapLayer;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.*;
@@ -79,6 +70,7 @@ public class CelestialMapper extends AppFrame
     private WorldMapLayer wml;
     private CoordinatesDisplay coordDisplay;
     private CMSWWOUnitsFormat unitsFormat;
+    private PointPlacemarkDialog pointPlacemarkDialog;
 
     public void restart()
     {
@@ -114,6 +106,9 @@ public class CelestialMapper extends AppFrame
         
         // Display the ScreenImage CMS logo as a RenderableLayer
         this.renderLogo();
+
+//        this.pointPlacemarkDialog = new PointPlacemarkDialog(this.getWwd(), this.getMeasureTool(), this);
+//        this.pointPlacemarkDialog.setVisible(true);
 
         // TODO - Decide whether to use pack or not, to accommodate the space that the cmsToolBar overlaps WorldWindow.
         // this.pack();
@@ -618,5 +613,15 @@ public class CelestialMapper extends AppFrame
     public CMSWWOUnitsFormat getUnits()
     {
         return this.unitsFormat;
+    }
+
+    public CoordinatesDisplay getCoordinatesDisplay()
+    {
+        return this.coordDisplay;
+    }
+
+    public void setCoordinatesDisplay(CoordinatesDisplay coordinatesDisplay)
+    {
+        this.coordDisplay = coordinatesDisplay;
     }
 }

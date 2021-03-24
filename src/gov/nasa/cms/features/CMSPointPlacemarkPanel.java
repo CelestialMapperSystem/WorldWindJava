@@ -9,7 +9,7 @@ import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.util.UnitsFormat;
-import gov.nasa.worldwind.util.measure.MeasureTool;
+import gov.nasa.worldwind.util.measure.*;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -32,7 +32,7 @@ public class CMSPointPlacemarkPanel extends JPanel
 {
 
     private WorldWindow wwd;
-    private MeasureTool measureTool;
+    private PointPlacemarkMeasureTool measureTool;
     private PropertyChangeListener measureToolListener;
 
     private JComboBox shapeCombo;
@@ -75,7 +75,7 @@ public class CMSPointPlacemarkPanel extends JPanel
         POLYGON.add(Position.fromDegrees(44, 7, 0));
     }
 
-    public CMSPointPlacemarkPanel(WorldWindow wwdObject, MeasureTool measureToolObject)
+    public CMSPointPlacemarkPanel(WorldWindow wwdObject, PointPlacemarkMeasureTool measureToolObject)
     {
         super(new BorderLayout());
         this.wwd = wwdObject;
@@ -125,78 +125,38 @@ public class CMSPointPlacemarkPanel extends JPanel
         JPanel shapePanel = new JPanel(new GridLayout(1, 2, 5, 5));
         shapePanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         shapePanel.add(new JLabel("Measurement Type:"));
-        shapeCombo = new JComboBox<>(new String[]
-        {
-            "Line", "Path", "Polygon", "Circle", "Ellipse", "Square", "Rectangle", "Freehand"
-        });
-        shapeCombo.addActionListener((ActionEvent event) ->
-        {
-            String item = (String) ((JComboBox) event.getSource()).getSelectedItem();
-            // Make sure Freehand isn't enabled for Path unless selected
-            measureTool.getController().setFreeHand(false);
-            wwd.redraw();
-            switch (item)
-            {
-                case "Line":
-                    measureTool.setMeasureShapeType(MeasureTool.SHAPE_LINE);
-                    break;
-                case "Path":
-                    measureTool.setMeasureShapeType(MeasureTool.SHAPE_PATH);
-                    break;
-                case "Polygon":
-                    measureTool.setMeasureShapeType(MeasureTool.SHAPE_POLYGON);
-                    break;
-                case "Circle":
-                    measureTool.setMeasureShapeType(MeasureTool.SHAPE_CIRCLE);
-                    break;
-                case "Ellipse":
-                    measureTool.setMeasureShapeType(MeasureTool.SHAPE_ELLIPSE);
-                    break;
-                case "Square":
-                    measureTool.setMeasureShapeType(MeasureTool.SHAPE_SQUARE);
-                    break;
-                case "Rectangle":
-                    measureTool.setMeasureShapeType(MeasureTool.SHAPE_QUAD);
-                    break;
-                case "Freehand":
-                    // Enable Freehand for Path
-                    measureTool.setMeasureShapeType(MeasureTool.SHAPE_PATH);
-                    measureTool.getController().setFreeHand(true);
-                    wwd.redraw();
-                default:
-                    break;
-            }
-        });
-        shapePanel.add(shapeCombo);
+
+        measureTool.getController().setFreeHand(false);
+        measureTool.setMeasureShapeType(PointPlacemarkMeasureTool.SHAPE_POINT);
 
         //======== Path Type Panel ========  
-        JPanel pathTypePanel = new JPanel(new GridLayout(1, 2, 5, 5));
-        pathTypePanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        pathTypePanel.add(new JLabel("Path type:"));
-        pathTypeCombo = new JComboBox<>(new String[]
-        {
-            "Linear", "Rhumb", "Great circle"
-        });
-        pathTypeCombo.setSelectedIndex(2);
-        pathTypeCombo.addActionListener((ActionEvent event) ->
-        {
-            String item = (String) ((JComboBox) event.getSource()).getSelectedItem();
-            switch (item)
-            {
-                case "Linear":
-                    measureTool.setPathType(AVKey.LINEAR);
-                    break;
-                case "Rhumb":
-                    measureTool.setPathType(AVKey.RHUMB_LINE);
-                    break;
-                case "Great circle":
-                    measureTool.setPathType(AVKey.GREAT_CIRCLE);
-                    break;
-                default:
-                    break;
-            }
-        });
-        pathTypePanel.add(pathTypeCombo);
+//        JPanel pathTypePanel = new JPanel(new GridLayout(1, 2, 5, 5));
+//        pathTypePanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+//        pathTypePanel.add(new JLabel("Path type:"));
+//        pathTypeCombo = new JComboBox<>(new String[]
+//        {
+//            "Linear", "Rhumb", "Great circle"
+//        });
+//        pathTypeCombo.setSelectedIndex(2);
+//        pathTypeCombo.addActionListener((ActionEvent event) ->
+//        {
+//            String item = (String) ((JComboBox) event.getSource()).getSelectedItem();
+//            switch (item)
+//            {
+//                case "Linear":
+//                    measureTool.setPathType(AVKey.LINEAR);
+//                    break;
+//                case "Rhumb":
+//                    measureTool.setPathType(AVKey.RHUMB_LINE);
+//                    break;
+//                case "Great circle":
+//                    measureTool.setPathType(AVKey.GREAT_CIRCLE);
+//                    break;
+//                default:
+//                    break;
+//            }
+//        });
+//        pathTypePanel.add(pathTypeCombo);
 
         //======== Units Panel ========  
         JPanel unitsPanel = new JPanel(new GridLayout(1, 2, 5, 5));
@@ -267,15 +227,7 @@ public class CMSPointPlacemarkPanel extends JPanel
         JPanel checkPanel = new JPanel(new GridLayout(3, 2, 5, 5));
         checkPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 
-        showControlsCheck = new JCheckBox("Control points");
-        showControlsCheck.setSelected(measureTool.isShowControlPoints());
-        showControlsCheck.addActionListener((ActionEvent event) ->
-        {
-            JCheckBox cb = (JCheckBox) event.getSource();
-            measureTool.setShowControlPoints(cb.isSelected());
-            wwd.redraw();
-        });
-        checkPanel.add(showControlsCheck);
+        measureTool.setShowControlPoints(true);
 
         showAnnotationCheck = new JCheckBox("Statistics");
         showAnnotationCheck.setSelected(measureTool.isShowAnnotation());
@@ -299,22 +251,22 @@ public class CMSPointPlacemarkPanel extends JPanel
         //======== Color Buttons ========  
         final JPanel colorPanel = new JPanel(new GridLayout(1, 2, 5, 5));
         colorPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        lineColorButton = new JButton("Line");
-        lineColorButton.addActionListener((ActionEvent event) ->
-        {
-            Color c = JColorChooser.showDialog(colorPanel,
-                    "Choose a color...", ((JButton) event.getSource()).getBackground());
-            if (c != null)
-            {
-                ((JButton) event.getSource()).setBackground(c);
-                measureTool.setLineColor(c);
-                Color fill = new Color(c.getRed() / 255f * .5f,
-                        c.getGreen() / 255f * .5f, c.getBlue() / 255f * .5f, .5f);
-                measureTool.setFillColor(fill);
-            }
-        });
-        colorPanel.add(lineColorButton);
-        lineColorButton.setBackground(measureTool.getLineColor());
+//        lineColorButton = new JButton("Line");
+//        lineColorButton.addActionListener((ActionEvent event) ->
+//        {
+//            Color c = JColorChooser.showDialog(colorPanel,
+//                    "Choose a color...", ((JButton) event.getSource()).getBackground());
+//            if (c != null)
+//            {
+//                ((JButton) event.getSource()).setBackground(c);
+//                measureTool.setLineColor(c);
+//                Color fill = new Color(c.getRed() / 255f * .5f,
+//                        c.getGreen() / 255f * .5f, c.getBlue() / 255f * .5f, .5f);
+//                measureTool.setFillColor(fill);
+//            }
+//        });
+//        colorPanel.add(lineColorButton);
+//        lineColorButton.setBackground(measureTool.getLineColor());
 
         pointColorButton = new JButton("Points");
         pointColorButton.addActionListener((ActionEvent event) ->
@@ -352,7 +304,6 @@ public class CMSPointPlacemarkPanel extends JPanel
         {
             measureTool.clear();
             measureTool.setArmed(true);
-
         });
         buttonPanel.add(newButton);
         newButton.setEnabled(true);
@@ -437,7 +388,7 @@ public class CMSPointPlacemarkPanel extends JPanel
         outerPanel.setToolTipText("Measure tool control and info");
         outerPanel.add(colorPanel);
         outerPanel.add(shapePanel);
-        outerPanel.add(pathTypePanel);
+//        outerPanel.add(pathTypePanel);
         outerPanel.add(unitsPanel);
         outerPanel.add(anglesPanel);
         outerPanel.add(checkPanel);

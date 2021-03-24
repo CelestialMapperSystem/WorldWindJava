@@ -104,6 +104,7 @@ public class CoordinatesDisplay extends AbstractOnDemandLayerFeature
 
     private class CoordAnnotationLayer extends AnnotationLayer
     {
+
         @Override
         public void render(DrawContext dc)
         {
@@ -111,6 +112,7 @@ public class CoordinatesDisplay extends AbstractOnDemandLayerFeature
             Annotation anno = iter.next();
             if (anno != null && anno instanceof ScreenAnnotation)
             {
+
                 anno.setText(formatText(dc));
                 Dimension wwSize = controller.getWWPanel().getSize();
                 ((ScreenAnnotation) anno).setScreenPoint(new Point(wwSize.width, wwSize.height));
@@ -118,7 +120,9 @@ public class CoordinatesDisplay extends AbstractOnDemandLayerFeature
 
             super.render(dc);
         }
+
     }
+
 
     private Position getCurrentPosition(DrawContext dc)
     {
