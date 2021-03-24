@@ -25,7 +25,7 @@ public class PointPlacemarkDialog
         dialog.setTitle("Point Placemarks");
         // Set the location and resizable to false
         dialog.setLocation(bounds.x + 900, bounds.y + 300);
-        dialog.setResizable(false);
+        dialog.setResizable(true);
         // Add the tabbedPane to the dialog
         dialog.getContentPane().add(measurePanel, BorderLayout.CENTER);
 

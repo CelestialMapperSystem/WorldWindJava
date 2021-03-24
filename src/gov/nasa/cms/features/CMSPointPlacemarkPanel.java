@@ -5,7 +5,7 @@
  */
 package gov.nasa.cms.features;
 
-import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.*;
 
 import javax.swing.*;
@@ -13,6 +13,8 @@ import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+
+import static gov.nasa.cms.features.coordinates.GoToCoordinatePanel.computeLatLonFromString;
 
 /**
  * Measure Tool control panel for <code>{@link gov.nasa.cms.features.MeasureDialog}</code>.
@@ -48,8 +50,11 @@ public class CMSPointPlacemarkPanel extends JPanel
     private JLabel heightLabel;
     private JLabel headingLabel;
     private JLabel centerLabel;
-
-
+    private JPanel coordinatesPanel;
+    private JLabel resultLabel;
+    private JPanel resultPanel;
+    private JButton flyToCoordinates;
+    private ActionListener flyToCoordinatesListener;
 
     public CMSPointPlacemarkPanel(WorldWindow wwdObject)
     {
@@ -101,12 +106,53 @@ public class CMSPointPlacemarkPanel extends JPanel
         });
         colorPanel.add(colorCombo);
 
-        //======== Coordinates Panel ========  
-        JPanel coordinatesPanel = new JPanel(new GridLayout(1, 2, 5, 5));
+        //======== Coordinates Panel ========
+        JPanel coordinatesLabelPanel = new JPanel(new GridLayout(1, 1, 5, 5));
+        coordinatesLabelPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        coordinatesLabelPanel.add(new JLabel("Coordinates (lat, lon):"));
+
+        this.coordinatesPanel = new JPanel(new GridBagLayout());
         coordinatesPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        coordinatesPanel.add(new JLabel("Coordinates (lat, lon):"));
-        coordinatesTextField = new JTextField();
-        coordinatesPanel.add(coordinatesTextField);
+        GridBagConstraints gbc;
+
+        this.coordinatesTextField = new JTextField();
+        gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridwidth = 2;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 0, 0, 5);
+        gbc.weightx = .7;
+        gbc.ipadx = 15;
+        gbc.anchor = GridBagConstraints.LINE_START;
+        coordinatesPanel.add(coordinatesTextField, gbc);
+
+        this.flyToCoordinates = new JButton("Validate");
+//        flyToCoordinates.setPreferredSize(new Dimension(30,15));
+        gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridwidth = 1;
+        gbc.gridx = 4;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        gbc.weightx = .05;
+//        gbc.ipadx = 10;
+        gbc.anchor = GridBagConstraints.LINE_END;
+        coordinatesPanel.add(flyToCoordinates, gbc);
+
+        this.createCoordinateValidationListener();
+        this.coordinatesTextField.addActionListener(flyToCoordinatesListener);
+        this.flyToCoordinates.addActionListener(flyToCoordinatesListener);
+
+        this.resultPanel = new JPanel(new GridLayout(0,1,5,5));
+        resultPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        this.resultLabel = new JLabel("-90°<=Lat<=90°, -180°<=Long<=180°");
+//        this.resultLabel = new JLabel("1");
+        this.resultLabel.setHorizontalTextPosition(JLabel.CENTER);
+        this.resultLabel.setVerticalTextPosition(JLabel.CENTER);
+
+        resultPanel.add(resultLabel);
+
 
         //======== Label Panel ========  
         JPanel labelPanel = new JPanel(new GridLayout(1, 2, 5, 5));
@@ -152,10 +198,7 @@ public class CMSPointPlacemarkPanel extends JPanel
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 5, 5));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         addButton = new JButton("Add Placemark");
-        addButton.addActionListener((ActionEvent actionEvent) ->
-        {
-
-        });
+        addButton.addActionListener(flyToCoordinatesListener);
         buttonPanel.add(addButton);
         addButton.setEnabled(true);
 
@@ -176,12 +219,47 @@ public class CMSPointPlacemarkPanel extends JPanel
         outerPanel.add(colorPanel);
         outerPanel.add(colorPanel);
         outerPanel.add(coordinatesPanel);
+        outerPanel.add(resultPanel);
         outerPanel.add(labelPanel);
         outerPanel.add(scalePanel);
         outerPanel.add(checkPanel);
         outerPanel.add(buttonPanel);
 
+
+
         this.add(outerPanel, BorderLayout.NORTH);
+
+    }
+
+    public void createCoordinateValidationListener()
+    {
+        this.flyToCoordinatesListener = new ActionListener()
+        {
+            public void actionPerformed(ActionEvent event)
+            {
+                LatLon latLon = computeLatLonFromString(coordinatesTextField.getText(), wwd.getModel().getGlobe());
+                updateResult(latLon);
+                if (latLon != null)
+                {
+                    View view = wwd.getView();
+                    double distance = view.getCenterPoint().distanceTo3(view.getEyePoint());
+                    view.goTo(new Position(latLon, 0), distance);
+                }
+            }
+        };
+    }
+
+    public void updateResult(LatLon latLon)
+    {
+        if (latLon != null)
+        {
+            coordinatesTextField.setText(coordinatesTextField.getText().toUpperCase());
+            this.resultLabel.setText(String.format("Lat %7.4f\u00B0,  Lon %7.4f\u00B0",
+                latLon.getLatitude().degrees,  latLon.getLongitude().degrees));
+        }
+        else
+            this.resultLabel.setText("Invalid coordinates");
+
     }
     
     public WorldWindow getWwd()
