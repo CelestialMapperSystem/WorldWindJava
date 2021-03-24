@@ -18,6 +18,7 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import javax.swing.Icon;
@@ -51,10 +52,13 @@ public class TimeFrame extends JDialog
     
     private Date startDate;
     private Date endDate;
+    private Date currentDate;
+    private DateTimeFormatter dtf;
    
     
     public TimeFrame(WorldWindow wwd, Component component, MoonShadingPanel panel)
     {
+        dateTimeDialog = new DateTimePickerDialog(wwd, component);    
         this.wwd = wwd;
         sun = panel.getSun();
         light = panel.getLight();
@@ -96,6 +100,7 @@ public class TimeFrame extends JDialog
         //======== Settings ========  
         settingsButton.setForeground(new Color(255, 255, 255));
         settingsButton.setBorderPainted(false); 
+        settingsButton.setToolTipText("Select start/end date and time for simulation");
         settingsButton.setContentAreaFilled(false); 
         settingsButton.setFocusPainted(false); 
         settingsButton.setOpaque(false);
@@ -104,10 +109,6 @@ public class TimeFrame extends JDialog
         {
             public void actionPerformed(ActionEvent evt)
             {
-                if(dateTimeDialog == null)
-                {
-                    dateTimeDialog = new DateTimePickerDialog(wwd, component);             
-                }
                 dateTimeDialog.setVisible(true);
             }
         });
@@ -120,6 +121,7 @@ public class TimeFrame extends JDialog
         //======== Play/Pause ========  
         playPauseButton.setForeground(new Color(255, 255, 255));
         playPauseButton.setIcon(new ImageIcon("cms-data/icons/play-icon.png"));
+        playPauseButton.setToolTipText("Play or pause the simulation");
         playPauseButton.setBorderPainted(false); 
         playPauseButton.setContentAreaFilled(false); 
         playPauseButton.setFocusPainted(false); 
@@ -132,6 +134,15 @@ public class TimeFrame extends JDialog
                 isPlaySelected = !isPlaySelected;
                 if(isPlaySelected) // Start animating
                 {
+                    startDate = dateTimeDialog.getStartDate();
+                    endDate = dateTimeDialog.getEndDate();
+                    String startLabel = startDate.toString();
+                    startDateTime.setText(startLabel);
+                    
+                    String endLabel = endDate.toString();
+                    endDateTime.setText(endLabel);                 
+                    
+                    dateTimeDialog.setVisible(false);
                     playPauseButton.setIcon(new ImageIcon("cms-data/icons/pause-icon.png"));
                     dateTimeDialog.updatePosition();
                     LatLon sunPos = dateTimeDialog.getPosition();
@@ -160,7 +171,7 @@ public class TimeFrame extends JDialog
 
         //======== Start Date/Time ========  
         startDateTime.setForeground(new Color(255, 255, 255));
-        startDateTime.setText("Start Time");
+        startDateTime.setText("Start Time");        
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -217,6 +228,12 @@ public class TimeFrame extends JDialog
                         }
                         dateTimeDialog.getCalendar().add(Calendar.HOUR, 1); // Increment calendar
                         startDate.setTime(cal.getTimeInMillis()); // Set the start time to the new calendar time
+                        
+                        // Update the current date 
+                        currentDate = startDate;
+                        String currentLabel = currentDate.toString();
+                        currentDateTime.setText(currentLabel);
+                    
                         dateTimeDialog.updatePosition(); // Update the position from DateTimePickerDialog
                         LatLon sunPos = dateTimeDialog.getPosition();  // Get the new LatLon sun position
                         sun = wwd.getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3(); // Set the sun position from the LatLon                    
