@@ -19,6 +19,8 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
@@ -227,25 +229,31 @@ public class TimeFrame extends JDialog
         Calendar cal = dateTimeDialog.getCalendar(); // Get the calendar from DateTimePickerDialog
         dateTimeDialog.getCalendar().setTime(startDate); // Set the calendar time to the start date time
         int value = dateTimeDialog.getDuration(); //speed of animation 
+        LocalDate localDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        int month = localDate.getMonthValue();
 
         // Start a new thread to display dynamic shading
-        Thread thread = new Thread(new Runnable()
+        Thread thread;
+        thread = new Thread(new Runnable()
         {
             @Override
             public void run()
             {
+                int currentMonth=month;
                 // While the end date/time is after the calendar date/time
                 while (endDate.after(dateTimeDialog.getCalendar().getTime()))
                 {
+                    
                     try
                     {
                         if (!isPlaySelected)
                         {
                             break;
                         }
-                        dateTimeDialog.getCalendar().add(Calendar.HOUR, 1); // Increment calendar
+                        timeFrameSlider.setValue(currentMonth-1);
+                        dateTimeDialog.getCalendar().add(Calendar.MONTH, 1); // Increment calendar
                         startDate.setTime(cal.getTimeInMillis()); // Set the start time to the new calendar time
-
+                        
                         // Update the current date 
                         currentDate = startDate;
                         String currentLabel = currentDate.toString();
@@ -262,6 +270,8 @@ public class TimeFrame extends JDialog
 
                         Thread.sleep(value * 1000); //animation speed
                         wwd.redraw();
+                        currentMonth++;
+                        currentMonth=currentMonth%12;
                     } catch (InterruptedException ignore)
                     {
                     }
@@ -305,5 +315,6 @@ public class TimeFrame extends JDialog
         table.put(10, nov);
         table.put(11, dec);
         timeFrameSlider.setLabelTable(table);
+        
     }
 }
