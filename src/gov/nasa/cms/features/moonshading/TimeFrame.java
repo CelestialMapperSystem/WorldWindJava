@@ -12,6 +12,7 @@ import gov.nasa.worldwind.geom.Vec4;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -36,13 +37,14 @@ import javax.swing.WindowConstants;
  */
 public class TimeFrame extends JDialog
 {
+
     private JSlider timeFrameSlider;
     private JButton settingsButton;
     private JButton playPauseButton;
     private JLabel startDateTime;
     private JLabel endDateTime;
     private JLabel currentDateTime;
-    
+
     private DateTimePickerDialog dateTimeDialog;
     private boolean isPlaySelected;
     private Vec4 sun;
@@ -50,11 +52,11 @@ public class TimeFrame extends JDialog
     private RectangularNormalTessellator tessellator;
     private LensFlareLayer lensFlareLayer;
     private WorldWindow wwd;
-    
+
     private Date startDate;
     private Date endDate;
     private Date currentDate;
-    
+
     private JLabel jan = new JLabel("Jan");
     private JLabel feb = new JLabel("Feb");
     private JLabel mar = new JLabel("Mar");
@@ -67,38 +69,37 @@ public class TimeFrame extends JDialog
     private JLabel oct = new JLabel("Oct");
     private JLabel nov = new JLabel("Nov");
     private JLabel dec = new JLabel("Dec");
-   
-    
+
     public TimeFrame(WorldWindow wwd, Component component, MoonShadingPanel panel)
     {
         this.initSlider(); // Initialize the slider with months in white text
-        dateTimeDialog = new DateTimePickerDialog(wwd, component);    
+        dateTimeDialog = new DateTimePickerDialog(wwd, component);
         this.wwd = wwd;
         sun = panel.getSun();
         light = panel.getLight();
         tessellator = panel.getTessellator();
         lensFlareLayer = panel.getLensFlareLayer();
-                    
+
         GridBagConstraints gridBagConstraints;
-        
+
         settingsButton = new JButton();
         playPauseButton = new JButton();
         startDateTime = new JLabel();
         endDateTime = new JLabel();
         currentDateTime = new JLabel();
-        
+
         //======== Dialog ========  
         this.setBackground(new Color(51, 51, 51));
         Rectangle bounds = component.getBounds();
-        this.setLocation(bounds.x + 140, bounds.y + 720);
+        this.setLocation(bounds.x + 140, bounds.y + 700);
         this.setAlwaysOnTop(true);
         this.setUndecorated(true);
         this.setOpacity((float) .70);
-        this.getContentPane().setBackground(new Color(51, 51, 51));
+        this.getContentPane().setBackground(Color.BLACK);
         this.getContentPane().setLayout(new GridBagLayout());
 
         //======== Time Frame Slider ========  
-        timeFrameSlider.setBackground(new Color(51, 51, 51));
+        timeFrameSlider.setBackground(Color.BLACK);
         timeFrameSlider.setForeground(new Color(255, 255, 255));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -112,10 +113,10 @@ public class TimeFrame extends JDialog
 
         //======== Settings ========  
         settingsButton.setForeground(new Color(255, 255, 255));
-        settingsButton.setBorderPainted(false); 
+        settingsButton.setBorderPainted(false);
         settingsButton.setToolTipText("Select start/end date and time for simulation");
-        settingsButton.setContentAreaFilled(false); 
-        settingsButton.setFocusPainted(false); 
+        settingsButton.setContentAreaFilled(false);
+        settingsButton.setFocusPainted(false);
         settingsButton.setOpaque(false);
         settingsButton.setIcon(new ImageIcon("cms-data/icons/settings-icon.png"));
         settingsButton.addActionListener(new ActionListener()
@@ -135,9 +136,9 @@ public class TimeFrame extends JDialog
         playPauseButton.setForeground(new Color(255, 255, 255));
         playPauseButton.setIcon(new ImageIcon("cms-data/icons/play-icon.png"));
         playPauseButton.setToolTipText("Play or pause the simulation");
-        playPauseButton.setBorderPainted(false); 
-        playPauseButton.setContentAreaFilled(false); 
-        playPauseButton.setFocusPainted(false); 
+        playPauseButton.setBorderPainted(false);
+        playPauseButton.setContentAreaFilled(false);
+        playPauseButton.setFocusPainted(false);
         playPauseButton.setOpaque(false);
         isPlaySelected = false;
         playPauseButton.addActionListener(new ActionListener()
@@ -145,33 +146,32 @@ public class TimeFrame extends JDialog
             public void actionPerformed(ActionEvent evt)
             {
                 isPlaySelected = !isPlaySelected;
-                if(isPlaySelected) // Start animating
+                if (isPlaySelected) // Start animating
                 {
                     startDate = dateTimeDialog.getStartDate();
                     endDate = dateTimeDialog.getEndDate();
                     String startLabel = startDate.toString();
                     startDateTime.setText(startLabel);
-                    
+
                     String endLabel = endDate.toString();
-                    endDateTime.setText(endLabel);                 
-                    
+                    endDateTime.setText(endLabel);
+
                     dateTimeDialog.setVisible(false);
                     playPauseButton.setIcon(new ImageIcon("cms-data/icons/pause-icon.png"));
                     dateTimeDialog.updatePosition();
                     LatLon sunPos = dateTimeDialog.getPosition();
-                    
-                    sun = wwd.getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3(); 
+
+                    sun = wwd.getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3();
                     light = sun.getNegative3();
-                    
+
                     tessellator.setLightDirection(light);
                     lensFlareLayer.setSunDirection(sun);
-                    
+
                     startDynamicShading();
-                }
-                else // Pause animation
+                } else // Pause animation
                 {
                     playPauseButton.setIcon(new ImageIcon("cms-data/icons/play-icon.png"));
-                }             
+                }
             }
         });
         gridBagConstraints = new GridBagConstraints();
@@ -184,7 +184,8 @@ public class TimeFrame extends JDialog
 
         //======== Start Date/Time ========  
         startDateTime.setForeground(new Color(255, 255, 255));
-        startDateTime.setText("Start Time");        
+        startDateTime.setText("Start Time");
+        startDateTime.setFont(Font.decode("Consolas-Bold-15"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -195,6 +196,7 @@ public class TimeFrame extends JDialog
         //======== End Date/Time ========  
         endDateTime.setForeground(new Color(255, 255, 255));
         endDateTime.setText("End Time");
+        endDateTime.setFont(Font.decode("Consolas-Bold-15"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 1;
@@ -205,6 +207,7 @@ public class TimeFrame extends JDialog
         //======== Current Date/Time ========  
         currentDateTime.setForeground(new Color(255, 255, 255));
         currentDateTime.setText("Current Time");
+        currentDateTime.setFont(Font.decode("Consolas-Bold-15"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -214,8 +217,9 @@ public class TimeFrame extends JDialog
         this.getContentPane().add(currentDateTime, gridBagConstraints);
 
         this.pack();
+
     }
-    
+
     protected void startDynamicShading()
     {
         startDate = dateTimeDialog.getStartDate(); // Get the start date
@@ -241,12 +245,12 @@ public class TimeFrame extends JDialog
                         }
                         dateTimeDialog.getCalendar().add(Calendar.HOUR, 1); // Increment calendar
                         startDate.setTime(cal.getTimeInMillis()); // Set the start time to the new calendar time
-                        
+
                         // Update the current date 
                         currentDate = startDate;
                         String currentLabel = currentDate.toString();
                         currentDateTime.setText(currentLabel);
-                    
+
                         dateTimeDialog.updatePosition(); // Update the position from DateTimePickerDialog
                         LatLon sunPos = dateTimeDialog.getPosition();  // Get the new LatLon sun position
                         sun = wwd.getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3(); // Set the sun position from the LatLon                    
@@ -255,8 +259,8 @@ public class TimeFrame extends JDialog
                         // Change the tesselator and lensFalreLayer according to new light and sun direction
                         tessellator.setLightDirection(light);
                         lensFlareLayer.setSunDirection(sun);
-                        
-                        Thread.sleep(value*1000); //animation speed
+
+                        Thread.sleep(value * 1000); //animation speed
                         wwd.redraw();
                     } catch (InterruptedException ignore)
                     {
@@ -267,7 +271,7 @@ public class TimeFrame extends JDialog
         thread.setDaemon(true);
         thread.start();
     }
-    
+
     protected void initSlider()
     {
         jan.setForeground(Color.WHITE);
@@ -282,24 +286,24 @@ public class TimeFrame extends JDialog
         oct.setForeground(Color.WHITE);
         nov.setForeground(Color.WHITE);
         dec.setForeground(Color.WHITE);
-        
+
         timeFrameSlider = new JSlider(0, 11, 0);
         timeFrameSlider.setPaintTicks(true);
         timeFrameSlider.setPaintLabels(true);
         timeFrameSlider.setMajorTickSpacing(1);
         Hashtable<Integer, JLabel> table = new Hashtable<Integer, JLabel>();
-        table.put (0, jan);
-        table.put (1, feb);
-        table.put (2, mar);
-        table.put (3, apr);
-        table.put (4, may);
-        table.put (5, jun);
-        table.put (6, jul);
-        table.put (7, aug);
-        table.put (8, sep);
-        table.put (9, oct);
-        table.put (10, nov);
-        table.put (11, dec);
-        timeFrameSlider.setLabelTable (table);
+        table.put(0, jan);
+        table.put(1, feb);
+        table.put(2, mar);
+        table.put(3, apr);
+        table.put(4, may);
+        table.put(5, jun);
+        table.put(6, jul);
+        table.put(7, aug);
+        table.put(8, sep);
+        table.put(9, oct);
+        table.put(10, nov);
+        table.put(11, dec);
+        timeFrameSlider.setLabelTable(table);
     }
 }
