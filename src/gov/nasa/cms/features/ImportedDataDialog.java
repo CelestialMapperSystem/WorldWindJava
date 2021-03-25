@@ -69,8 +69,8 @@ public class ImportedDataDialog implements NetworkActivitySignal.NetworkUser
         Rectangle bounds = component.getBounds();
         dialog.getContentPane().setLayout(new BorderLayout());
         dialog.setTitle("Import Imagery & Elevations");
-        dialog.setPreferredSize(new Dimension(400, 400));
-        dialog.setLocation(bounds.x, bounds.y + 60);
+        dialog.setPreferredSize(new Dimension(300, 400));
+        dialog.setLocation(bounds.x, bounds.y + 200);
         dialog.setResizable(false);
         
         dataConfigPanel = new ImportedDataPanel(wwd);

@@ -34,6 +34,8 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.TitledBorder;
 import org.w3c.dom.Element;
 
 /**
@@ -85,7 +87,7 @@ public class ImportedDataPanel extends ShadedPanel
         // Add the scroll pane to a titled panel that will resize with the main window.
         JPanel bodyPanel = new JPanel(new GridLayout(0, 1, 0, 10)); // rows, cols, hgap, vgap
         bodyPanel.setOpaque(false);
-        bodyPanel.setBorder(BorderFactory.createEmptyBorder(9, 9, 9, 9));
+        bodyPanel.setBorder(new CompoundBorder(BorderFactory.createEmptyBorder(9, 9, 9, 9), new TitledBorder("")));
         bodyPanel.add(scrollPane, BorderLayout.CENTER);
 
         buttonPanel = new JPanel(new BorderLayout());
