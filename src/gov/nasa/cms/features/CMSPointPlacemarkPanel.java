@@ -7,6 +7,7 @@ package gov.nasa.cms.features;
 
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.cache.BasicMemoryCache;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.*;
@@ -18,6 +19,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.math.RoundingMode;
 import java.text.*;
+import java.util.ArrayList;
 
 import static javax.swing.JOptionPane.*;
 
@@ -68,6 +70,7 @@ public class CMSPointPlacemarkPanel extends JPanel
     private double latLocation;
     private double lonLocation;
     private double elevLocation;
+    private ArrayList <PointPlacemark> placemarkList;
 
     public CMSPointPlacemarkPanel(WorldWindow wwdObject)
     {
@@ -84,6 +87,7 @@ public class CMSPointPlacemarkPanel extends JPanel
         placemark = new PointPlacemark(Position.fromDegrees(0, 0, 1e4));
         layer = new RenderableLayer();
         attrs = new PointPlacemarkAttributes();
+        placemarkList = new ArrayList();
         
         //======== Measurement Panel ========  
         JPanel colorPanel = new JPanel(new GridLayout(1, 2, 5, 5));
@@ -201,7 +205,7 @@ public class CMSPointPlacemarkPanel extends JPanel
         JLabel latTextLabel = new JLabel("Latitude: ");
 
         // gnorman note:
-        // Create a post-validation formatter that will toss out non-double input
+        // Number creates Format a post-validation formatter that will toss out non-double input
         // However this doesn't prevent bad input in real time the way a mask-formatter does
         NumberFormat format = DecimalFormat.getInstance();
         format.setMaximumIntegerDigits(2);
@@ -323,13 +327,21 @@ public class CMSPointPlacemarkPanel extends JPanel
 
         addButton.addActionListener((ActionEvent actionEvent) ->
         {
+
             updateCoordinates();
             placemark.setAttributes(attrs);
 
             if(validateLatLongElev(latLocation, lonLocation, elevLocation)){
                 placemark.setPosition(Position.fromDegrees(latLocation, lonLocation, elevLocation));
-                layer.addRenderable(placemark);
+
+                PointPlacemark validPlacemark = new PointPlacemark(placemark.getPosition());
+                validPlacemark.setAttributes(placemark.getAttributes());
+                validPlacemark.setLabelText(placemark.getLabelText());
+                placemarkList.add(validPlacemark);
+
+                layer.addRenderable(validPlacemark);
                 getWwd().getModel().getLayers().add(layer);
+                wwd.redraw();
 
                 // Fly to new Placemark
                 View view = wwd.getView();
@@ -344,9 +356,12 @@ public class CMSPointPlacemarkPanel extends JPanel
         viewButton = new JButton("View");
         viewButton.addActionListener((ActionEvent actionEvent) ->
         {
+            if(!placemarkList.isEmpty()){
+                placemarkList.forEach(e -> System.out.println(e.getLabelText()));
+            }
         });
         buttonPanel.add(viewButton);
-        viewButton.setEnabled(false);
+        viewButton.setEnabled(true);
 
 
         //======== Outer Panel ======== 
@@ -370,9 +385,27 @@ public class CMSPointPlacemarkPanel extends JPanel
 
     private void updateCoordinates()
     {
-        latLocation = Double.parseDouble(latTextField.getText());
-        lonLocation = Double.parseDouble(lonTextField.getText());
-        elevLocation = Double.parseDouble(elevTextField.getText());
+        if(!latTextField.getText().isEmpty()){
+            latLocation = Double.parseDouble(latTextField.getText());
+        } else {
+            latLocation = 0.0;
+            latTextField.setText("0.0");
+        }
+
+        if(!lonTextField.getText().isEmpty()){
+            lonLocation = Double.parseDouble(lonTextField.getText());
+        } else {
+            lonLocation = 0.0;
+            lonTextField.setText("0.0");
+        }
+
+        if(!elevTextField.getText().isEmpty()){
+            elevLocation = Double.parseDouble(elevTextField.getText());
+        } else {
+            elevLocation = 0.0;
+            elevTextField.setText("0.0");
+        }
+
         placemark.setLabelText(labelTextField.getText());
     }
 
@@ -435,5 +468,10 @@ public class CMSPointPlacemarkPanel extends JPanel
     public void setWwd(WorldWindow wwd)
     {
         this.wwd = wwd;
+    }
+
+    public void setPlacemarkList(ArrayList placemarkList)
+    {
+        this.placemarkList = placemarkList;
     }
 }
