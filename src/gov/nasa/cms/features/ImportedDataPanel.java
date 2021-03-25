@@ -6,8 +6,6 @@
 package gov.nasa.cms.features;
 
 import gov.nasa.cms.CelestialMapper;
-import gov.nasa.cms.LayerPanel;
-import gov.nasa.cms.features.layermanager.LayerManagerDialog;
 import gov.nasa.cms.util.PanelTitle;
 import gov.nasa.cms.util.ShadedPanel;
 import gov.nasa.worldwind.Factory;
@@ -39,17 +37,15 @@ import javax.swing.SwingUtilities;
 import org.w3c.dom.Element;
 
 /**
- *
+ * Panel containing functionality for importing imagery & elevations.
+ * Utilized in <code>{@link gov.nasa.cms.features.ImportedDataDialog}</code>
  * @author kjdickin
  */
 public class ImportedDataPanel extends ShadedPanel
 {
 
     private WorldWindow wwd;
-    private CelestialMapper cms;
     protected JPanel dataConfigPanel;
-    private JButton importButton;
-    private JButton goToButton;
     private JPanel buttonPanel ;
 
     public ImportedDataPanel(WorldWindow wwd)
@@ -277,10 +273,4 @@ public class ImportedDataPanel extends ShadedPanel
     {
         return buttonPanel;
     }
-    
-    public JButton getImportButton()
-    {
-        return importButton;
-    }
-
 }

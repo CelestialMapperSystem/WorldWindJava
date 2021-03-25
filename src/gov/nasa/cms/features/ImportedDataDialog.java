@@ -6,8 +6,8 @@
 package gov.nasa.cms.features;
 
 import gov.nasa.cms.CelestialMapper;
+import gov.nasa.cms.util.NetworkActivitySignal;
 import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwindx.applications.worldwindow.features.NetworkActivitySignal;
 import java.awt.Component;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
@@ -38,7 +38,8 @@ import org.w3c.dom.*;
 
 
 /**
- *
+ * Dialog containing functionality for importing imagery & elevations using
+ * <code>{@link gov.nasa.cms.features.ImportedDataPanel}</code>
  * @author kjdickin
  */
 public class ImportedDataDialog implements NetworkActivitySignal.NetworkUser
@@ -48,9 +49,16 @@ public class ImportedDataDialog implements NetworkActivitySignal.NetworkUser
     protected Thread importThread;
     private JDialog dialog;
     private CelestialMapper frame;
-    private NetworkActivitySignal networkActivitySignal;
+    private NetworkActivitySignal networkActivitySignal = new NetworkActivitySignal();
     private JButton importButton = new JButton("Import");
 
+    /**
+     * Constructs a dialog for importing imagery & elevations into CMS
+     *
+     * @param wwd the WorldWindow to attach the dialog to
+     * @param component CelestialMapper's AppFrame
+     *
+     */
     public ImportedDataDialog(WorldWindow wwd, Component component)
     {
         this.frame = (CelestialMapper) component;
