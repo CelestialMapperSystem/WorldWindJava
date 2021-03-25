@@ -1,12 +1,13 @@
 /*
- * Copyright (C) 2012 United States Government as represented by the Administrator of the
+ * Copyright (C) 2021 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
-package gov.nasa.cms.features;
+package gov.nasa.cms.features.placemarks;
 
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.cache.BasicMemoryCache;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
@@ -20,6 +21,7 @@ import java.awt.event.*;
 import java.math.RoundingMode;
 import java.text.*;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static javax.swing.JOptionPane.*;
 
@@ -101,6 +103,7 @@ public class CMSPointPlacemarkPanel extends JPanel
 
         // Setting default pin to Red, otherwise a yellow smaller pin is shown by default.
         attrs.setImageAddress("images/pushpins/plain-red.png");
+        attrs.setLineMaterial(Material.RED);
 
         colorCombo.addActionListener((ActionEvent event) ->
         {
@@ -111,86 +114,49 @@ public class CMSPointPlacemarkPanel extends JPanel
                 {
                     case "Red":
                         attrs.setImageAddress("images/pushpins/plain-red.png");
+                        attrs.setLineMaterial(Material.RED);
                         break;
                     case "Orange":
                         attrs.setImageAddress("images/pushpins/plain-orange.png");
+                        attrs.setLineMaterial(Material.ORANGE);
                         break;
                     case "Yellow":
                         attrs.setImageAddress("images/pushpins/plain-yellow.png");
+                        attrs.setLineMaterial(Material.YELLOW);
                         break;
                     case "Green":
                         attrs.setImageAddress("images/pushpins/plain-green.png");
+                        attrs.setLineMaterial(Material.GREEN);
                         break;
                     case "Blue":
                         attrs.setImageAddress("images/pushpins/plain-blue.png");
+                        attrs.setLineMaterial(Material.BLUE);
                         break;
                     case "Purple":
                         attrs.setImageAddress("images/pushpins/plain-purple.png");
+                        attrs.setLineMaterial(new Material(new Color(102,0,153)));
                         break;
                     case "White":
                         attrs.setImageAddress("images/pushpins/plain-white.png");
+                        attrs.setLineMaterial(Material.WHITE);
                         break;
                     case "Black":
                         attrs.setImageAddress("images/pushpins/plain-black.png");
+                        attrs.setLineMaterial(Material.BLACK);
                         break;
                     case "Gray":
                         attrs.setImageAddress("images/pushpins/plain-gray.png");
+                        attrs.setLineMaterial(Material.GRAY);
                         break;
                     default:
                         break;
                 }
             } else {
                 attrs.setImageAddress("images/pushpins/plain-red.png");
+                attrs.setLineMaterial(Material.RED);
             }
         });
         colorPanel.add(colorCombo);
-
-        //======== Coordinates Panel ========
-//        JPanel coordinatesLabelPanel = new JPanel(new GridLayout(1, 1, 5, 5));
-//        coordinatesLabelPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-//        coordinatesLabelPanel.add(new JLabel("Coordinates (lat, lon):"));
-//
-//        this.coordinatesPanel = new JPanel(new GridBagLayout());
-//        coordinatesPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-//        GridBagConstraints gbc;
-//
-//        this.coordinatesTextField = new JTextField();
-//        gbc = new GridBagConstraints();
-//        gbc.fill = GridBagConstraints.HORIZONTAL;
-//        gbc.gridwidth = 2;
-//        gbc.gridx = 0;
-//        gbc.gridy = 0;
-//        gbc.insets = new Insets(0, 0, 0, 5);
-//        gbc.weightx = .7;
-//        gbc.ipadx = 15;
-//        gbc.anchor = GridBagConstraints.LINE_START;
-//        coordinatesPanel.add(coordinatesTextField, gbc);
-//
-//        this.flyToCoordinates = new JButton("Validate");
-////        flyToCoordinates.setPreferredSize(new Dimension(30,15));
-//        gbc = new GridBagConstraints();
-//        gbc.fill = GridBagConstraints.HORIZONTAL;
-//        gbc.gridwidth = 1;
-//        gbc.gridx = 4;
-//        gbc.gridy = 0;
-//        gbc.insets = new Insets(0, 0, 0, 0);
-//        gbc.weightx = .05;
-////        gbc.ipadx = 10;
-//        gbc.anchor = GridBagConstraints.LINE_END;
-//        coordinatesPanel.add(flyToCoordinates, gbc);
-
-
-//        this.coordinatesTextField.addActionListener(flyToCoordinatesListener);
-//        this.flyToCoordinates.addActionListener(flyToCoordinatesListener);
-//
-//        this.resultPanel = new JPanel(new GridLayout(0,1,5,5));
-//        resultPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-//        this.resultLabel = new JLabel("-90°<=Lat<=90°, -180°<=Long<=180°");
-////        this.resultLabel = new JLabel("1");
-//        this.resultLabel.setHorizontalTextPosition(JLabel.CENTER);
-//        this.resultLabel.setVerticalTextPosition(JLabel.CENTER);
-//
-//        resultPanel.add(resultLabel);
 
         //======== Coordinates Panel ========
 
@@ -207,13 +173,15 @@ public class CMSPointPlacemarkPanel extends JPanel
         // gnorman note:
         // Number creates Format a post-validation formatter that will toss out non-double input
         // However this doesn't prevent bad input in real time the way a mask-formatter does
-        NumberFormat format = DecimalFormat.getInstance();
-        format.setMaximumIntegerDigits(2);
-        format.setMinimumFractionDigits(0);
-        format.setMaximumFractionDigits(10);
-        format.setRoundingMode(RoundingMode.HALF_UP);
+        NumberFormat latFormat = DecimalFormat.getInstance();
+        latFormat.setMaximumIntegerDigits(2);
+        latFormat.setMinimumFractionDigits(0);
+        latFormat.setMaximumFractionDigits(10);
+        latFormat.setRoundingMode(RoundingMode.HALF_UP);
 
-        latTextField = new JFormattedTextField(format);
+//        System.out.println(latFormat.getMaximumIntegerDigits());
+
+        latTextField = new JFormattedTextField(latFormat);
         latTextField.setColumns(5);
 //        latTextField.setDocument(newDocFilter());
 
@@ -224,30 +192,30 @@ public class CMSPointPlacemarkPanel extends JPanel
 
         JLabel lonTextLabel = new JLabel("Longitude: ");
 
-        format.setMaximumIntegerDigits(3);
-        format.setMinimumFractionDigits(0);
-        format.setMaximumFractionDigits(10);
-        format.setRoundingMode(RoundingMode.HALF_UP);
+        NumberFormat lonFormat = DecimalFormat.getInstance();
+        lonFormat.setMaximumIntegerDigits(3);
+        lonFormat.setMinimumFractionDigits(0);
+        lonFormat.setMaximumFractionDigits(10);
+        lonFormat.setRoundingMode(RoundingMode.HALF_UP);
 
-        lonTextField = new JFormattedTextField(format);
+        lonTextField = new JFormattedTextField(lonFormat);
         lonTextField.setColumns(5);
-//        lonTextField.setDocument(newDocFilter());
 
         lonTextField.addActionListener(event -> {
             String latInput = lonTextField.getText();
             lonLocation = Double.parseDouble(latInput);
         });
 
-        JLabel elevTextLabel = new JLabel("Elevation: ");
+        JLabel elevTextLabel = new JLabel("Elevation (km): ");
 
-        format.setMaximumIntegerDigits(5);
-        format.setMinimumFractionDigits(0);
-        format.setMaximumFractionDigits(10);
-        format.setRoundingMode(RoundingMode.HALF_UP);
+        NumberFormat elevFormat = DecimalFormat.getInstance();
+        elevFormat.setMaximumIntegerDigits(5);
+        elevFormat.setMinimumFractionDigits(0);
+        elevFormat.setMaximumFractionDigits(10);
+        elevFormat.setRoundingMode(RoundingMode.HALF_UP);
 
-        elevTextField = new JFormattedTextField(format);
+        elevTextField = new JFormattedTextField(elevFormat);
         elevTextField.setColumns(5);
-//        elevTextField.setDocument(newDocFilter());
 
         elevTextField.addActionListener(event -> {
             String latInput = elevTextField.getText();
@@ -280,12 +248,13 @@ public class CMSPointPlacemarkPanel extends JPanel
         // Setting default scale to 1.0
         attrs.setScale(1.0);
 
-        format.setMaximumIntegerDigits(2);
-        format.setMinimumFractionDigits(0);
-        format.setMaximumFractionDigits(10);
-        format.setRoundingMode(RoundingMode.HALF_UP);
+        NumberFormat scaleFormat = DecimalFormat.getInstance();
+        scaleFormat.setMaximumIntegerDigits(2);
+        scaleFormat.setMinimumFractionDigits(0);
+        scaleFormat.setMaximumFractionDigits(10);
+        scaleFormat.setRoundingMode(RoundingMode.HALF_UP);
 
-        scaleTextField = new JFormattedTextField(format);
+        scaleTextField = new JFormattedTextField(scaleFormat);
 
         scaleTextField.addActionListener(event -> {
            String scaleInput = scaleTextField.getText();
@@ -327,16 +296,21 @@ public class CMSPointPlacemarkPanel extends JPanel
 
         addButton.addActionListener((ActionEvent actionEvent) ->
         {
-
             updateCoordinates();
+            attrs.setImageOffset(new Offset(19d, 8d, AVKey.PIXELS, AVKey.PIXELS));
+            attrs.setLabelOffset(new Offset(0.9d, 0.6d, AVKey.FRACTION, AVKey.FRACTION));
+            attrs.setLineWidth(2d);
             placemark.setAttributes(attrs);
 
+//            System.out.println("latLocation: " + latLocation + "  lonLocation: " + lonLocation + " elevLocation in km: " +  elevLocation * 1000);
             if(validateLatLongElev(latLocation, lonLocation, elevLocation)){
-                placemark.setPosition(Position.fromDegrees(latLocation, lonLocation, elevLocation));
+                placemark.setPosition(Position.fromDegrees(latLocation, lonLocation, elevLocation * 1000));
 
                 PointPlacemark validPlacemark = new PointPlacemark(placemark.getPosition());
-                validPlacemark.setAttributes(placemark.getAttributes());
+                validPlacemark.setAttributes(new PointPlacemarkAttributes(placemark.getAttributes()));
                 validPlacemark.setLabelText(placemark.getLabelText());
+                validPlacemark.setLineEnabled(true);
+                validPlacemark.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
                 placemarkList.add(validPlacemark);
 
                 layer.addRenderable(validPlacemark);
@@ -356,8 +330,10 @@ public class CMSPointPlacemarkPanel extends JPanel
         viewButton = new JButton("View");
         viewButton.addActionListener((ActionEvent actionEvent) ->
         {
+
             if(!placemarkList.isEmpty()){
-                placemarkList.forEach(e -> System.out.println(e.getLabelText()));
+                AtomicInteger i = new AtomicInteger(0);
+                placemarkList.forEach((e) -> {System.out.println(i + ": " + e.getLabelText()); i.addAndGet(1);});
             }
         });
         buttonPanel.add(viewButton);
@@ -419,7 +395,7 @@ public class CMSPointPlacemarkPanel extends JPanel
                     + "-90°<= Latitude <=90°"
                  );
             return false;
-        } else if (!(Math.abs(lonLocation) <= 90)){
+        } else if (!(Math.abs(lonLocation) <= 180)){
             showMessageDialog(null, "Invalid Longitude Value"
                 + lonTextField.getText()
                 + "\n"
@@ -427,7 +403,7 @@ public class CMSPointPlacemarkPanel extends JPanel
                 + "-180°<= Longitude <=180°"
             );
             return false;
-        } else if (!(Math.abs(elevLocation) < 100000)){
+        } else if (!(Math.abs(elevLocation) < (100000))){
             showMessageDialog(null, "Invalid Elevation Value"
                 + elevTextField.getText()
                 + "\n"
@@ -440,25 +416,25 @@ public class CMSPointPlacemarkPanel extends JPanel
         }
     }
 
-    private PlainDocument newDocFilter()
-    {
-        PlainDocument doc = new PlainDocument();
-        doc.setDocumentFilter(new DocumentFilter() {
-            @Override
-            public void insertString(FilterBypass fb, int off, String str, AttributeSet attr)
-                throws BadLocationException
-            {
-                fb.insertString(off, str.replaceAll("\\D++", ""), attr);  // remove non-digits
-            }
-            @Override
-            public void replace(FilterBypass fb, int off, int len, String str, AttributeSet attr)
-                throws BadLocationException
-            {
-                fb.replace(off, len, str.replaceAll("\\D++", ""), attr);  // remove non-digits
-            }
-        });
-        return doc;
-    }
+//    private PlainDocument newDocFilter()
+//    {
+//        PlainDocument doc = new PlainDocument();
+//        doc.setDocumentFilter(new DocumentFilter() {
+//            @Override
+//            public void insertString(FilterBypass fb, int off, String str, AttributeSet attr)
+//                throws BadLocationException
+//            {
+//                fb.insertString(off, str.replaceAll("\\D++", ""), attr);  // remove non-digits
+//            }
+//            @Override
+//            public void replace(FilterBypass fb, int off, int len, String str, AttributeSet attr)
+//                throws BadLocationException
+//            {
+//                fb.replace(off, len, str.replaceAll("\\D++", ""), attr);  // remove non-digits
+//            }
+//        });
+//        return doc;
+//    }
 
     public WorldWindow getWwd()
     {

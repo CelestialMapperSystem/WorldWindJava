@@ -8,6 +8,7 @@ package gov.nasa.cms;
 import gov.nasa.cms.features.*;
 import gov.nasa.cms.features.coordinates.*;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
+import gov.nasa.cms.features.placemarks.PointPlacemarkDialog;
 import gov.nasa.cms.layers.WorldMapLayer;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.*;
