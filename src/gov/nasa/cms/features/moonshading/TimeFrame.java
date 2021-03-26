@@ -226,8 +226,12 @@ public class TimeFrame extends JDialog
         Calendar cal = dateTimeDialog.getCalendar(); // Get the calendar from DateTimePickerDialog
         dateTimeDialog.getCalendar().setTime(startDate); // Set the calendar time to the start date time
         int value = dateTimeDialog.getDuration(); //speed of animation 
-        LocalDate localDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        int month = localDate.getMonthValue();
+        LocalDate localDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(); //start date
+        int month = localDate.getMonthValue(); //month value from start date
+        int day = localDate.getDayOfMonth();//day of month from start date
+        int time = startDate.toInstant().atZone(ZoneId.systemDefault()).getHour();
+        long diffInMillies = Math.abs(endDate.getTime() - startDate.getTime());//difference between start and end date in milliseconds
+        
 
         // Start a new thread to display dynamic shading
         Thread thread;
@@ -236,7 +240,14 @@ public class TimeFrame extends JDialog
             @Override
             public void run()
             {
-                int currentMonth=month;
+                int currentMonth=month-1;
+                int currentDay=day-1;
+                int currentHour=time-1;
+                //incrementation of shading
+                int shadingInterval;
+                int num=0;//humber of days/hours/months to update by
+                int value=0;//current day,month,hour 
+                
                 // While the end date/time is after the calendar date/time
                 while (endDate.after(dateTimeDialog.getCalendar().getTime()))
                 {
@@ -247,8 +258,30 @@ public class TimeFrame extends JDialog
                         {
                             break;
                         }
-                        timeFrameSlider.setValue(currentMonth);
-                        dateTimeDialog.getCalendar().add(Calendar.MONTH, 1); // Increment calendar
+                        if(diffInMillies<6.048e+8){
+                            shadingInterval=Calendar.HOUR;
+                            num=1;//1 hour
+                            currentHour++;
+                            currentHour=currentHour%24;//wraps hours around
+                            value=currentHour;
+                            
+                        }
+                        else if(diffInMillies<2.628e+9){
+                            shadingInterval=Calendar.HOUR;
+                            num=24;//1 day
+                            currentDay++;
+                            currentDay=currentDay%31; //tentative, will mod by 30 or 28 or 31 dependent on month
+                            value=currentDay;
+                        }
+                        else{
+                            shadingInterval=Calendar.MONTH;
+                            num=1;//1 month
+                            currentMonth++;
+                            currentMonth=currentMonth%12; //wraps the month around
+                            value=currentMonth;
+                        }
+                        timeFrameSlider.setValue(value);//sets value to be month,day, or hour
+                        dateTimeDialog.getCalendar().add(shadingInterval, num); // Increment calendar by month,day,or hour
                         startDate.setTime(cal.getTimeInMillis()); // Set the start time to the new calendar time
                         
                         // Update the current date 
@@ -267,8 +300,8 @@ public class TimeFrame extends JDialog
 
                         Thread.sleep(value * 1000); //animation speed
                         wwd.redraw();
-                        currentMonth++;
-                        currentMonth=currentMonth%12;
+//                        currentMonth++;
+//                        currentMonth=currentMonth%12;
                     } catch (InterruptedException ignore)
                     {
                     }
