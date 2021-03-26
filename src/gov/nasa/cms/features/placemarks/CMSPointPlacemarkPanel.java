@@ -40,11 +40,11 @@ public class CMSPointPlacemarkPanel extends JPanel
 
     private JComboBox colorCombo;
     private JComboBox labelCombo;
-    private JTextField latTextField;
-    private JTextField lonTextField;
-    private JTextField elevTextField;
+    private JFormattedTextField latTextField;
+    private JFormattedTextField lonTextField;
+    private JFormattedTextField elevTextField;
     private JTextField labelTextField;
-    private JTextField scaleTextField;
+    private JFormattedTextField scaleTextField;
     private JButton labelColorButton;
     private JCheckBox showLabelCheck;
     private JButton addButton;
@@ -77,6 +77,7 @@ public class CMSPointPlacemarkPanel extends JPanel
     private PointPlacemarksTableModel placemarkTableModel;
     private JDialog placemarkTableDialog;
     private boolean isTableOpen;
+    private double scale;
 
     public CMSPointPlacemarkPanel(WorldWindow wwdObject, CelestialMapper cms)
     {
@@ -297,7 +298,8 @@ public class CMSPointPlacemarkPanel extends JPanel
         scalePanel.add(new JLabel("Scale (1 is default):"));
 
         // Setting default scale to 1.0
-        attrs.setScale(1.0);
+        scale = 1.0;
+        attrs.setScale(scale);
 
         NumberFormat scaleFormat = DecimalFormat.getInstance();
         scaleFormat.setMaximumIntegerDigits(2);
@@ -306,6 +308,17 @@ public class CMSPointPlacemarkPanel extends JPanel
         scaleFormat.setRoundingMode(RoundingMode.HALF_UP);
 
         scaleTextField = new JFormattedTextField(scaleFormat);
+
+        scaleTextField.addActionListener(event -> {
+            // Update scale
+            String scaleInput = String.valueOf(scaleTextField.getValue());
+            if(scaleInput.equals("") || scaleInput.isEmpty()){
+                scaleTextField.setValue(null);
+                scale = 1.0;
+            } else {
+                scale = Double.parseDouble(scaleInput);
+            }
+        });
         scalePanel.add(scaleTextField);           
 
         //======== Check Boxes Panel ========  
@@ -333,19 +346,19 @@ public class CMSPointPlacemarkPanel extends JPanel
             attrs.setImageOffset(new Offset(19d, 8d, AVKey.PIXELS, AVKey.PIXELS));
             attrs.setLabelOffset(new Offset(0.9d, 0.6d, AVKey.FRACTION, AVKey.FRACTION));
             attrs.setLineWidth(2d);
-            placemark.setAttributes(attrs);
-            
-            // Update scale
-            String scaleInput = scaleTextField.getText();
-            double scale = Double.parseDouble(scaleInput);
             attrs.setScale(scale);
-            
+
+            System.out.println(attrs.getScale());
+
+            placemark.setAttributes(attrs);
+
             if(validateLatLongElev(latLocation, lonLocation, elevLocation))
             {
                 placemark.setPosition(Position.fromDegrees(latLocation, lonLocation, elevLocation * 1000));
 
                 PointPlacemark validPlacemark = new PointPlacemark(placemark.getPosition());
                 validPlacemark.setAttributes(new PointPlacemarkAttributes(placemark.getAttributes()));
+                System.out.println(validPlacemark.getAttributes().getScale());
                 validPlacemark.setLabelText(placemark.getLabelText());
                 validPlacemark.setLineEnabled(true);
                 validPlacemark.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
@@ -427,21 +440,28 @@ public class CMSPointPlacemarkPanel extends JPanel
             latLocation = Double.parseDouble(latTextField.getText());
         } else {
             latLocation = 0.0;
-            latTextField.setText("0.0");
+            latTextField.setValue(latLocation);
         }
 
         if(!lonTextField.getText().isEmpty()){
             lonLocation = Double.parseDouble(lonTextField.getText());
         } else {
             lonLocation = 0.0;
-            lonTextField.setText("0.0");
+            lonTextField.setValue(lonLocation);
         }
 
         if(!elevTextField.getText().isEmpty()){
             elevLocation = Double.parseDouble(elevTextField.getText());
         } else {
             elevLocation = 0.0;
-            elevTextField.setText("0.0");
+            elevTextField.setValue(elevLocation);
+        }
+
+        if(!scaleTextField.getText().isEmpty() && !scaleTextField.getText().equals("")){
+            scale = Double.parseDouble(scaleTextField.getText());
+        } else {
+            scale = 1.0;
+            scaleTextField.setValue(null);
         }
 
         placemark.setLabelText(labelTextField.getText());

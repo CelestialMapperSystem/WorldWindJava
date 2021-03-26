@@ -31,7 +31,7 @@ public class PointPlacemarksTableModel extends DefaultTableModel
 //    };
 
     private final String [] columnNames = new String[] {
-        "Id", "Label", "Lat", "Long", "Elev"
+        "Id", "Label", "Lat", "Long", "Elev", "Scale"
     };
 
     private final Class[] columnClass = new Class[] {
@@ -54,8 +54,6 @@ public class PointPlacemarksTableModel extends DefaultTableModel
         // First add placemark to internal ArrayList
         pointPlacemarkArrayList.add(pm);
 
-
-
         // Then extract the properties of the placemark as strings for display in the table
         Position currentPosition = pm.getPosition();
 //        UTMCoord utm = UTMCoord.fromLatLon(currentPosition.getLatitude().multiply(0.9996), currentPosition.getLongitude().multiply(0.9996));
@@ -66,6 +64,7 @@ public class PointPlacemarksTableModel extends DefaultTableModel
         var latitude = String.valueOf(currentPosition.getLatitude()).trim();
         var longitude = String.valueOf(currentPosition.getLongitude()).trim();
         var elevation = String.valueOf(currentPosition.getElevation()).trim();
+        var scale = String.valueOf(pm.getAttributes().getScale());
 //
 //        var zone = String.valueOf(utm.getZone());
 //        var easting = String.valueOf(utm.getEasting());
@@ -77,6 +76,7 @@ public class PointPlacemarksTableModel extends DefaultTableModel
             { "latitude", latitude },
             { "longitude", longitude },
             { "elevation", elevation },
+            { "scale", scale }
 //            { "zone", zone },
 //            { "easting", easting },
 //            { "northing", northing }
@@ -167,6 +167,8 @@ public class PointPlacemarksTableModel extends DefaultTableModel
                 return entry.get("longitude");
             case 4:
                 return entry.get("elevation");
+            case 5:
+                return entry.get("scale");
 //            case 5:
 //                return entry.get("zone");
 //            case 6:
