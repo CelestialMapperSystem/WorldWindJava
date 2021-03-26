@@ -9,14 +9,12 @@ import gov.nasa.cms.CelestialMapper;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.cache.BasicMemoryCache;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.*;
 
 import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.math.RoundingMode;
@@ -76,8 +74,9 @@ public class CMSPointPlacemarkPanel extends JPanel
     private double lonLocation;
     private double elevLocation;
     private ArrayList <PointPlacemark> placemarkList;
-    private PointPlacemarksTable placemarkTable;
+    private PointPlacemarksTableModel placemarkTableModel;
     private JDialog placemarkTableDialog;
+    private boolean isTableOpen;
 
     public CMSPointPlacemarkPanel(WorldWindow wwdObject, CelestialMapper cms)
     {
@@ -96,7 +95,7 @@ public class CMSPointPlacemarkPanel extends JPanel
         layer = new RenderableLayer();
         attrs = new PointPlacemarkAttributes();
         placemarkList = new ArrayList();
-        placemarkTable = new PointPlacemarksTable();
+        placemarkTableModel = new PointPlacemarksTableModel();
         placemarkTableDialog = createPlaceMarksTable();
         
         //======== Measurement Panel ========  
@@ -352,6 +351,8 @@ public class CMSPointPlacemarkPanel extends JPanel
                 validPlacemark.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
 //                placemarkList.add(validPlacemark);
 
+                placemarkTableModel.addEntry(validPlacemark);
+
                 layer.addRenderable(validPlacemark);
                 getWwd().getModel().getLayers().add(layer);
                 wwd.redraw();
@@ -369,6 +370,14 @@ public class CMSPointPlacemarkPanel extends JPanel
         viewButton = new JButton("View");
         viewButton.addActionListener((ActionEvent actionEvent) ->
         {
+            this.isTableOpen = !isTableOpen;
+            if(isTableOpen){
+                setTableVisible(true);
+            }
+            else
+            {
+                setTableVisible(false);
+            }
 
             if(!placemarkList.isEmpty()){
                 AtomicInteger i = new AtomicInteger(0);
@@ -407,9 +416,9 @@ public class CMSPointPlacemarkPanel extends JPanel
         dialog.setLocation(bounds.x + 900, bounds.y + 300);
         dialog.setResizable(true);
         // Add the tabbedPane to the dialog
-        dialog.getContentPane().add(measurePanel, BorderLayout.CENTER);
-
+        dialog.getContentPane().add(new JScrollPane(new JTable(placemarkTableModel)), BorderLayout.CENTER);
         dialog.pack();
+        return dialog;
     }
 
     private void updateCoordinates()
@@ -502,5 +511,10 @@ public class CMSPointPlacemarkPanel extends JPanel
     public void setPlacemarkList(ArrayList placemarkList)
     {
         this.placemarkList = placemarkList;
+    }
+
+    public void setTableVisible(boolean visible)
+    {
+        placemarkTableDialog.setVisible(visible);
     }
 }

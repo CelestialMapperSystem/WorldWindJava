@@ -12,11 +12,12 @@ import gov.nasa.cms.features.placemarks.PointPlacemarkDialog;
 import gov.nasa.cms.layers.WorldMapLayer;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Box;
+import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.globes.MoonFlat;
-import gov.nasa.worldwind.render.ScreenImage;
 import gov.nasa.worldwind.util.Logging;
 
 import java.awt.*;
@@ -625,4 +626,5 @@ public class CelestialMapper extends AppFrame
     {
         this.coordDisplay = coordinatesDisplay;
     }
+
 }
