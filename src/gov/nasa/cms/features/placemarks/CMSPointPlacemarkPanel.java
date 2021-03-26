@@ -39,6 +39,7 @@ public class CMSPointPlacemarkPanel extends JPanel
     private WorldWindow wwd;
 
     private JComboBox colorCombo;
+    private JComboBox labelCombo;
     private JTextField latTextField;
     private JTextField lonTextField;
     private JTextField elevTextField;
@@ -157,6 +158,54 @@ public class CMSPointPlacemarkPanel extends JPanel
             }
         });
         colorPanel.add(colorCombo);
+        
+        JPanel labelColorPanel = new JPanel(new GridLayout(1, 2, 5, 5));
+        labelColorPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        labelColorPanel.add(new JLabel("Label Color:"));
+        labelCombo = new JComboBox<>(new String[]
+        {
+            "White", "Blue", "Black", "Red", "Orange", "Yellow", "Green", "Purple"
+        });
+        labelCombo.setSelectedIndex(0);
+        attrs.setLabelColor("ffffffff"); // White is default
+        
+        labelCombo.addActionListener((ActionEvent event) ->
+        {
+            String item = (String) ((JComboBox) event.getSource()).getSelectedItem();
+            if (item != null)
+            {
+                switch (item)
+                {
+                    case "White":
+                        attrs.setLabelColor("ffffffff");
+                        break;
+                    case "Blue":
+                        attrs.setLabelColor("ffff0000");
+                        break;
+                    case "Black":
+                        attrs.setLabelColor("ff000000");
+                        break;
+                    case "Red":
+                        attrs.setLabelColor("ff000000");
+                        break;
+                    case "Orange":
+                        attrs.setLabelColor("f0000000");
+                        break;
+                    case "Yellow":
+                        attrs.setLabelColor("ff000000");
+                        break;
+                    case "Green":
+                        attrs.setLabelColor("ff000000");
+                        break;                 
+                    case "Purple":
+                        attrs.setLabelColor("ff000000");
+                        break;         
+                    default:
+                        break;
+                }
+            }
+        }); 
+        labelColorPanel.add(labelCombo);
 
         //======== Coordinates Panel ========
         JPanel coordinatesLabel = new JPanel(new GridLayout(1,1,5,5));
@@ -267,19 +316,6 @@ public class CMSPointPlacemarkPanel extends JPanel
         });
         checkPanel.add(showLabelCheck);
 
-        //======== Label Color Button ========  
-        labelColorButton = new JButton("Label");
-        labelColorButton.addActionListener((ActionEvent event) ->
-        {
-            Color c = JColorChooser.showDialog(colorPanel,
-                    "Choose a color...", ((JButton) event.getSource()).getBackground());
-            if (c != null)
-            {
-                ((JButton) event.getSource()).setBackground(c);
-            }
-        });
-        colorPanel.add(labelColorButton);
-
         //======== Action Buttons ========  
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 5, 5));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
@@ -343,10 +379,9 @@ public class CMSPointPlacemarkPanel extends JPanel
         outerPanel.setBorder(new CompoundBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10), new TitledBorder("Point Placemarks")));
         outerPanel.setToolTipText("Create point placemarks on the globe");
         outerPanel.add(colorPanel);
-        outerPanel.add(colorPanel);
+        outerPanel.add(labelColorPanel);
         outerPanel.add(coordinatesLabel);
         outerPanel.add(coordinatesPanel);
-//        outerPanel.add(resultPanel);
         outerPanel.add(labelPanel);
         outerPanel.add(scalePanel);
         outerPanel.add(checkPanel);
