@@ -187,7 +187,6 @@ public class TimeFrame extends JDialog
         //======== Start Date/Time ========  
         startDateTime.setForeground(new Color(255, 255, 255));
         startDateTime.setText("Start Time");
-        startDateTime.setFont(Font.decode("Consolas-Bold-15"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -198,7 +197,6 @@ public class TimeFrame extends JDialog
         //======== End Date/Time ========  
         endDateTime.setForeground(new Color(255, 255, 255));
         endDateTime.setText("End Time");
-        endDateTime.setFont(Font.decode("Consolas-Bold-15"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 1;
@@ -209,7 +207,6 @@ public class TimeFrame extends JDialog
         //======== Current Date/Time ========  
         currentDateTime.setForeground(new Color(255, 255, 255));
         currentDateTime.setText("Current Time");
-        currentDateTime.setFont(Font.decode("Consolas-Bold-15"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -250,7 +247,7 @@ public class TimeFrame extends JDialog
                         {
                             break;
                         }
-                        timeFrameSlider.setValue(currentMonth-1);
+                        timeFrameSlider.setValue(currentMonth);
                         dateTimeDialog.getCalendar().add(Calendar.MONTH, 1); // Increment calendar
                         startDate.setTime(cal.getTimeInMillis()); // Set the start time to the new calendar time
                         
