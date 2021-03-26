@@ -159,7 +159,6 @@ public class CMSPointPlacemarkPanel extends JPanel
         colorPanel.add(colorCombo);
 
         //======== Coordinates Panel ========
-
         JPanel coordinatesLabel = new JPanel(new GridLayout(1,1,5,5));
         coordinatesLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         coordinatesLabel.add(new JLabel("Coordinates (lat, lon, elev):"));
@@ -179,11 +178,8 @@ public class CMSPointPlacemarkPanel extends JPanel
         latFormat.setMaximumFractionDigits(10);
         latFormat.setRoundingMode(RoundingMode.HALF_UP);
 
-//        System.out.println(latFormat.getMaximumIntegerDigits());
-
         latTextField = new JFormattedTextField(latFormat);
         latTextField.setColumns(5);
-//        latTextField.setDocument(newDocFilter());
 
         latTextField.addActionListener(event -> {
             String latInput = latTextField.getText();
@@ -255,12 +251,6 @@ public class CMSPointPlacemarkPanel extends JPanel
         scaleFormat.setRoundingMode(RoundingMode.HALF_UP);
 
         scaleTextField = new JFormattedTextField(scaleFormat);
-
-        scaleTextField.addActionListener(event -> {
-           String scaleInput = scaleTextField.getText();
-           double scale = Double.parseDouble(scaleInput);
-           attrs.setScale(scale);
-        });
         scalePanel.add(scaleTextField);           
 
         //======== Check Boxes Panel ========  
@@ -272,6 +262,7 @@ public class CMSPointPlacemarkPanel extends JPanel
         showLabelCheck.addActionListener((ActionEvent event) ->
         {
             JCheckBox cb = (JCheckBox) event.getSource();
+            showLabelCheck.setEnabled(cb.isEnabled());
             wwd.redraw();
         });
         checkPanel.add(showLabelCheck);
@@ -301,9 +292,14 @@ public class CMSPointPlacemarkPanel extends JPanel
             attrs.setLabelOffset(new Offset(0.9d, 0.6d, AVKey.FRACTION, AVKey.FRACTION));
             attrs.setLineWidth(2d);
             placemark.setAttributes(attrs);
-
-//            System.out.println("latLocation: " + latLocation + "  lonLocation: " + lonLocation + " elevLocation in km: " +  elevLocation * 1000);
-            if(validateLatLongElev(latLocation, lonLocation, elevLocation)){
+            
+            // Update scale
+            String scaleInput = scaleTextField.getText();
+            double scale = Double.parseDouble(scaleInput);
+            attrs.setScale(scale);
+            
+            if(validateLatLongElev(latLocation, lonLocation, elevLocation))
+            {
                 placemark.setPosition(Position.fromDegrees(latLocation, lonLocation, elevLocation * 1000));
 
                 PointPlacemark validPlacemark = new PointPlacemark(placemark.getPosition());
