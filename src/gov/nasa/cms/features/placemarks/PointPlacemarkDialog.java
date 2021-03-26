@@ -6,6 +6,7 @@
 
 package gov.nasa.cms.features.placemarks;
 
+import gov.nasa.cms.CelestialMapper;
 import gov.nasa.worldwind.WorldWindow;
 import java.awt.*;
 import javax.swing.JDialog;
@@ -19,13 +20,13 @@ public class PointPlacemarkDialog
 
     private JDialog dialog;
 
-    public PointPlacemarkDialog(WorldWindow wwdObject, Component component)
+    public PointPlacemarkDialog(WorldWindow wwdObject, CelestialMapper component)
     {
-        CMSPointPlacemarkPanel measurePanel = new CMSPointPlacemarkPanel(wwdObject);
+        CMSPointPlacemarkPanel measurePanel = new CMSPointPlacemarkPanel(wwdObject, component);
 
         //dialog.setSize(new Dimension(200, 400));
         // Create the dialog from a Frame and set the bounds
-        dialog = new JDialog((Frame) component);
+        dialog = new JDialog(component);
         Rectangle bounds = component.getBounds();
         dialog.getContentPane().setLayout(new BorderLayout());
         dialog.setTitle("Point Placemarks");

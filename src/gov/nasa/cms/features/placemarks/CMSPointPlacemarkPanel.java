@@ -5,6 +5,7 @@
  */
 package gov.nasa.cms.features.placemarks;
 
+import gov.nasa.cms.CelestialMapper;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
@@ -36,6 +37,7 @@ import static javax.swing.JOptionPane.*;
 public class CMSPointPlacemarkPanel extends JPanel
 {
 
+    private final CelestialMapper cms;
     private WorldWindow wwd;
 
     private JComboBox colorCombo;
@@ -73,11 +75,14 @@ public class CMSPointPlacemarkPanel extends JPanel
     private double lonLocation;
     private double elevLocation;
     private ArrayList <PointPlacemark> placemarkList;
+    private PointPlacemarksTable placemarkTable;
+    private JDialog placemarkTableDialog;
 
-    public CMSPointPlacemarkPanel(WorldWindow wwdObject)
+    public CMSPointPlacemarkPanel(WorldWindow wwdObject, CelestialMapper cms)
     {
         super(new BorderLayout());
         this.wwd = wwdObject;
+        this.cms = cms;
         
         JPanel mainPanel = new JPanel();
         mainPanel.setOpaque(false);
@@ -90,6 +95,8 @@ public class CMSPointPlacemarkPanel extends JPanel
         layer = new RenderableLayer();
         attrs = new PointPlacemarkAttributes();
         placemarkList = new ArrayList();
+        placemarkTable = new PointPlacemarksTable();
+        placemarkTableDialog = createPlaceMarksTable();
         
         //======== Measurement Panel ========  
         JPanel colorPanel = new JPanel(new GridLayout(1, 2, 5, 5));
@@ -311,7 +318,7 @@ public class CMSPointPlacemarkPanel extends JPanel
                 validPlacemark.setLabelText(placemark.getLabelText());
                 validPlacemark.setLineEnabled(true);
                 validPlacemark.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
-                placemarkList.add(validPlacemark);
+//                placemarkList.add(validPlacemark);
 
                 layer.addRenderable(validPlacemark);
                 getWwd().getModel().getLayers().add(layer);
@@ -357,6 +364,21 @@ public class CMSPointPlacemarkPanel extends JPanel
         outerPanel.add(buttonPanel);
 
         this.add(outerPanel, BorderLayout.NORTH);
+    }
+
+    private JDialog createPlaceMarksTable()
+    {
+        JDialog dialog = new JDialog(cms);
+        Rectangle bounds = cms.getBounds();
+        dialog.getContentPane().setLayout(new BorderLayout());
+        dialog.setTitle("Point Placemarks");
+        // Set the location and resizable to false
+        dialog.setLocation(bounds.x + 900, bounds.y + 300);
+        dialog.setResizable(true);
+        // Add the tabbedPane to the dialog
+        dialog.getContentPane().add(measurePanel, BorderLayout.CENTER);
+
+        dialog.pack();
     }
 
     private void updateCoordinates()
