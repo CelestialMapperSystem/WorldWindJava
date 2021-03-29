@@ -314,6 +314,12 @@ public class TimeFrame extends JDialog
 
     protected void initSlider()
     {
+        
+        startDate = dateTimeDialog.getStartDate(); // Get the start date
+        endDate = dateTimeDialog.getEndDate(); // Get the end date
+        long diffInMillies = Math.abs(endDate.getTime() - startDate.getTime());//difference between start and end date in milliseconds
+        
+        
         jan.setForeground(Color.WHITE);
         feb.setForeground(Color.WHITE);
         mar.setForeground(Color.WHITE);
