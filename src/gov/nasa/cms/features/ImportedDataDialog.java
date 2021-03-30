@@ -73,7 +73,7 @@ public class ImportedDataDialog implements NetworkActivitySignal.NetworkUser
         dialog.setLocation(bounds.x, bounds.y + 200);
         dialog.setResizable(false);
         
-        dataConfigPanel = new ImportedDataPanel(wwd);
+        dataConfigPanel = new ImportedDataPanel(wwd, (CelestialMapper) component);
         
         dataConfigPanel.getButtonPanel().add(importButton, BorderLayout.WEST);
         importButton.addActionListener(new ActionListener()

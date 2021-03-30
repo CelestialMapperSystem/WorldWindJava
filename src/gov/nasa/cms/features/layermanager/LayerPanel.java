@@ -8,6 +8,7 @@ import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.layers.placename.PlaceNameLayer;
+import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwindx.examples.ClickAndGoSelectListener;
 
 import javax.swing.*;
@@ -31,6 +32,9 @@ public class LayerPanel extends JPanel
      private Dimension size_ = null;
      private CMSPlaceNamesMenu cmsPlaceNamesMenu;
      private CelestialMapper cms;
+     
+     private Vector importedCategory;
+     private JTree tree;
 
      // Font problem : too thin, use the textfield one
      private Font font_ = UIManager.getFont("Textfield.font");
@@ -88,6 +92,7 @@ public class LayerPanel extends JPanel
           // Replace all the layer names in the layers panel with the names of the current layers.
           this.removeAll();
           makePanel();
+          this.validate();
      }
 
      protected JTree fill(WorldWindow wwd)
@@ -164,7 +169,7 @@ public class LayerPanel extends JPanel
 
           Vector rootVector = new NamedVector("Root", rootNodes);
 
-          JTree tree = new JTree(rootVector);
+          tree = new JTree(rootVector);
 
 
           tree.setCellRenderer(new CheckBoxNodeRenderer(wwd, font_));
@@ -177,6 +182,29 @@ public class LayerPanel extends JPanel
           return tree;
      }
 
+     public void addLayer(Layer layer)
+     {
+        if (layer == null)
+        {
+            String msg = "Layer is null";
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+        
+         if(importedCategory == null)
+         {
+             importedCategory = new Vector();
+         }
+         
+         String name = layer.getName();
+         importedCategory.add(new CheckBoxNode("Imported", name, layer.isEnabled()));
+         
+         for(int i = 0; i < tree.getRowCount(); i++)
+         {
+             tree.expandRow(i);
+         }
+     }
+     
      private String shorten(String parent, String name)
      {
           return name.substring(parent.length() + 1);

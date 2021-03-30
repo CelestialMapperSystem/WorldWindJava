@@ -6,6 +6,8 @@
 package gov.nasa.cms.features;
 
 import gov.nasa.cms.CelestialMapper;
+import gov.nasa.cms.features.layermanager.LayerManagerDialog;
+import gov.nasa.cms.features.layermanager.LayerPanel;
 import gov.nasa.cms.util.PanelTitle;
 import gov.nasa.cms.util.ShadedPanel;
 import gov.nasa.worldwind.Factory;
@@ -24,6 +26,7 @@ import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwindx.applications.worldwindow.core.layermanager.LayerPath;
+import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
@@ -48,9 +51,12 @@ public class ImportedDataPanel extends ShadedPanel
 
     private WorldWindow wwd;
     protected JPanel dataConfigPanel;
-    private JPanel buttonPanel ;
+    private JPanel buttonPanel;
+    private CelestialMapper cms;
+    private LayerPanel layerPanel;
+    private LayerManagerDialog layerManagerDialog;
 
-    public ImportedDataPanel(WorldWindow wwd)
+    public ImportedDataPanel(WorldWindow wwd, Component component)
     {
         super(new BorderLayout());
 
@@ -61,6 +67,7 @@ public class ImportedDataPanel extends ShadedPanel
             throw new IllegalArgumentException(message);
         }
 
+        cms = (CelestialMapper) component;
         this.wwd = wwd;
         this.makePanel();
     }
@@ -209,6 +216,11 @@ public class ImportedDataPanel extends ShadedPanel
     protected void doAddLayer(final Layer layer, final LayerPath path)
     {
         wwd.getModel().getLayers().add(layer);
+        
+        layerManagerDialog = cms.getLayerManager();
+        layerPanel = layerManagerDialog.getLayerPanel();
+        layerPanel.update(wwd);
+       // wwd.redraw();
     }
 
     protected void addElevationModelToWorldWindow(Element domElement, AVList params)

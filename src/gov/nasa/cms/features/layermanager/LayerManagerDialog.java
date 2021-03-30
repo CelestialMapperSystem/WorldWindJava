@@ -47,6 +47,10 @@ public class LayerManagerDialog
         dialog.pack();
     }
     
+    public LayerPanel getLayerPanel()
+    {
+        return layerPanel;
+    }
     public void setVisible(boolean visible)
     {
         dialog.setVisible(visible);
