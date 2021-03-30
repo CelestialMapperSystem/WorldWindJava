@@ -440,6 +440,7 @@ public class CMSPointPlacemarkPanel extends JPanel
 
     private void configurePositionsTable(JTable table)
     {
+        // This defines the Header row for the table
         String[] COLUMN_NAMES = new String[] {"Id", "Label", "Lat", "Long", "Elev", "Scale"};
 
         // Mismatch between column positions and these declared classes will cause an untraceable
@@ -450,14 +451,27 @@ public class CMSPointPlacemarkPanel extends JPanel
         Class[] columnClass = new Class[] {
             String.class, String.class, String.class,String.class,String.class,String.class
         };
+        
+        // This defines the table using the much easier to use DefaultTableModel
+        // and initializes it to be empty
         model = new DefaultTableModel(COLUMN_NAMES, 0) {
+
+            // Right now we are only inserting Strings into the table
+            // so this Run Time method may not need to be overridden
             @Override
             public Class<?> getColumnClass(int columnIndex) {
                 Class cls = String.class;
                 cls = columnClass[columnIndex];
                 return cls;
             }
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                //all cells false
+                return false;
+            }
         };
+
         table.setModel(model);
     }
 
@@ -468,7 +482,6 @@ public class CMSPointPlacemarkPanel extends JPanel
 
             // Then extract the properties of the placemark as strings for display in the table
             Position currentPosition = pm.getPosition();
-//            UTMCoord utm = UTMCoord.fromLatLon(currentPosition.getLatitude().multiply(0.9996), currentPosition.getLongitude().multiply(0.9996));
 
             var id = String.valueOf(++idCount);
             var label = pm.getLabelText();

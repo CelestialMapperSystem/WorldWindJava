@@ -13,6 +13,7 @@ import gov.nasa.worldwindx.examples.ClickAndGoSelectListener;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
+import javax.swing.text.*;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -164,7 +165,7 @@ public class LayerPanel extends JPanel
 
           Vector rootVector = new NamedVector("Root", rootNodes);
 
-          JTree tree = new JTree(rootVector);
+          JTree tree = new JTree(new DefaultTreeModel(new DefaultMutableTreeNode(rootVector)));
 
 
           tree.setCellRenderer(new CheckBoxNodeRenderer(wwd, font_));
