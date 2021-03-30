@@ -1,22 +1,15 @@
 package gov.nasa.cms.features.layermanager;
 
-import gov.nasa.cms.CelestialMapper;
-import gov.nasa.cms.features.CMSPlaceNamesMenu;
 import gov.nasa.cms.layers.WorldMapLayer;
 import gov.nasa.cms.util.PanelTitle;
 import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.layers.placename.PlaceNameLayer;
-import gov.nasa.worldwind.util.Logging;
-import gov.nasa.worldwindx.examples.ClickAndGoSelectListener;
 
 import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.event.*;
 import javax.swing.tree.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.util.Vector;
 
 public class LayerPanel extends JPanel
@@ -30,10 +23,6 @@ public class LayerPanel extends JPanel
      private Font defaultFont = null;
      private WorldWindow wwd = null;
      private Dimension size_ = null;
-     private CMSPlaceNamesMenu cmsPlaceNamesMenu;
-     private CelestialMapper cms;
-     
-     private Vector importedCategory;
      private JTree tree;
 
      // Font problem : too thin, use the textfield one
@@ -146,7 +135,7 @@ public class LayerPanel extends JPanel
                } 
                // Tools
                else if (name.startsWith("Lat") || name.startsWith("GARS") ||
-                   name.startsWith("View") || name.startsWith("Scale") || name.startsWith("Mini"))
+                   name.startsWith("View") || name.startsWith("Scale") || name.startsWith("Mini") || name.startsWith("Coordinates"))
                {
                     toolsCategory.add(new CheckBoxNode("Tools", name, layer.isEnabled()));
                } 
@@ -180,29 +169,6 @@ public class LayerPanel extends JPanel
           tree.expandRow(0);
 
           return tree;
-     }
-
-     public void addLayer(Layer layer)
-     {
-        if (layer == null)
-        {
-            String msg = "Layer is null";
-            Logging.logger().severe(msg);
-            throw new IllegalArgumentException(msg);
-        }
-        
-         if(importedCategory == null)
-         {
-             importedCategory = new Vector();
-         }
-         
-         String name = layer.getName();
-         importedCategory.add(new CheckBoxNode("Imported", name, layer.isEnabled()));
-         
-         for(int i = 0; i < tree.getRowCount(); i++)
-         {
-             tree.expandRow(i);
-         }
      }
      
      private String shorten(String parent, String name)

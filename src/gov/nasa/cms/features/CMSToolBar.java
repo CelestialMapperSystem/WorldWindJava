@@ -71,7 +71,7 @@ public class CMSToolBar
 
         // Have to add this as a child of AppPanel, the parent of CelestialMapper
         // so it gets removed at the same time as wwjPanel when reset is called
-        this.frame.getWwjPanel().add(toolBar,BorderLayout.PAGE_START);
+        this.frame.getWwjPanel().add(toolBar,BorderLayout.NORTH);
 
     }
 

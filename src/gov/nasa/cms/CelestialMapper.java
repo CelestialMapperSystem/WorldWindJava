@@ -6,40 +6,33 @@
 package gov.nasa.cms;
         
 import gov.nasa.cms.features.CMSPlaceNamesMenu;
-import gov.nasa.cms.features.*;
+import gov.nasa.cms.features.coordinates.*;
 import gov.nasa.cms.features.ApolloMenu;
 import gov.nasa.cms.features.ApolloDialog;
 import gov.nasa.cms.features.CMSProfile;
 import gov.nasa.cms.features.CMSToolBar;
 import gov.nasa.cms.features.ImportKML;
+import gov.nasa.cms.features.ImportedDataDialog;
 import gov.nasa.cms.features.MeasureDialog;
 import gov.nasa.cms.features.MoonElevationModel;
 import gov.nasa.cms.features.WMSLayerManager;
-import gov.nasa.cms.features.coordinates.CoordinatesDialog;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
 import gov.nasa.cms.features.LineOfSightController;
-import gov.nasa.cms.features.wms.WMSLegendRetriever;
 import gov.nasa.cms.layers.WorldMapLayer;
 import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.geom.Angle;
-import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.MoonFlat;
 import gov.nasa.worldwind.render.ScreenImage;
 import gov.nasa.worldwind.util.Logging;
-import gov.nasa.worldwindx.applications.worldwindow.core.*;
-import gov.nasa.worldwindx.examples.ClickAndGoSelectListener;
 
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.*;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -83,22 +76,19 @@ public class CelestialMapper extends AppFrame
     private JMenuItem exportMeasureTool;
     
     private CMSToolBar toolBar;
-    private Registry regController;
-    private Controller generalController;
+
     private MouseListener mouseListener;
     private CoordinatesDialog coordinatesDialog;
     private ApolloDialog apolloDialog;
     private WorldMapLayer wml;
-    private WMSLegendRetriever legendRetriever;
+    private CoordinatesDisplay coordDisplay;
+    private CMSWWOUnitsFormat unitsFormat;
 
     public void restart()
     {
-
-//        Arrays.stream(getContentPane().getComponents()).forEach(System.out::println);
         getWwd().shutdown();
         getContentPane().remove(wwjPanel); //removing component's parent must be JPanel
         this.initialize();
-
     }
 
 
@@ -117,11 +107,20 @@ public class CelestialMapper extends AppFrame
         this.toolBar = new CMSToolBar(this);
         this.toolBar.createToolbar();
 
+        // create coordinates display layer
+        this.unitsFormat = new CMSWWOUnitsFormat();
+        this.unitsFormat.setShowUTM(true);
+        this.unitsFormat.setShowWGS84(false);
+        this.coordDisplay = new CoordinatesDisplay(this);
+
         // Import the lunar elevation data
         elevationModel = new MoonElevationModel(this.getWwd());
         
         // Display the ScreenImage CMS logo as a RenderableLayer
         this.renderLogo();
+
+        // TODO - Decide whether to use pack or not, to accommodate the space that the cmsToolBar overlaps WorldWindow.
+        // this.pack();
 
     }
 
@@ -326,7 +325,8 @@ public class CelestialMapper extends AppFrame
             cmsLogo.setImageSource(ImageIO.read(new File("cms-data/cms-logo.png")));
             Rectangle view = getWwd().getView().getViewport();
             // Set the screen location to different points to offset the image size
-            cmsLogo.setScreenLocation(new Point(view.x + 55, view.y + 70));
+            cmsLogo.setScreenLocation(new Point(view.x + 70, view.y + 70));
+//            cmsLogo.setScreenLocation(new Point(view.x + 1000, view.y + 800));
         } catch (IOException ex) 
         {
             Logger.getLogger(CelestialMapper.class.getName()).log(Level.SEVERE, null, ex);
@@ -569,26 +569,6 @@ public class CelestialMapper extends AppFrame
         this.toolBar = toolBar;
     }
 
-    public Registry getRegController()
-    {
-        return regController;
-    }
-
-    public void setRegController(Registry regController)
-    {
-        this.regController = regController;
-    }
-
-    public Controller getGeneralController()
-    {
-        return generalController;
-    }
-
-    public void setGeneralController(Controller generalController)
-    {
-        this.generalController = generalController;
-    }
-
     public MouseListener getMouseListener()
     {
         return mouseListener;
@@ -635,7 +615,13 @@ public class CelestialMapper extends AppFrame
         this.wml.setResizeBehavior(AVKey.RESIZE_STRETCH);
 
         // set location of minimap
+        // Use these two lines if pairing with logo in top left.
+//        this.wml.setPosition(AVKey.NORTHWEST);
+//        this.wml.setLocationOffset(new Vec4(0,-30));
+
+        //
         this.wml.setPosition(AVKey.NORTHEAST);
+//        this.wml.setLocationOffset(new Vec4(0,-30));
 
         // enable globe navigation by clicking the minimap
         this.getWwd().addSelectListener(new ClickAndGoSelectListener(this.getWwd(), WorldMapLayer.class));
@@ -652,5 +638,10 @@ public class CelestialMapper extends AppFrame
     public WorldMapLayer getWML()
     {
         return this.wml;
+    }
+
+    public CMSWWOUnitsFormat getUnits()
+    {
+        return this.unitsFormat;
     }
 }
