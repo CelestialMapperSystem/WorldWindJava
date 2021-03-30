@@ -86,8 +86,6 @@ public class PointPlacemarksTableModel extends DefaultTableModel
         ));
         mapArrayList.add(map);
         System.out.println(idCount + " : " + mapArrayList.size());
-
-
     }
 
     public PointPlacemark getPlacemarkAtTrueIndex(int index){

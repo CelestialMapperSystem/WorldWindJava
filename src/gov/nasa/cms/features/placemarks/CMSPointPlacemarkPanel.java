@@ -6,21 +6,27 @@
 package gov.nasa.cms.features.placemarks;
 
 import gov.nasa.cms.CelestialMapper;
+import gov.nasa.cms.features.coordinates.*;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.cache.BasicMemoryCache;
+import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.coords.UTMCoord;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.*;
 
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.math.RoundingMode;
 import java.text.*;
-import java.util.ArrayList;
+import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.*;
 
 import static javax.swing.JOptionPane.*;
 
@@ -65,7 +71,6 @@ public class CMSPointPlacemarkPanel extends JPanel
     private JPanel resultPanel;
     private JButton flyToCoordinates;
 
-    
     private PointPlacemark placemark;
     private RenderableLayer layer;
     private PointPlacemarkAttributes attrs;
@@ -78,6 +83,13 @@ public class CMSPointPlacemarkPanel extends JPanel
     private JDialog placemarkTableDialog;
     private boolean isTableOpen;
     private double scale;
+    private JTable table;
+    private ArrayList<PointPlacemark> pointPlacemarkArrayList;
+    private ArrayList<Map> mapArrayList = new ArrayList<>();
+    private static int idCount = 0;
+    private CMSWWOUnitsFormat unitsFormat;
+    private DefaultTableModel model;
+    private ArrayList pmPropertiesArrayList;
 
     public CMSPointPlacemarkPanel(WorldWindow wwdObject, CelestialMapper cms)
     {
@@ -96,7 +108,12 @@ public class CMSPointPlacemarkPanel extends JPanel
         layer = new RenderableLayer();
         attrs = new PointPlacemarkAttributes();
         placemarkList = new ArrayList();
-        placemarkTableModel = new PointPlacemarksTableModel();
+        pmPropertiesArrayList = new ArrayList();
+        pointPlacemarkArrayList = new ArrayList<>();
+//        placemarkTableModel = new PointPlacemarksTableModel();
+//        placemarkTableDialog = createPlaceMarksTable();
+        table = new JTable();
+        configurePositionsTable(table);
         placemarkTableDialog = createPlaceMarksTable();
         
         //======== Measurement Panel ========  
@@ -364,7 +381,9 @@ public class CMSPointPlacemarkPanel extends JPanel
                 validPlacemark.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
 //                placemarkList.add(validPlacemark);
 
-                placemarkTableModel.addEntry(validPlacemark);
+//                placemarkTableModel.addEntry(validPlacemark);
+//                placemarkTableModel.addRow();7
+                addPointPlacemarkRow(validPlacemark);
 
                 layer.addRenderable(validPlacemark);
                 getWwd().getModel().getLayers().add(layer);
@@ -419,6 +438,51 @@ public class CMSPointPlacemarkPanel extends JPanel
         this.add(outerPanel, BorderLayout.NORTH);
     }
 
+    private void configurePositionsTable(JTable table)
+    {
+        String[] COLUMN_NAMES = new String[] {"Id", "Label", "Lat", "Long", "Elev", "Scale"};
+
+        // Mismatch between column positions and these declared classes will cause an untraceable
+        // runtime exception!!
+//        Class[] columnClass = new Class[] {
+//            Integer.class, String.class, Double.class,Double.class,Double.class,Double.class
+//        };
+        Class[] columnClass = new Class[] {
+            String.class, String.class, String.class,String.class,String.class,String.class
+        };
+        model = new DefaultTableModel(COLUMN_NAMES, 0) {
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                Class cls = String.class;
+                cls = columnClass[columnIndex];
+                return cls;
+            }
+        };
+        table.setModel(model);
+    }
+
+    public void addPointPlacemarkRow(PointPlacemark pm){
+
+            // First add placemark to internal ArrayList
+            pointPlacemarkArrayList.add(pm);
+
+            // Then extract the properties of the placemark as strings for display in the table
+            Position currentPosition = pm.getPosition();
+//            UTMCoord utm = UTMCoord.fromLatLon(currentPosition.getLatitude().multiply(0.9996), currentPosition.getLongitude().multiply(0.9996));
+
+            var id = String.valueOf(++idCount);
+            var label = pm.getLabelText();
+            var latitude = String.valueOf(currentPosition.getLatitude()).trim();
+            var longitude = String.valueOf(currentPosition.getLongitude()).trim();
+            var elevation = String.valueOf(currentPosition.getElevation()).trim();
+            var scale = String.valueOf(pm.getAttributes().getScale());
+
+            var list = List.of(id, label, latitude, longitude, elevation, scale);
+            pmPropertiesArrayList.add(list);
+            Vector vec = new Vector(list);
+            model.addRow(vec);
+    }
+
     private JDialog createPlaceMarksTable()
     {
         JDialog dialog = new JDialog(cms);
@@ -426,10 +490,11 @@ public class CMSPointPlacemarkPanel extends JPanel
         dialog.getContentPane().setLayout(new BorderLayout());
         dialog.setTitle("Point Placemarks");
         // Set the location and resizable to false
-        dialog.setLocation(bounds.x + 900, bounds.y + 300);
+        dialog.setLocation(bounds.x + 100, bounds.y + 100);
         dialog.setResizable(true);
         // Add the tabbedPane to the dialog
-        dialog.getContentPane().add(new JScrollPane(new JTable(placemarkTableModel)), BorderLayout.CENTER);
+//        dialog.getContentPane().add(new JScrollPane(new JTable(placemarkTableModel)), BorderLayout.CENTER);
+        dialog.getContentPane().add(new JScrollPane(table), BorderLayout.CENTER);
         dialog.pack();
         return dialog;
     }
@@ -498,39 +563,9 @@ public class CMSPointPlacemarkPanel extends JPanel
         }
     }
 
-//    private PlainDocument newDocFilter()
-//    {
-//        PlainDocument doc = new PlainDocument();
-//        doc.setDocumentFilter(new DocumentFilter() {
-//            @Override
-//            public void insertString(FilterBypass fb, int off, String str, AttributeSet attr)
-//                throws BadLocationException
-//            {
-//                fb.insertString(off, str.replaceAll("\\D++", ""), attr);  // remove non-digits
-//            }
-//            @Override
-//            public void replace(FilterBypass fb, int off, int len, String str, AttributeSet attr)
-//                throws BadLocationException
-//            {
-//                fb.replace(off, len, str.replaceAll("\\D++", ""), attr);  // remove non-digits
-//            }
-//        });
-//        return doc;
-//    }
-
     public WorldWindow getWwd()
     {
         return this.wwd;
-    }
-
-    public void setWwd(WorldWindow wwd)
-    {
-        this.wwd = wwd;
-    }
-
-    public void setPlacemarkList(ArrayList placemarkList)
-    {
-        this.placemarkList = placemarkList;
     }
 
     public void setTableVisible(boolean visible)
