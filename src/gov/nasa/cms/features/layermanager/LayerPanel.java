@@ -1,14 +1,10 @@
 package gov.nasa.cms.features.layermanager;
 
-import gov.nasa.cms.CelestialMapper;
-import gov.nasa.cms.features.CMSPlaceNamesMenu;
 import gov.nasa.cms.layers.WorldMapLayer;
 import gov.nasa.cms.util.PanelTitle;
 import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.layers.placename.PlaceNameLayer;
-import gov.nasa.worldwindx.examples.ClickAndGoSelectListener;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -16,7 +12,6 @@ import javax.swing.event.*;
 import javax.swing.text.*;
 import javax.swing.tree.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.util.Vector;
 
 public class LayerPanel extends JPanel
@@ -30,8 +25,7 @@ public class LayerPanel extends JPanel
      private Font defaultFont = null;
      private WorldWindow wwd = null;
      private Dimension size_ = null;
-     private CMSPlaceNamesMenu cmsPlaceNamesMenu;
-     private CelestialMapper cms;
+     private JTree tree;
 
      // Font problem : too thin, use the textfield one
      private Font font_ = UIManager.getFont("Textfield.font");
@@ -89,6 +83,7 @@ public class LayerPanel extends JPanel
           // Replace all the layer names in the layers panel with the names of the current layers.
           this.removeAll();
           makePanel();
+          this.validate();
      }
 
      protected JTree fill(WorldWindow wwd)
@@ -165,9 +160,7 @@ public class LayerPanel extends JPanel
 
           Vector rootVector = new NamedVector("Root", rootNodes);
 
-          JTree tree = new JTree(new DefaultTreeModel(new DefaultMutableTreeNode(rootVector)));
-
-
+          tree = new JTree(rootVector);
           tree.setCellRenderer(new CheckBoxNodeRenderer(wwd, font_));
           tree.setCellEditor(new CheckBoxNodeEditor(wwd, tree, font_));
           tree.setEditable(true);
@@ -177,7 +170,7 @@ public class LayerPanel extends JPanel
 
           return tree;
      }
-
+     
      private String shorten(String parent, String name)
      {
           return name.substring(parent.length() + 1);
