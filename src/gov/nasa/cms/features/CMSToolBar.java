@@ -9,6 +9,7 @@ package gov.nasa.cms.features;
 import gov.nasa.cms.*;
 import gov.nasa.cms.features.coordinates.CoordinatesDialog;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
+import gov.nasa.cms.features.placemarks.PointPlacemarkDialog;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -24,14 +25,15 @@ import java.util.ArrayList;
 public class CMSToolBar
 {
     private final CelestialMapper frame;
-    
+    private JToolBar toolBar;
+
     private boolean isLayerManagerOpen = false;
     private boolean isMeasureDialogOpen = false;
     private boolean isCoordinatesDialogOpen = false;
     private boolean isProfilerOpen = false;
     private boolean isLineOfSightOpen = false;
-    private boolean isLandingSitesOpen;
-    private JToolBar toolBar;
+    private boolean isLandingSitesOpen = false;
+    private boolean isPlacemarksOpen = false;
 
     public CMSToolBar(CelestialMapper frame)
     {
@@ -57,6 +59,7 @@ public class CMSToolBar
         buttons.add(new JButton("Profiler"));
         buttons.add(new JButton("Sight Lines"));
         buttons.add(new JButton("Landing Sites"));
+        buttons.add(new JButton("Placemarks"));
 
         try
         {
@@ -135,11 +138,29 @@ public class CMSToolBar
             {
                 setButtonIcon("cms-data/icons/icons8-head-profile-48.png", button);
                 button.addActionListener(e -> showLineOfSight());
+
             } else if (button.getText().equals("Landing Sites"))
             {
                 setButtonIcon("cms-data/icons/icons8-launchpad-48.png", button);
                 button.addActionListener(e -> showLandingSites());
+            } else if (button.getText().equals("Placemarks"))
+            {
+                setButtonIcon("cms-data/icons/icons8-place-marker-48.png", button);
+                button.addActionListener(e -> showPlacemarks());
             }
+        }
+    }
+
+    private void showPlacemarks()
+    {
+        this.isPlacemarksOpen = !isPlacemarksOpen;
+        if(isPlacemarksOpen){
+            if(frame.getPointPlacemarkDialog() == null){
+                frame.setPointPlacemarkDialog(new PointPlacemarkDialog(frame.getWwd(), frame));
+            }
+            frame.getPointPlacemarkDialog().setVisible(true);
+        } else {
+            frame.getPointPlacemarkDialog().setVisible(false);
         }
     }
 

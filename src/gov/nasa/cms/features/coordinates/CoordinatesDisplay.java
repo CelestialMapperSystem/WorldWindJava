@@ -140,7 +140,7 @@ public class CoordinatesDisplay
         attrs.setAdjustWidthToText(AVKey.SIZE_FIXED);
 //        attrs.setDrawOffset(new Point(-width * 2, -height));
 //        attrs.setDrawOffset(new Point(-width / 2, -height - 140));
-        attrs.setDrawOffset(new Point(-width -665, -height - 140));
+        attrs.setDrawOffset(new Point(-width/2 + 90, -height - 225));
 //        attrs.setDrawOffset(new Point(-width / 2, -height - 20));
 //        attrs.setDrawOffset(null);
 

@@ -481,6 +481,7 @@ public class CMSPointPlacemarkPanel extends JPanel
             pointPlacemarkArrayList.add(pm);
 
             // Then extract the properties of the placemark as strings for display in the table
+            // TODO - Capture elevation on the surface vs the relative elevation above the surface
             Position currentPosition = pm.getPosition();
 
             var id = String.valueOf(++idCount);

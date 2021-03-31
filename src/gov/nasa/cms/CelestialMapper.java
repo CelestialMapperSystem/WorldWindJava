@@ -17,7 +17,7 @@ import gov.nasa.cms.features.MeasureDialog;
 import gov.nasa.cms.features.MoonElevationModel;
 import gov.nasa.cms.features.WMSLayerManager;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
-import gov.nasa.cms.features.placemarks.PointPlacemarkDialog;
+import gov.nasa.cms.features.placemarks.*;
 import gov.nasa.cms.layers.WorldMapLayer;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.*;
@@ -85,6 +85,7 @@ public class CelestialMapper extends AppFrame
     private CoordinatesDisplay coordDisplay;
     private CMSWWOUnitsFormat unitsFormat;
     private PointPlacemarkDialog pointPlacemarkDialog;
+    private SearchPlacenamesDialog searchPlacenamesDialog;
 
     public void restart()
     {
@@ -121,8 +122,9 @@ public class CelestialMapper extends AppFrame
         // Display the ScreenImage CMS logo as a RenderableLayer
         this.renderLogo();
 
-       this.pointPlacemarkDialog = new PointPlacemarkDialog(this.getWwd(), this);
-       this.pointPlacemarkDialog.setVisible(true);
+        this.searchPlacenamesDialog = new SearchPlacenamesDialog(this.getWwd(), this);
+        this.searchPlacenamesDialog.setVisible(true);
+
 
         // TODO - Decide whether to use pack or not, to accommodate the space that the cmsToolBar overlaps WorldWindow.
         // this.pack();
@@ -616,17 +618,10 @@ public class CelestialMapper extends AppFrame
         // Which the layertree needs later to label the checkbox
         this.wml.setName("Mini Map");
         this.wml.setIconFilePath("cms-data/icons/lunar_minimap_ldem_3_8bit.jpg");
-//        System.out.println(this.wml.getName());
         this.wml.setResizeBehavior(AVKey.RESIZE_STRETCH);
 
         // set location of minimap
-        // Use these two lines if pairing with logo in top left.
-//        this.wml.setPosition(AVKey.NORTHWEST);
-//        this.wml.setLocationOffset(new Vec4(0,-30));
-
-        //
         this.wml.setPosition(AVKey.NORTHEAST);
-//        this.wml.setLocationOffset(new Vec4(0,-30));
 
         // enable globe navigation by clicking the minimap
         this.getWwd().addSelectListener(new ClickAndGoSelectListener(this.getWwd(), WorldMapLayer.class));
@@ -660,4 +655,24 @@ public class CelestialMapper extends AppFrame
         this.coordDisplay = coordinatesDisplay;
     }
 
+
+    public void setPointPlacemarkDialog(PointPlacemarkDialog pointPlacemarkDialog)
+    {
+        this.pointPlacemarkDialog = pointPlacemarkDialog;
+    }
+
+    public PointPlacemarkDialog getPointPlacemarkDialog()
+    {
+        return pointPlacemarkDialog;
+    }
+
+    public SearchPlacenamesDialog getSearchPlacenamesDialog()
+    {
+        return searchPlacenamesDialog;
+    }
+
+    public void setSearchPlacenamesDialog(SearchPlacenamesDialog searchPlacenamesDialog)
+    {
+        this.searchPlacenamesDialog = searchPlacenamesDialog;
+    }
 }
