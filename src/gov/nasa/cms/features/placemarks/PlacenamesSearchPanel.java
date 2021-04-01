@@ -7,12 +7,15 @@
 package gov.nasa.cms.features.placemarks;
 
 import gov.nasa.cms.CelestialMapper;
+import gov.nasa.cms.util.TableColumnManager;
 import gov.nasa.worldwind.WorldWindow;
 
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.math.RoundingMode;
+import java.text.*;
 import java.util.ArrayList;
 
 /**
@@ -38,24 +41,46 @@ public class PlacenamesSearchPanel extends JPanel
         this.cms = celestialMapper;
         this.placemarkSearchData = new PlacemarkSearchData(wwd,cms);
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setOpaque(false);
-        this.makePanel(mainPanel);
+        this.makePanel();
     }
 
-    private void makePanel(JPanel mainPanel)
+    private void makePanel()
     {
         jtf = new JTextField(15);
         searchLbl = new JLabel("Search");
 
+        JPanel searchField = new JPanel(new GridLayout(1, 2, 5, 5));
+        searchField.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        searchField.add(searchLbl);
+        searchField.add(jtf);
+
         String[] columnNames = placemarkSearchData.getHeaders();
 
         // The 0 argument is number rows.
-        model = new DefaultTableModel(columnNames,0);
+        model = new DefaultTableModel(columnNames,0){
+            @Override
+            public void setValueAt(Object inValue, int inRow, int inCol) {
+//                System.out.println("Gets called ");
+                fireTableCellUpdated(inRow, inCol);
+            }
+        };
         sorter = new TableRowSorter<>(model);
-        table = new JTable(model);
+        table = new JTable(model){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return true;
+            };
+
+
+        };
         table.setRowSorter(sorter);
-        this.setLayout(new FlowLayout(FlowLayout.CENTER));
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+        int height = (int) (Toolkit.getDefaultToolkit().getScreenSize().getHeight()/2);
+        int width = (int) (Toolkit.getDefaultToolkit().getScreenSize().getWidth()/2);
+        table.setPreferredScrollableViewportSize(new Dimension(width,height));
+        TableColumnManager tcm = new TableColumnManager(table);
+        this.setLayout(new BorderLayout());
 
 
         placemarkSearchData.getRowList().forEach( o -> {
@@ -86,11 +111,11 @@ public class PlacenamesSearchPanel extends JPanel
         });
 
         jsp = new JScrollPane(table);
-        this.add(searchLbl);
-        this.add(jtf);
-        this.add(jsp);
 
-        setSize(475, 300);
+        this.add(searchField, BorderLayout.NORTH);
+        this.add(jsp, BorderLayout.CENTER);
+
+//        setSize(475, 300);
         setVisible(true);
     }
 }

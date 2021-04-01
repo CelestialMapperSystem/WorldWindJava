@@ -99,10 +99,10 @@ public class CMSPointPlacemarkPanel extends JPanel
         
         JPanel mainPanel = new JPanel();
         mainPanel.setOpaque(false);
-        this.makePanel(mainPanel);     
+        this.makePanel();
     }
 
-    private void makePanel(JPanel panel)
+    private void makePanel()
     {
         placemark = new PointPlacemark(Position.fromDegrees(0, 0, 1e4));
         layer = new RenderableLayer();

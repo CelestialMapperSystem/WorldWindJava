@@ -137,6 +137,8 @@ public class PlacemarkSearchData
                     // It will be easier to extract the data for each row of the table as a list
                     // instead of an unordered hashmap
                     ArrayList row = new ArrayList(Arrays.asList(line));
+
+                    // TODO - make the category / Filename the first column and possibly a row integer
                     row.add(filename);
                     rowList.add(row);
 

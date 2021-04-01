@@ -299,7 +299,6 @@ public class CelestialMapper extends AppFrame
                     Configuration.setValue(AVKey.GLOBE_CLASS_NAME, "gov.nasa.worldwind.globes.Moon");
                 }
                 restart();
-
             });
             view.add(flatGlobe);    
             
