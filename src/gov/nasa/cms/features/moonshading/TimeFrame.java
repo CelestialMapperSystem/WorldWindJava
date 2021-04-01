@@ -227,7 +227,7 @@ public class TimeFrame extends JDialog
         for (int i = 0; i < x; i++)
         {
             String day = Integer.toString(i);
-            labels[i] = new JLabel(day);
+            labels[i] = new JLabel(day);            
         }
         return labels;
     }
@@ -235,8 +235,8 @@ public class TimeFrame extends JDialog
     //creates list of hour labels
     private JLabel[] createHourLabels()
     {
-        JLabel[] labels = new JLabel[24];
-        for (int i = 0; i < 24; i++)
+        JLabel[] labels = new JLabel[25];
+        for (int i = 1; i < 25; i++)
         {
             String hour = Integer.toString(i) + ":00";
             labels[i] = new JLabel(hour);
@@ -396,14 +396,14 @@ public class TimeFrame extends JDialog
         // If start - end is less than a week, change time frame to show hours
         if (diffInMillies < 6.048e+8)
         {
-           // timeFrameSlider = new JSlider(0, 23, 0);
-            timeFrameSlider.setMinimum(0);
-            timeFrameSlider.setMaximum(23);
+            timeFrameSlider.setMinimum(1);
+            timeFrameSlider.setMaximum(24);
             timeFrameSlider.setPaintTicks(true);
             timeFrameSlider.setPaintLabels(true);
             timeFrameSlider.setMajorTickSpacing(1);
-            table = new Hashtable<Integer, JLabel>();
-            for (int x = 0; x < 24; x++)
+            table = new Hashtable<Integer, JLabel>();           
+        
+            for (int x = 1; x < 25; x++)
             {
                 hourLabels[x].setText(x+":00");
                 hourLabels[x].setForeground(Color.WHITE);
@@ -470,23 +470,24 @@ public class TimeFrame extends JDialog
         //if we need time frame to represent months
         if (diffInMillies >= 2.628e+9)
         {
-            timeFrameSlider = new JSlider(0, 11, 0);
+            //timeFrameSlider.setMinimum(1);
+            //timeFrameSlider.setMaximum(12);
             timeFrameSlider.setPaintTicks(true);
             timeFrameSlider.setPaintLabels(true);
             timeFrameSlider.setMajorTickSpacing(1);
             table = new Hashtable<Integer, JLabel>();
-            table.put(0, jan);
-            table.put(1, feb);
-            table.put(2, mar);
-            table.put(3, apr);
-            table.put(4, may);
-            table.put(5, jun);
-            table.put(6, jul);
-            table.put(7, aug);
-            table.put(8, sep);
-            table.put(9, oct);
-            table.put(10, nov);
-            table.put(11, dec);
+            table.put(1, jan);
+            table.put(2, feb);
+            table.put(3, mar);
+            table.put(4, apr);
+            table.put(5, may);
+            table.put(6, jun);
+            table.put(7, jul);
+            table.put(8, aug);
+            table.put(9, sep);
+            table.put(10, oct);
+            table.put(11, nov);
+            table.put(12, dec);
             timeFrameSlider.setLabelTable(table);
         }
 
