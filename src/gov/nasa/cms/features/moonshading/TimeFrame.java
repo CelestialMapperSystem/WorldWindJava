@@ -227,7 +227,7 @@ public class TimeFrame extends JDialog
         for (int i = 0; i < x; i++)
         {
             String day = Integer.toString(i);
-            labels[i] = new JLabel(day);            
+            labels[i] = new JLabel(day);
         }
         return labels;
     }
@@ -240,7 +240,6 @@ public class TimeFrame extends JDialog
         {
             String hour = Integer.toString(i) + ":00";
             labels[i] = new JLabel(hour);
-            
         }
         return labels;
     }
@@ -273,6 +272,7 @@ public class TimeFrame extends JDialog
                 int num = 0;//humber of days/hours/months to update by
                 int value = 0;//current day,month,hour 
 
+                //changeSlider();//updates the slider to relfect start and end date inputted
                 // While the end date/time is after the calendar date/time
                 while (endDate.after(dateTimeDialog.getCalendar().getTime()))
                 {
@@ -309,8 +309,7 @@ public class TimeFrame extends JDialog
                             currentMonth = currentMonth % 12; //wraps the month around
                             value = currentMonth;
                         }
-                          changeSlider();//updates the slider to relfect start and end date inputted
-
+                        changeSlider();
                         timeFrameSlider.setValue(value);//sets value to be month,day, or hour
                         dateTimeDialog.getCalendar().add(shadingInterval, num); // Increment calendar by month,day,or hour
                         startDate.setTime(cal.getTimeInMillis()); // Set the start time to the new calendar time
@@ -331,8 +330,6 @@ public class TimeFrame extends JDialog
 
                         Thread.sleep(durationTime * 1000); //animation speed
                         wwd.redraw();
-//                        currentMonth++;
-//                        currentMonth=currentMonth%12;
                     } catch (InterruptedException ignore)
                     {
                     }
@@ -396,17 +393,17 @@ public class TimeFrame extends JDialog
         // If start - end is less than a week, change time frame to show hours
         if (diffInMillies < 6.048e+8)
         {
+           // timeFrameSlider = new JSlider(0, 23, 0);
             timeFrameSlider.setMinimum(1);
             timeFrameSlider.setMaximum(24);
             timeFrameSlider.setPaintTicks(true);
             timeFrameSlider.setPaintLabels(true);
             timeFrameSlider.setMajorTickSpacing(1);
-            table = new Hashtable<Integer, JLabel>();           
-        
+            table = new Hashtable<Integer, JLabel>();
             for (int x = 1; x < 25; x++)
             {
-                hourLabels[x].setText(x+":00");
                 hourLabels[x].setForeground(Color.WHITE);
+                hourLabels[x].setText(x + ":00");
                 table.put(x, hourLabels[x]);
             }
             timeFrameSlider.setLabelTable(table);
@@ -443,7 +440,6 @@ public class TimeFrame extends JDialog
                 for (int x = 0; x < 29; x++)
                 {
                     dayLabels[x].setForeground(Color.WHITE);
-                    System.out.println(dayLabels[x]);
                     table.put(x, dayLabels[x]);
                 }
                 timeFrameSlider.setLabelTable(table);
@@ -470,24 +466,23 @@ public class TimeFrame extends JDialog
         //if we need time frame to represent months
         if (diffInMillies >= 2.628e+9)
         {
-            //timeFrameSlider.setMinimum(1);
-            //timeFrameSlider.setMaximum(12);
+            //timeFrameSlider = new JSlider(0, 11, 0);
             timeFrameSlider.setPaintTicks(true);
             timeFrameSlider.setPaintLabels(true);
             timeFrameSlider.setMajorTickSpacing(1);
             table = new Hashtable<Integer, JLabel>();
-            table.put(1, jan);
-            table.put(2, feb);
-            table.put(3, mar);
-            table.put(4, apr);
-            table.put(5, may);
-            table.put(6, jun);
-            table.put(7, jul);
-            table.put(8, aug);
-            table.put(9, sep);
-            table.put(10, oct);
-            table.put(11, nov);
-            table.put(12, dec);
+            table.put(0, jan);
+            table.put(1, feb);
+            table.put(2, mar);
+            table.put(3, apr);
+            table.put(4, may);
+            table.put(5, jun);
+            table.put(6, jul);
+            table.put(7, aug);
+            table.put(8, sep);
+            table.put(9, oct);
+            table.put(10, nov);
+            table.put(11, dec);
             timeFrameSlider.setLabelTable(table);
         }
 

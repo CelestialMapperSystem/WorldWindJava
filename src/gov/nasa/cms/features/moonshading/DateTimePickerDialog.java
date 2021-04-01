@@ -65,6 +65,7 @@ public class DateTimePickerDialog extends JDialog
         jLabel3 = new JLabel();
         animationSpeedSlider = new JSlider();
         applyChangesButton = new JButton();
+        animationDuration = 2; // Default 
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setLocation(new java.awt.Point(645, 180));
@@ -199,12 +200,10 @@ public class DateTimePickerDialog extends JDialog
         calendar.setTime(startDate);
         return position;
     }
+    
     public int getDuration(){
         return this.animationDuration;
     }
-    
-    
-
 }
 
 
