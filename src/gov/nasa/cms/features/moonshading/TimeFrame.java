@@ -94,7 +94,7 @@ public class TimeFrame extends JDialog
         //======== Dialog ========  
         this.setBackground(new Color(51, 51, 51));
         Rectangle bounds = component.getBounds();
-        this.setLocation(bounds.x + 140, bounds.y + 700);
+        this.setLocation(bounds.x + 40, bounds.y + 700);
         this.setAlwaysOnTop(true);
         this.setUndecorated(true);
         this.setOpacity((float) .70);
@@ -108,7 +108,7 @@ public class TimeFrame extends JDialog
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.ipadx = 611;
+        gridBagConstraints.ipadx = 811;
         gridBagConstraints.ipady = 16;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new Insets(6, 1, 22, 0);
@@ -153,11 +153,8 @@ public class TimeFrame extends JDialog
                 {
                     startDate = dateTimeDialog.getStartDate();
                     endDate = dateTimeDialog.getEndDate();
-                    String startLabel = startDate.toString();
-                    startDateTime.setText(startLabel);
-
-                    String endLabel = endDate.toString();
-                    endDateTime.setText(endLabel);
+                    
+                    setTimeFormat();
 
                     dateTimeDialog.setVisible(false);
                     playPauseButton.setIcon(new ImageIcon("cms-data/icons/pause-icon.png"));
@@ -235,8 +232,8 @@ public class TimeFrame extends JDialog
     //creates list of hour labels
     private JLabel[] createHourLabels()
     {
-        JLabel[] labels = new JLabel[25];
-        for (int i = 1; i < 25; i++)
+        JLabel[] labels = new JLabel[24];
+        for (int i = 0; i < 24; i++)
         {
             String hour = Integer.toString(i) + ":00";
             labels[i] = new JLabel(hour);
@@ -315,10 +312,8 @@ public class TimeFrame extends JDialog
                         dateTimeDialog.getCalendar().add(shadingInterval, num); // Increment calendar by month,day,or hour
                         startDate.setTime(cal.getTimeInMillis()); // Set the start time to the new calendar time
 
-                        // Update the current date 
-                        currentDate = startDate;
-                        String currentLabel = currentDate.toString();
-                        currentDateTime.setText(currentLabel);
+                        setTimeFormat();
+                        
 
                         dateTimeDialog.updatePosition(); // Update the position from DateTimePickerDialog
                         LatLon sunPos = dateTimeDialog.getPosition();  // Get the new LatLon sun position
@@ -390,23 +385,30 @@ public class TimeFrame extends JDialog
         JLabel[] dayLabels = this.createDayLabels(31);//array of day labels
         Hashtable<Integer, JLabel> table = new Hashtable<Integer, JLabel>();//table for JLabels
 
-        
         // If start - end is less than a week, change time frame to show hours
         if (diffInMillies < 6.048e+8)
         {
-           // timeFrameSlider = new JSlider(0, 23, 0);
-            timeFrameSlider.setMinimum(1);
-            timeFrameSlider.setMaximum(24);
+            timeFrameSlider.setMinimum(0);
+            timeFrameSlider.setMaximum(23);
             timeFrameSlider.setPaintTicks(true);
             timeFrameSlider.setPaintLabels(true);
             timeFrameSlider.setMajorTickSpacing(1);
             table = new Hashtable<Integer, JLabel>();
-            for (int x = 1; x < 25; x++)
+
+            if (dateTimeDialog.getMilitaryButton().isSelected())
             {
-                hourLabels[x].setForeground(Color.WHITE);
-                hourLabels[x].setText(x + ":00");
-                table.put(x, hourLabels[x]);
+                for (int x = 0; x < 24; x++) // Display Military time
+                {
+                    hourLabels[x].setForeground(Color.WHITE);
+                    hourLabels[x].setText(x + ":00");
+                    table.put(x, hourLabels[x]);
+                }
             }
+            else // Display Universal time
+            {
+                
+            }
+
             timeFrameSlider.setLabelTable(table);
         }
         
@@ -487,5 +489,27 @@ public class TimeFrame extends JDialog
             timeFrameSlider.setLabelTable(table);
         }
 
+    }
+    
+    // Sets the start, end, and current labels to either universal or military time 
+    private void setTimeFormat()
+    {
+        if(dateTimeDialog.getUniversalButton().isSelected())
+        {
+            
+        }
+        else // Military time
+        {
+            String startLabel = startDate.toString();                 
+            startDateTime.setText(startLabel);
+
+            String endLabel = endDate.toString();
+            endDateTime.setText(endLabel);
+            
+            // Update the current date 
+            currentDate = startDate;
+            String currentLabel = currentDate.toString();
+            currentDateTime.setText(currentLabel);
+        }
     }
 }

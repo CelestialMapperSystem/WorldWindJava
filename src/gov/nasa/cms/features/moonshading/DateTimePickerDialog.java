@@ -15,6 +15,8 @@ import java.awt.Insets;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import javax.swing.AbstractButton;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -42,6 +44,8 @@ public class DateTimePickerDialog extends JDialog
     private JLabel jLabel2;
     private JLabel jLabel3;
     private JSpinner startDateTime;
+    private JRadioButton militaryTime;
+    private JRadioButton universalTime;
     private Calendar calendar;
     private Date startDate;
     private Date endDate;
@@ -54,7 +58,7 @@ public class DateTimePickerDialog extends JDialog
 
     public DateTimePickerDialog(WorldWindow wwdObject, Component component)
     {
-        this.setSize(400, 180);
+        this.setSize(400, 250);
         this.setTitle("Date/Time Picker");
         this.setAlwaysOnTop(true);
         GridBagConstraints gridBagConstraints;
@@ -65,6 +69,8 @@ public class DateTimePickerDialog extends JDialog
         jLabel3 = new JLabel();
         animationSpeedSlider = new JSlider();
         applyChangesButton = new JButton();
+        militaryTime = new JRadioButton("Military Time");
+        universalTime = new JRadioButton("Universal Time");
         animationDuration = 2; // Default 
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -145,7 +151,7 @@ public class DateTimePickerDialog extends JDialog
         jLabel3.setText("Animation Speed: ");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(18, 6, 0, 0);
@@ -156,7 +162,7 @@ public class DateTimePickerDialog extends JDialog
         animationSpeedSlider.setPaintLabels(true);
         animationSpeedSlider.setMajorTickSpacing(1);
         // Action listener for the animation speed
-       animationSpeedSlider.addChangeListener(new javax.swing.event.ChangeListener()
+        animationSpeedSlider.addChangeListener(new javax.swing.event.ChangeListener()
         {
             public void stateChanged(javax.swing.event.ChangeEvent evt)
             {
@@ -166,13 +172,46 @@ public class DateTimePickerDialog extends JDialog
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.ipadx = 164;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(18, 18, 0, 6);
         getContentPane().add(animationSpeedSlider, gridBagConstraints);
+        
+         //======== Universal Time ========  
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(18, 6, 0, 0);
+        getContentPane().add(universalTime, gridBagConstraints);
+        
+         //======== Military Time ========  
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(18, 6, 0, 0);
+        getContentPane().add(militaryTime, gridBagConstraints);
+        
+        // Put in a button group so user can only enable one at a time
+        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(universalTime);
+        buttonGroup.add(militaryTime);
 
+    }
+    
+    public JRadioButton getMilitaryButton()
+    {
+        return militaryTime;
+    }
+    
+    public JRadioButton getUniversalButton()
+    {
+        return universalTime;
     }
     
     public Date getStartDate()
