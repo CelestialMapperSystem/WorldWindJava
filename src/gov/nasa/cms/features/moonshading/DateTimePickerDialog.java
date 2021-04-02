@@ -201,6 +201,7 @@ public class DateTimePickerDialog extends JDialog
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(universalTime);
         buttonGroup.add(militaryTime);
+        militaryTime.setSelected(true);
 
     }
     

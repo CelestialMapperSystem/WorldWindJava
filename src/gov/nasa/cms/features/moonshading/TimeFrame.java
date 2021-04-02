@@ -19,12 +19,15 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.TimeZone;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -40,7 +43,7 @@ import javax.swing.WindowConstants;
 public class TimeFrame extends JDialog
 {
 
-    private JSlider timeFrameSlider;
+    private JSlider timeFrameSlider = new JSlider();
     private JButton settingsButton;
     private JButton playPauseButton;
     private JLabel startDateTime;
@@ -76,7 +79,7 @@ public class TimeFrame extends JDialog
     {
 
         dateTimeDialog = new DateTimePickerDialog(wwd, component);
-        this.initSlider(); // Initialize the slider with months in white text
+        this.initMonthSlider(); // Initialize the slider with months in white text
         this.wwd = wwd;
         sun = panel.getSun();
         light = panel.getLight();
@@ -154,7 +157,7 @@ public class TimeFrame extends JDialog
                     startDate = dateTimeDialog.getStartDate();
                     endDate = dateTimeDialog.getEndDate();
                     
-                    setTimeFormat();
+                    setStartEndTime();
 
                     dateTimeDialog.setVisible(false);
                     playPauseButton.setIcon(new ImageIcon("cms-data/icons/pause-icon.png"));
@@ -229,18 +232,6 @@ public class TimeFrame extends JDialog
         return labels;
     }
 
-    //creates list of hour labels
-    private JLabel[] createHourLabels()
-    {
-        JLabel[] labels = new JLabel[24];
-        for (int i = 0; i < 24; i++)
-        {
-            String hour = Integer.toString(i) + ":00";
-            labels[i] = new JLabel(hour);
-        }
-        return labels;
-    }
-
     protected void startDynamicShading()
     {
         startDate = dateTimeDialog.getStartDate(); // Get the start date
@@ -272,10 +263,10 @@ public class TimeFrame extends JDialog
                 //changeSlider();//updates the slider to relfect start and end date inputted
                 // While the end date/time is after the calendar date/time
                 while (endDate.after(dateTimeDialog.getCalendar().getTime()))
-                {
-
+                {                   
                     try
                     {
+                        changeSlider();
                         if (!isPlaySelected)
                         {
                             break;
@@ -288,6 +279,7 @@ public class TimeFrame extends JDialog
                             currentHour++;
                             value = currentHour; // Shading happens once before going into this function
                             timeFrameSlider.setValue(value);
+                            wwd.redraw();
 
                         } //if the difference is less than a month
                         else if (diffInMillies < 2.628e+9)
@@ -306,15 +298,18 @@ public class TimeFrame extends JDialog
                             currentMonth++;
                             value = currentMonth;
                             timeFrameSlider.setValue(value);
+                            if(currentMonth == 12)
+                            {
+                                currentMonth = 0;
+                            }
                         }
                         changeSlider();
                         
                         dateTimeDialog.getCalendar().add(shadingInterval, num); // Increment calendar by month,day,or hour
                         startDate.setTime(cal.getTimeInMillis()); // Set the start time to the new calendar time
 
-                        setTimeFormat();
+                        changeCurrentTime(); // Make sure to update current time
                         
-
                         dateTimeDialog.updatePosition(); // Update the position from DateTimePickerDialog
                         LatLon sunPos = dateTimeDialog.getPosition();  // Get the new LatLon sun position
                         sun = wwd.getModel().getGlobe().computePointFromPosition(new Position(sunPos, 0)).normalize3(); // Set the sun position from the LatLon                    
@@ -336,44 +331,6 @@ public class TimeFrame extends JDialog
         thread.start();
     }
 
-    protected void initSlider()
-    {
-
-        jan.setForeground(Color.WHITE);
-        feb.setForeground(Color.WHITE);
-        mar.setForeground(Color.WHITE);
-        apr.setForeground(Color.WHITE);
-        may.setForeground(Color.WHITE);
-        jun.setForeground(Color.WHITE);
-        jul.setForeground(Color.WHITE);
-        aug.setForeground(Color.WHITE);
-        sep.setForeground(Color.WHITE);
-        oct.setForeground(Color.WHITE);
-        nov.setForeground(Color.WHITE);
-        dec.setForeground(Color.WHITE);
-
-        Hashtable<Integer, JLabel> table = new Hashtable<Integer, JLabel>();//table for JLabels
-        timeFrameSlider = new JSlider(1, 12, 1);
-        timeFrameSlider.setPaintTicks(true);
-        timeFrameSlider.setPaintLabels(true);
-        timeFrameSlider.setMajorTickSpacing(1);
-        table = new Hashtable<Integer, JLabel>();
-        table.put(1, jan);
-        table.put(2, feb);
-        table.put(3, mar);
-        table.put(4, apr);
-        table.put(5, may);
-        table.put(6, jun);
-        table.put(7, jul);
-        table.put(8, aug);
-        table.put(9, sep);
-        table.put(10, oct);
-        table.put(11, nov);
-        table.put(12, dec);
-        timeFrameSlider.setLabelTable(table);
-
-    }
-
     protected void changeSlider()
     {
         startDate = dateTimeDialog.getStartDate(); // Get the start date
@@ -381,35 +338,36 @@ public class TimeFrame extends JDialog
         long diffInMillies = Math.abs(endDate.getTime() - startDate.getTime());//difference between start and end date in milliseconds
         LocalDate localDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(); //start date
         int month = localDate.getMonthValue(); //month value from start date
-        JLabel[] hourLabels = this.createHourLabels(); //array of hour labels
         JLabel[] dayLabels = this.createDayLabels(31);//array of day labels
+        JLabel[] hourLabels = new JLabel[25];
         Hashtable<Integer, JLabel> table = new Hashtable<Integer, JLabel>();//table for JLabels
 
         // If start - end is less than a week, change time frame to show hours
         if (diffInMillies < 6.048e+8)
         {
-            timeFrameSlider.setMinimum(0);
-            timeFrameSlider.setMaximum(23);
             timeFrameSlider.setPaintTicks(true);
             timeFrameSlider.setPaintLabels(true);
             timeFrameSlider.setMajorTickSpacing(1);
             table = new Hashtable<Integer, JLabel>();
 
             if (dateTimeDialog.getMilitaryButton().isSelected())
-            {
+            {        
+                timeFrameSlider.setMinimum(0);
+                timeFrameSlider.setMaximum(23);                
                 for (int x = 0; x < 24; x++) // Display Military time
                 {
+                    hourLabels[x] = new JLabel();
+                    
                     hourLabels[x].setForeground(Color.WHITE);
                     hourLabels[x].setText(x + ":00");
                     table.put(x, hourLabels[x]);
+                    timeFrameSlider.setLabelTable(table);
                 }
             }
             else // Display Universal time
-            {
-                
-            }
-
-            timeFrameSlider.setLabelTable(table);
+            {           
+                initHourSlider();
+            }         
         }
         
         // If start - end is less than a month, represent hours
@@ -491,11 +449,15 @@ public class TimeFrame extends JDialog
 
     }
     
-    // Sets the start, end, and current labels to either universal or military time 
-    private void setTimeFormat()
-    {
+    // Sets the start and end date/time to either military or universal
+    private void setStartEndTime()
+    {                  
         if(dateTimeDialog.getUniversalButton().isSelected())
         {
+            DateFormat df = new SimpleDateFormat("yyyy/MM/dd hh:mm aa");
+            
+            startDateTime.setText(df.format(startDate));          
+            endDateTime.setText(df.format(endDate));
             
         }
         else // Military time
@@ -505,11 +467,105 @@ public class TimeFrame extends JDialog
 
             String endLabel = endDate.toString();
             endDateTime.setText(endLabel);
+        }
+    }
+    // Modifies the current date/time to change with the shading animation to either military or universal
+    private void changeCurrentTime()
+    {
+        if(dateTimeDialog.getUniversalButton().isSelected())
+        {
+            DateFormat df = new SimpleDateFormat("yyyy/MM/dd hh:mm aa");
             
-            // Update the current date 
+            currentDate = startDate;
+            currentDateTime.setText(df.format(currentDate));
+            
+        }
+        else // Military time
+        {
             currentDate = startDate;
             String currentLabel = currentDate.toString();
             currentDateTime.setText(currentLabel);
         }
+    }
+    
+    private void initHourSlider()
+    {
+        JLabel[] labels = new JLabel[25];
+        labels[1] = new JLabel("12:00");
+        labels[2] = new JLabel("1:00");
+        labels[3] = new JLabel("2:00");
+        labels[4] = new JLabel("3:00");
+        labels[5] = new JLabel("4:00");
+        labels[6] = new JLabel("5:00");
+        labels[7]= new JLabel("6:00");
+        labels[8] = new JLabel("7:00");
+        labels[9] = new JLabel("8:00");
+        labels[10] = new JLabel("9:00");
+        labels[11] = new JLabel("10:00");
+        labels[12] = new JLabel("11:00");
+        labels[13] = new JLabel("12:00");
+        labels[14] = new JLabel("1:00");
+        labels[15] = new JLabel("2:00");
+        labels[16] = new JLabel("3:00");
+        labels[17] = new JLabel("4:00");
+        labels[18] = new JLabel("5:00");
+        labels[19] = new JLabel("6:00");
+        labels[20] = new JLabel("7:00");
+        labels[21] = new JLabel("8:00");
+        labels[22] = new JLabel("9:00");
+        labels[23] = new JLabel("10:00");
+        labels[24] = new JLabel("11:00");
+        
+        Hashtable<Integer, JLabel> table = new Hashtable<Integer, JLabel>();//table for JLabels
+        timeFrameSlider.setPaintTicks(true);
+        timeFrameSlider.setPaintLabels(true);
+        timeFrameSlider.setMajorTickSpacing(1);
+        timeFrameSlider.setMinimum(1);
+        timeFrameSlider.setMaximum(24);
+        
+        for(int i = 1; i <= 24; i++)
+        {
+            table.put(i, labels[i]);
+            labels[i].setForeground(Color.WHITE);
+        }
+        timeFrameSlider.setLabelTable(table);
+        
+    }
+    protected void initMonthSlider()
+    {
+        jan.setForeground(Color.WHITE);
+        feb.setForeground(Color.WHITE);
+        mar.setForeground(Color.WHITE);
+        apr.setForeground(Color.WHITE);
+        may.setForeground(Color.WHITE);
+        jun.setForeground(Color.WHITE);
+        jul.setForeground(Color.WHITE);
+        aug.setForeground(Color.WHITE);
+        sep.setForeground(Color.WHITE);
+        oct.setForeground(Color.WHITE);
+        nov.setForeground(Color.WHITE);
+        dec.setForeground(Color.WHITE);
+
+        Hashtable<Integer, JLabel> table = new Hashtable<Integer, JLabel>();//table for JLabels
+        timeFrameSlider.setMinimum(1);
+        timeFrameSlider.setMaximum(12);
+        timeFrameSlider.setPaintTicks(true);
+        timeFrameSlider.setPaintLabels(true);
+        timeFrameSlider.setMajorTickSpacing(1);
+        table = new Hashtable<Integer, JLabel>();
+        table.put(1, jan);
+        table.put(2, feb);
+        table.put(3, mar);
+        table.put(4, apr);
+        table.put(5, may);
+        table.put(6, jun);
+        table.put(7, jul);
+        table.put(8, aug);
+        table.put(9, sep);
+        table.put(10, oct);
+        table.put(11, nov);
+        table.put(12, dec);
+        timeFrameSlider.setLabelTable(table);
+
     }
 }
