@@ -365,7 +365,7 @@ public class CMSPointPlacemarkPanel extends JPanel
             attrs.setLineWidth(2d);
             attrs.setScale(scale);
 
-            System.out.println(attrs.getScale());
+//            System.out.println(attrs.getScale());
 
             placemark.setAttributes(attrs);
 
