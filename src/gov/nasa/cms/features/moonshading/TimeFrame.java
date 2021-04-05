@@ -260,13 +260,13 @@ public class TimeFrame extends JDialog
                 int num = 0;//humber of days/hours/months to update by
                 int value = 0;//current day,month,hour 
 
-                //changeSlider();//updates the slider to relfect start and end date inputted
+               changeSlider();//updates the slider to relfect start and end date inputted
                 // While the end date/time is after the calendar date/time
                 while (endDate.after(dateTimeDialog.getCalendar().getTime()))
                 {                   
                     try
                     {
-                        changeSlider();
+                        //changeSlider();
                         if (!isPlaySelected)
                         {
                             break;
@@ -303,7 +303,7 @@ public class TimeFrame extends JDialog
                                 currentMonth = 0;
                             }
                         }
-                        changeSlider();
+                        //changeSlider();
                         
                         dateTimeDialog.getCalendar().add(shadingInterval, num); // Increment calendar by month,day,or hour
                         startDate.setTime(cal.getTimeInMillis()); // Set the start time to the new calendar time
@@ -370,8 +370,8 @@ public class TimeFrame extends JDialog
             }         
         }
         
-        // If start - end is less than a month, represent hours
-        if (diffInMillies < 2.628e+9)
+        // If start - end is less than a month, represent days
+        if (diffInMillies < 2.628e+9&&diffInMillies>=6.048e+8)
         {
             //time frame from 1-31
             if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12)
