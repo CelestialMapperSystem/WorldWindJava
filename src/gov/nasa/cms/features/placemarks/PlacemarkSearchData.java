@@ -15,11 +15,10 @@ import gov.nasa.worldwind.WorldWindow;
 
 import java.io.*;
 import java.util.*;
-import java.util.stream.*;
 
 public class PlacemarkSearchData
 {
-    private static String [] shapeFiles;
+    private static String [] csvFromPlaceNameShapeFiles;
     CelestialMapper cms;
     WorldWindow wwd;
 
@@ -34,7 +33,7 @@ public class PlacemarkSearchData
         hashMap = new HashMap<>();
         rowList = new ArrayList<>();
 
-        shapeFiles = new String[]{
+        csvFromPlaceNameShapeFiles = new String[]{
             "cms-data/placenames/Oceanus/Oceanus.csv",
             "cms-data/placenames/Mare/Mare.csv",
             "cms-data/placenames/Mons/Mons.csv",
@@ -54,41 +53,14 @@ public class PlacemarkSearchData
             "cms-data/placenames/Satellite/Satellite.csv",
         };
 
-        fillHashMap();
+        fillTableData();
 
     }
 
-    // Here just for testing
-//    public static void main(String[] args)
-//    {
-//        shapeFiles = new String[]{
-//            "cms-data/placenames/Oceanus/Oceanus.csv",
-//            "cms-data/placenames/Mare/Mare.csv",
-//            "cms-data/placenames/Mons/Mons.csv",
-//            "cms-data/placenames/Catena/Catena.csv",
-//            "cms-data/placenames/Vallis/Vallis.csv",
-//            "cms-data/placenames/Crater/Crater.csv",
-//            "cms-data/placenames/Dorsum/Dorsum.csv",
-//            "cms-data/placenames/Lacus/Lacus.csv",
-//            "cms-data/placenames/Sinus/Sinus.csv",
-//            "cms-data/placenames/Rima/Rima.csv",
-//            "cms-data/placenames/Promontorium/Promontorium.csv",
-//            "cms-data/placenames/Palus/Palus.csv",
-//            "cms-data/placenames/Rupes/Rupes.csv",
-//            "cms-data/placenames/Landing Site/LandingSiteName.csv",
-//            "cms-data/placenames/Planitia/Planitia.csv",
-//            "cms-data/placenames/Albedo/Albedo.csv",
-//            "cms-data/placenames/Satellite/Satellite.csv",
-//        };
-//        PlacemarkSearch.hashMap = new HashMap();
-//        PlacemarkSearch.fillHashMap();
-//        hashMap.forEach((o, o2) -> System.out.println(o + ": " + o2));
-//    }
-
-    private static void fillHashMap()
+    private static void fillTableData()
     {
 
-        Arrays.stream(shapeFiles).forEach(s -> {
+        Arrays.stream(csvFromPlaceNameShapeFiles).forEach(s -> {
             String filename = s.substring(s.lastIndexOf("/") +1, s.lastIndexOf("."));
 
             // From this example for handling quoted commas in csv's
@@ -110,8 +82,10 @@ public class PlacemarkSearchData
             try ( BufferedReader in = new BufferedReader(new FileReader(s)))
             {
 
-                System.out.println(filename);
-                String[] headers = in.readLine().split(",");
+//                System.out.println(filename);
+                ArrayList<String> headers = new ArrayList(Arrays.asList(in.readLine().split(",")));
+                headers.add(0, "Category");
+
                 in.lines().forEach(s1 -> {
                     String[] line =  s1.split(regex, -1);
 
@@ -139,11 +113,11 @@ public class PlacemarkSearchData
                     ArrayList row = new ArrayList(Arrays.asList(line));
 
                     // TODO - make the category / Filename the first column and possibly a row integer
-                    row.add(filename);
+                    row.add(0,filename);
                     rowList.add(row);
 
                 });
-                tableHeader = headers;
+                tableHeader = headers.toArray(new String[0]);
             }
             catch (FileNotFoundException e)
             {

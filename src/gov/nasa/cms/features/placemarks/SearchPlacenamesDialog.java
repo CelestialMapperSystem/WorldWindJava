@@ -23,13 +23,14 @@ public class SearchPlacenamesDialog{
     {
         JPanel searchPanel = new PlacenamesSearchPanel(wwd, celestialMapper);
 
-        //dialog.setSize(new Dimension(200, 400));
+
 
         // Create the dialog from a Frame and set the bounds
         dialog = new JDialog(celestialMapper);
         Rectangle bounds = celestialMapper.getBounds();
         dialog.getContentPane().setLayout(new BorderLayout());
         dialog.setTitle("Placename Search");
+//        dialog.setSize(new Dimension(200, 400));
 
         // Set the location and resizable
         dialog.setLocation(bounds.x + 50, bounds.y + 200);

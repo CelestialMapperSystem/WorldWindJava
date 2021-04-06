@@ -420,4 +420,19 @@ public class TableColumnManager
             });
         }
     };
+
+    public List<TableColumn> getAllColumns()
+    {
+        return allColumns;
+    }
+
+    public JTable getTable()
+    {
+        return table;
+    }
+
+    public TableColumnModel getTcm()
+    {
+        return tcm;
+    }
 }
