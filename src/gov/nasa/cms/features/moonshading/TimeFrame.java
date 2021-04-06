@@ -338,13 +338,28 @@ public class TimeFrame extends JDialog
         long diffInMillies = Math.abs(endDate.getTime() - startDate.getTime());//difference between start and end date in milliseconds
         LocalDate localDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(); //start date
         int month = localDate.getMonthValue(); //month value from start date
-        JLabel[] dayLabels = this.createDayLabels(31);//array of day labels
+       // JLabel[] dayLabels = this.createDayLabels(31);//array of day labels
+        JLabel[] dayLabels=new JLabel[31];
         JLabel[] hourLabels = new JLabel[25];
         Hashtable<Integer, JLabel> table = new Hashtable<Integer, JLabel>();//table for JLabels
+        System.out.println(diffInMillies);
+        System.out.println(diffInMillies);
+        System.out.println(diffInMillies);
+        System.out.println(diffInMillies);
+        System.out.println(diffInMillies);
+        
+
+
+                        
 
         // If start - end is less than a week, change time frame to show hours
         if (diffInMillies < 6.048e+8)
         {
+            System.out.println("Helllooooooo");
+            System.out.println("Helllooooooo");
+            System.out.println("Helllooooooo");
+            System.out.println("Helllooooooo");
+            System.out.println("Helllooooooo");
             timeFrameSlider.setPaintTicks(true);
             timeFrameSlider.setPaintLabels(true);
             timeFrameSlider.setMajorTickSpacing(1);
@@ -373,60 +388,79 @@ public class TimeFrame extends JDialog
         // If start - end is less than a month, represent days
         if (diffInMillies < 2.628e+9&&diffInMillies>=6.048e+8)
         {
+
+             
+                        
             //time frame from 1-31
             if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12)
             {
-                dayLabels = this.createDayLabels(31); //day labels   
+                //dayLabels = this.createDayLabels(31); //day labels   
                 // timeFrameSlider = new JSlider(0, 30, 0);
                 timeFrameSlider.setPaintTicks(true);
                 timeFrameSlider.setPaintLabels(true);
                 timeFrameSlider.setMajorTickSpacing(1);
                 table = new Hashtable<Integer, JLabel>();
-                for (int x = 0; x < 30; x++)
+                timeFrameSlider.setMinimum(1);
+                timeFrameSlider.setMaximum(31); 
+                for (int x = 1; x < 32; x++)
                 {
+                    dayLabels[x]=new JLabel();
                     dayLabels[x].setForeground(Color.WHITE);
+                    dayLabels[x].setText(x+"");
                     table.put(x, dayLabels[x]);
+                    timeFrameSlider.setLabelTable(table);
                 }
-                timeFrameSlider.setLabelTable(table);
+                
             }
             //time frame from 1-30
             if (month == 4 || month == 6 || month == 9 || month == 11)
             {
-                dayLabels = this.createDayLabels(30); //day labels   
-                timeFrameSlider = new JSlider(0, 29, 0);
+                //dayLabels = this.createDayLabels(30); //day labels   
+                //timeFrameSlider = new JSlider(0, 31, 0);
                 timeFrameSlider.setPaintTicks(true);
                 timeFrameSlider.setPaintLabels(true);
                 timeFrameSlider.setMajorTickSpacing(1);
                 table = new Hashtable<Integer, JLabel>();
-                for (int x = 0; x < 29; x++)
+                timeFrameSlider.setMinimum(1);
+                timeFrameSlider.setMaximum(30); 
+                for (int x = 1; x < 31; x++)
                 {
+                    dayLabels[x]=new JLabel();
                     dayLabels[x].setForeground(Color.WHITE);
+                    dayLabels[x].setText(x+"");
                     table.put(x, dayLabels[x]);
+                    timeFrameSlider.setLabelTable(table);
                 }
-                timeFrameSlider.setLabelTable(table);
+                
             }
 
             //time frame from 1-28
             if (month == 2)
             {
-                dayLabels = this.createDayLabels(28); //day labels   
-                timeFrameSlider = new JSlider(0, 27, 0);
+                //dayLabels = this.createDayLabels(28); //day labels   
+                //timeFrameSlider = new JSlider(0, 27, 0);
                 timeFrameSlider.setPaintTicks(true);
                 timeFrameSlider.setPaintLabels(true);
                 timeFrameSlider.setMajorTickSpacing(1);
                 table = new Hashtable<Integer, JLabel>();
-                for (int x = 0; x < 27; x++)
+                timeFrameSlider.setMinimum(1);
+                timeFrameSlider.setMaximum(28); 
+                for (int x = 1; x < 29; x++)
                 {
+                    dayLabels[x]=new JLabel();
                     dayLabels[x].setForeground(Color.WHITE);
+                    dayLabels[x].setText(x + "");
                     table.put(x, dayLabels[x]);
+                    timeFrameSlider.setLabelTable(table);
                 }
-                timeFrameSlider.setLabelTable(table);
+                
             }
         }
 
         //if we need time frame to represent months
         if (diffInMillies >= 2.628e+9)
         {
+
             timeFrameSlider.setPaintTicks(true);
             timeFrameSlider.setPaintLabels(true);
             timeFrameSlider.setLabelTable(null);
