@@ -254,7 +254,7 @@ public class TimeFrame extends JDialog
             {
                 int currentMonth = month;
                 int currentDay = day;
-                int currentHour = time;
+                int currentHour = time + 1;
                 //incrementation of shading
                 int shadingInterval;
                 int num = 0;//humber of days/hours/months to update by
@@ -427,11 +427,13 @@ public class TimeFrame extends JDialog
         //if we need time frame to represent months
         if (diffInMillies >= 2.628e+9)
         {
-            //timeFrameSlider = new JSlider(0, 11, 0);
             timeFrameSlider.setPaintTicks(true);
             timeFrameSlider.setPaintLabels(true);
+            timeFrameSlider.setLabelTable(null);
             timeFrameSlider.setMajorTickSpacing(1);
             table = new Hashtable<Integer, JLabel>();
+            timeFrameSlider.setMinimum(1);
+            timeFrameSlider.setMaximum(12);
             table.put(1, jan);
             table.put(2, feb);
             table.put(3, mar);
@@ -469,6 +471,7 @@ public class TimeFrame extends JDialog
             endDateTime.setText(endLabel);
         }
     }
+    
     // Modifies the current date/time to change with the shading animation to either military or universal
     private void changeCurrentTime()
     {
@@ -528,9 +531,9 @@ public class TimeFrame extends JDialog
             table.put(i, labels[i]);
             labels[i].setForeground(Color.WHITE);
         }
-        timeFrameSlider.setLabelTable(table);
-        
+        timeFrameSlider.setLabelTable(table);       
     }
+    
     protected void initMonthSlider()
     {
         jan.setForeground(Color.WHITE);
@@ -549,6 +552,7 @@ public class TimeFrame extends JDialog
         Hashtable<Integer, JLabel> table = new Hashtable<Integer, JLabel>();//table for JLabels
         timeFrameSlider.setMinimum(1);
         timeFrameSlider.setMaximum(12);
+        timeFrameSlider.setLabelTable(null);
         timeFrameSlider.setPaintTicks(true);
         timeFrameSlider.setPaintLabels(true);
         timeFrameSlider.setMajorTickSpacing(1);
