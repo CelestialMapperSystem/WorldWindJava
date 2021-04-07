@@ -10,8 +10,11 @@ import gov.nasa.cms.CelestialMapper;
 import gov.nasa.cms.util.TableColumnManager;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.formats.shapefile.Shapefile;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.layers.*;
+import gov.nasa.worldwind.ogc.kml.KMLConstants;
+import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.util.measure.MeasureTool;
@@ -27,8 +30,7 @@ import java.util.List;
 import java.util.stream.*;
 
 /**
- * @author : gknorman
- * @created : 3/31/2021, Wednesday
+ * @author : gknorman - 3/31/2021
  **/
 public class PlacenamesSearchPanel extends JPanel
 {
@@ -366,46 +368,57 @@ public class PlacenamesSearchPanel extends JPanel
         jsp = new JScrollPane(table);
 
 
-        pinnedRows = new ArrayList<>();
+//        pinnedRows = new ArrayList<>();
+//
+//        JButton saveLocations = new JButton("Pin Selected Locations");
+//        saveLocations.addActionListener(e -> {
+//            pinSelectedRows = true;
+//            if(pinnedRows != selectedRowIndices){
+//
+//                // Effectively merges without duplicates
+//                pinnedRows.removeAll(selectedRowIndices);
+//                pinnedRows.addAll(selectedRowIndices);
+//            }
+//        });
+//
+//        saveLocations.setAlignmentX(Component.CENTER_ALIGNMENT);
+//        JButton removeLocations = new JButton("Remove Pins");
+//        removeLocations.addActionListener(e -> {
+//            pinSelectedRows = false;
+//            pinnedRows = new ArrayList<>();
+//        });
+//
+//
+//        removeLocations.setAlignmentX(Component.CENTER_ALIGNMENT);
+//        JButton exportLocations = new JButton("Export Pins");
+//        exportLocations.addActionListener(e -> {
+//            pinnedRows.forEach(integer -> {
+//                var row = model.getDataVector().elementAt(table.convertRowIndexToModel(integer));
+//
+//            });
+//        });
 
-        JButton saveLocations = new JButton("Pin Selected Locations");
-        saveLocations.addActionListener(e -> {
-            pinSelectedRows = true;
-            if(pinnedRows != selectedRowIndices){
-                // Effectively merges without duplicates
-                pinnedRows.removeAll(selectedRowIndices);
-                pinnedRows.addAll(selectedRowIndices);
-            }
-        });
 
-        saveLocations.setAlignmentX(Component.CENTER_ALIGNMENT);
-        JButton removeLocations = new JButton("Remove Pins");
-        removeLocations.addActionListener(e -> {
-            pinSelectedRows = false;
-        });
-
-        removeLocations.setAlignmentX(Component.CENTER_ALIGNMENT);
-        JButton exportLocations = new JButton("Export Pins");
-        exportLocations.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        ;
-
-        JPanel rightPanel = new JPanel();
-        JPanel rpInnerPanel = new JPanel(new GridLayout(3, 1, 5, 5));
-
-        rpInnerPanel.add(saveLocations);
-//        rightPanel.add(Box.createVerticalStrut(20));
-        rpInnerPanel.add(removeLocations);
-//        rightPanel.add(Box.createVerticalStrut(20));
-        rpInnerPanel.add(exportLocations);
-//        rightPanel.add(Box.createVerticalStrut(20));
-        rightPanel.add(rpInnerPanel, BorderLayout.CENTER);
+//        exportLocations.setAlignmentX(Component.CENTER_ALIGNMENT);
+//
+//        JPanel rightPanel = new JPanel();
+//        JPanel rpInnerPanel = new JPanel(new GridLayout(3, 1, 5, 5));
+//
+//        rpInnerPanel.add(saveLocations);
+////        rightPanel.add(Box.createVerticalStrut(20));
+//        rpInnerPanel.add(removeLocations);
+////        rightPanel.add(Box.createVerticalStrut(20));
+//        rpInnerPanel.add(exportLocations);
+////        rightPanel.add(Box.createVerticalStrut(20));
+//        rightPanel.add(rpInnerPanel, BorderLayout.CENTER);
 
 //        rightPanel.add(box);
 
         this.add(topPanel, BorderLayout.NORTH);
         this.add(jsp, BorderLayout.CENTER);
-        this.add(rightPanel, BorderLayout.EAST);
+
+        // TODO - Enable functionality of right panel buttons or move to different feature
+//        this.add(rightPanel, BorderLayout.EAST);
         this.add(bottomPanel, BorderLayout.SOUTH);
 
 //        setSize(475, 300);
