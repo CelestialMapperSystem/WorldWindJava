@@ -11,6 +11,8 @@ import java.awt.Rectangle;
 import javax.swing.JDialog;
 import java.awt.Component;
 import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 
 /**
@@ -33,6 +35,22 @@ public class MoonShadingDialog
         
         timeFrame = new TimeFrame(wwdObject, component, moonShadingPanel);
         timeFrame.setVisible(true);
+        
+        moonShadingPanel.getTimeFrameCheckBox().addActionListener(new ActionListener()
+        {
+
+            public void actionPerformed(ActionEvent event)
+            {
+                if (moonShadingPanel.getTimeFrameCheckBox().isSelected())
+                {
+                    timeFrame.setVisible(true);
+                }
+                else
+                {
+                    timeFrame.setVisible(false);
+                }
+            }
+        });
         
         this.wwd = wwdObject; 
           

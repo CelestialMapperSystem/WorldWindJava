@@ -21,6 +21,7 @@ import java.util.Date;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -50,6 +51,7 @@ public class MoonShadingPanel extends JPanel
     private JButton coordinatesButton;
     private JSlider azimuthSlider;
     private JSlider elevationSlider;
+    private JCheckBox timeFrameCheckBox;
 
     private RectangularNormalTessellator tessellator;
 
@@ -64,7 +66,7 @@ public class MoonShadingPanel extends JPanel
 
     public MoonShadingPanel(WorldWindow wwdObject)
     {
-        super(new BorderLayout()); // Create the border layerout
+        super(new BorderLayout()); 
         this.wwd = wwdObject; // Set up the WorldWindow
         JPanel mainPanel = new JPanel(); // Create the panel
         mainPanel.setOpaque(false);
@@ -117,6 +119,13 @@ public class MoonShadingPanel extends JPanel
             }
         });
 
+        // Time Frame
+        JPanel timeFramePanel = new JPanel(new GridLayout(0, 1, 0, 0));
+        timeFramePanel.setToolTipText("Show or hide the time frame layer");
+        timeFrameCheckBox = new JCheckBox("Show / hide time frame");
+        timeFrameCheckBox.setSelected(true);
+        timeFramePanel.add(timeFrameCheckBox);
+        
         // Color
         final JPanel colorPanel = new JPanel(new GridLayout(0, 3, 0, 0));
         colorPanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
@@ -221,8 +230,9 @@ public class MoonShadingPanel extends JPanel
                 }
             }
         });
-
+        
         // Control panel assembly
+        controlPanel.add(timeFramePanel);
         controlPanel.add(colorPanel);
         controlPanel.add(azimuthPanel);
         controlPanel.add(elevationPanel);
@@ -298,6 +308,11 @@ public class MoonShadingPanel extends JPanel
     public LensFlareLayer getLensFlareLayer()
     {
         return lensFlareLayer;
+    }
+    
+    public JCheckBox getTimeFrameCheckBox()
+    {
+        return timeFrameCheckBox;
     }
 }
 
