@@ -279,6 +279,9 @@ public class TimeFrame extends JDialog
                             shadingInterval = Calendar.HOUR;
                             num = 1;//1 hour
                             currentHour++;
+                            if(currentHour > 23){
+                                currentHour = 0;
+                            }
                             value = currentHour; // Shading happens once before going into this function
                             timeFrameSlider.setValue(value);
                             wwd.redraw();
@@ -344,21 +347,15 @@ public class TimeFrame extends JDialog
         JLabel[] dayLabels=new JLabel[31];
         JLabel[] hourLabels = new JLabel[25];
         Hashtable<Integer, JLabel> table = new Hashtable<Integer, JLabel>();//table for JLabels
-        System.out.println(diffInMillies);
-        System.out.println(diffInMillies);
-        System.out.println(diffInMillies);
-        System.out.println(diffInMillies);
-        System.out.println(diffInMillies);
+        System.out.println("Absolute time between Start & End in ms: " + diffInMillies);
+
                         
 
         // If start - end is less than a week, change time frame to show hours
         if (diffInMillies < 6.048e+8)
         {
-            System.out.println("Helllooooooo");
-            System.out.println("Helllooooooo");
-            System.out.println("Helllooooooo");
-            System.out.println("Helllooooooo");
-            System.out.println("Helllooooooo");
+//            System.out.println("Helllooooooo");
+            System.out.println("Time is < 1 week (aka < 6.048e+8), changing to hours: " + diffInMillies);
             timeFrameSlider.setPaintTicks(true);
             timeFrameSlider.setPaintLabels(true);
             timeFrameSlider.setMajorTickSpacing(1);
@@ -385,7 +382,7 @@ public class TimeFrame extends JDialog
         }
         
         // If start - end is less than a month, represent days
-        if (diffInMillies < 2.628e+9&&diffInMillies>=6.048e+8)
+        if (diffInMillies < 2.628e+9 && diffInMillies>=6.048e+8)
         {
 
              

@@ -11,3 +11,6 @@ cms.jar
 /dist/
 /nbproject/private/
 .idea/uiDesigner.xml
+csv_output/
+hs_err*
+doc/
