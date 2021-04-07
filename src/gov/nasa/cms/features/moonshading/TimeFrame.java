@@ -85,6 +85,8 @@ public class TimeFrame extends JDialog
         light = panel.getLight();
         tessellator = panel.getTessellator();
         lensFlareLayer = panel.getLensFlareLayer();
+        startDate = dateTimeDialog.getStartDate();
+        endDate = dateTimeDialog.getEndDate();
 
         GridBagConstraints gridBagConstraints;
 
@@ -347,9 +349,6 @@ public class TimeFrame extends JDialog
         System.out.println(diffInMillies);
         System.out.println(diffInMillies);
         System.out.println(diffInMillies);
-        
-
-
                         
 
         // If start - end is less than a week, change time frame to show hours

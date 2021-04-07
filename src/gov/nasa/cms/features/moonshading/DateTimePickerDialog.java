@@ -12,6 +12,7 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -129,6 +130,9 @@ public class DateTimePickerDialog extends JDialog
 
         endDateTime.setModel(new SpinnerDateModel(new java.util.Date(), null, null, java.util.Calendar.MINUTE));
         endDateTime.setToolTipText("Select a end date/time");
+        endDate = calendar.getTime();
+        endDate.setMonth((endDate.getMonth() - 1 + 12));
+
         endDateTime.addChangeListener(new ChangeListener()
         {
             @Override
