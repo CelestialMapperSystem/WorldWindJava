@@ -57,14 +57,12 @@ public class PlacenamesSearchPanel extends JPanel
     protected Path line;
     protected SurfaceShape surfaceShape;
     protected ScreenAnnotation annotation;
+    protected String labelName;
 
     protected Color lineColor = Color.YELLOW;
     protected Color fillColor = new Color(.6f, .6f, .4f, .5f);
     protected double lineWidth = 2;
 
-    protected AnnotationAttributes controlPointsAttributes;
-    protected AnnotationAttributes controlPointWithLeaderAttributes;
-    protected ShapeAttributes leaderAttributes;
     protected AnnotationAttributes annotationAttributes;
 
     protected boolean followTerrain = false;
@@ -92,11 +90,6 @@ public class PlacenamesSearchPanel extends JPanel
     private int[] selectedRows;
     private ArrayList<Integer> pinnedRows;
     private boolean pinSelectedRows;
-    
-    public static final String LATITUDE_LABEL = "PlacenamesSearchPanel.LatitudeLabel";
-    public static final String LONGITUDE_LABEL = "PlacenamesSearchPanel.LongitudeLabel";
-    public static final String NAME_LABEL = "PlacenamesSearchPanel.LatitudeLabel";
-    public static final String ELEVATION_LABEL = "PlacenamesSearchPanel.LongitudeLabel";
 
     public PlacenamesSearchPanel(WorldWindow wwd, CelestialMapper celestialMapper)
     {
@@ -118,6 +111,23 @@ public class PlacenamesSearchPanel extends JPanel
         // Pops up search options Dialog, but can't add action listeners until Table is created
         JButton searchOptions = new JButton("Show/Hide Search Options");
         searchOptions.setToolTipText("Lets you choose which fields to query in the table");
+        
+        // Label Text Button
+        JButton labelButton = new JButton("Show/Hide Label");
+        labelButton.setToolTipText("Toggle the placemark label text visibility");
+        labelButton.addActionListener(e ->
+        {
+            if(pp.getLabelText() == null)
+            {
+                pp.setLabelText(labelName);   
+                wwd.redraw();
+            }
+            else if(pp.getLabelText() != null)
+            {
+                pp.setLabelText(null);
+                wwd.redraw();
+            }
+        });
 
         JButton resetRowSort = new JButton("Reset Row Order");
         addResetRowSortListener(resetRowSort);
@@ -127,6 +137,8 @@ public class PlacenamesSearchPanel extends JPanel
         searchOptionsButtonRow.add(searchOptions);
         searchOptionsButtonRow.add(Box.createHorizontalStrut(10));
         searchOptionsButtonRow.add(resetRowSort);
+        searchOptionsButtonRow.add(Box.createHorizontalStrut(10));
+        searchOptionsButtonRow.add(labelButton);
 
         JPanel searchField = new JPanel(new GridLayout(3, 1, 5, 5));
         searchField.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
@@ -289,7 +301,7 @@ public class PlacenamesSearchPanel extends JPanel
                 .map(Object::toString)
                 .collect(Collectors.toList());
 
-        // Store each column name and it's position in the model's header
+        // Store each column labelName and it's position in the model's header
         // before any columns are hidden or moved by the user
         this.searchColumnMap = IntStream.range(0, allColumns.size())
                 .boxed()
@@ -478,11 +490,11 @@ public class PlacenamesSearchPanel extends JPanel
 
         allColumnModels.forEach(tableColumn ->
         {
-            var name = tableColumn.getHeaderValue().toString();
-            if (name.equals("name"))
+            var labelName = tableColumn.getHeaderValue().toString();
+            if (labelName.equals("labelName"))
             {
                 tableColumn.setPreferredWidth(100);
-            } else if (name.equals("clean_name"))
+            } else if (labelName.equals("clean_name"))
             {
                 tableColumn.setPreferredWidth(150);
             }
@@ -507,7 +519,7 @@ public class PlacenamesSearchPanel extends JPanel
         // Loop through all columns, visible or otherwise in the model
         for (int i = 0; i < tableModel.getColumnCount() - 1; i++)
         {
-            String name = tableModel.getColumnName(i);
+            String labelName = tableModel.getColumnName(i);
 
             // location will be the column's current position in the table, where as
             // i is the column's position in the table's underlying model
@@ -515,11 +527,11 @@ public class PlacenamesSearchPanel extends JPanel
             try
             {
                 // if the column is in the table already, it will have a value > 0
-                location = tableColumnModel.getColumnIndex(name);
+                location = tableColumnModel.getColumnIndex(labelName);
             } catch (IllegalArgumentException e)
             {
                 // Don't need to do anything if the column isn't currently visible
-//                System.out.println(name + " not currently visible in table.");
+//                System.out.println(labelName + " not currently visible in table.");
 //                    e.printStackTrace();
             }
 
@@ -534,8 +546,8 @@ public class PlacenamesSearchPanel extends JPanel
             {
                 // If the column doesn't exist in the table currently, add it and
                 // then move it to the correct position according to the model
-                table.addColumn(allColumnModels.get(searchColumnMap.get(name)));
-                location = tableColumnModel.getColumnIndex(name);
+                table.addColumn(allColumnModels.get(searchColumnMap.get(labelName)));
+                location = tableColumnModel.getColumnIndex(labelName);
                 tableColumnModel.moveColumn(location, i);
             }
         }
@@ -784,14 +796,14 @@ public class PlacenamesSearchPanel extends JPanel
                                 table.convertRowIndexToModel(table.getSelectedRow()));
                         rows.add(vector);
 
-                        String name = (String) model.getValueAt(i, tcm.getColumnIndex("clean_name"));
+                        labelName = (String) model.getValueAt(i, tcm.getColumnIndex("clean_name"));
                         String category = (String) model.getValueAt(i, tcm.getColumnIndex("Category"));
 
                         Double longitude = Double.valueOf(
                                 String.valueOf(model.getValueAt(i, model.findColumn("center_lon"))));
                         Double latitude = Double.valueOf(
                                 String.valueOf(model.getValueAt(i, model.findColumn("center_lat"))));
-                        specificRowData.add(new Vector(Arrays.asList(name, category, longitude, latitude)));
+                        specificRowData.add(new Vector(Arrays.asList(labelName, category, longitude, latitude)));
 
                         Angle lat, lon;
 
@@ -811,7 +823,7 @@ public class PlacenamesSearchPanel extends JPanel
                             lat = Angle.fromDegrees(latitude);
                         }
                         Position position = new Position(lat, lon, 0);
-                        positions.put(name, position);
+                        positions.put(labelName, position);
 
                         pp = new PointPlacemark(position);
 
@@ -823,15 +835,16 @@ public class PlacenamesSearchPanel extends JPanel
                         attrs.setLabelOffset(new Offset(0.9d, 0.6d, AVKey.FRACTION, AVKey.FRACTION));
                         attrs.setLineWidth(2d);
                         attrs.setScale(1.0);
-                        String fullLabel = name + "\n"
+                        String fullLabel = labelName + "\n"
                                 + category + "\n"
                                 + "lon: " + longitude.toString() + "\n"
                                 + "lat: " + latitude.toString();
-                        pp.setLabelText(name);
+                        pp.setLabelText(labelName);
 
                         pp.setAttributes(attrs);
                         placemarksLayer.addRenderable(pp);
 
+                        // Show or hide annotation layer
                         wwd.addSelectListener(new SelectListener()
                         {
                             @Override
@@ -846,10 +859,17 @@ public class PlacenamesSearchPanel extends JPanel
                                             if(annotation == null)
                                             {
                                                 makeAnnotation(position);
+                                                wwd.redraw();
                                             }
-                                            else
+                                            else if(annotation.getAttributes().isVisible())
                                             {
-                                                annotation.getAttributes().setVisible(false);
+                                                annotation.getAttributes().setVisible(false);  
+                                                wwd.redraw();
+                                            }
+                                            else if(!annotation.getAttributes().isVisible())
+                                            {
+                                                annotation.getAttributes().setVisible(true);  
+                                                wwd.redraw();
                                             }
                                         }
                                     }
@@ -916,7 +936,7 @@ public class PlacenamesSearchPanel extends JPanel
         this.annotationAttributes.setSize(new Dimension(220, 0));
         this.annotation = new ScreenAnnotation("", new Point(0, 0), this.annotationAttributes);
         this.annotation.getAttributes().setVisible(false);
-        this.annotation.getAttributes().setDrawOffset(null); // use defaults
+        this.annotation.getAttributes().setDrawOffset(new Point(0, 30)); // use defaults
         this.annotation.setPosition(pos);
         this.annotation.getAttributes().setVisible(true);
         
@@ -933,9 +953,13 @@ public class PlacenamesSearchPanel extends JPanel
         double value;
         String s;
         
+        String str = pp.getLabelText();
+        s = String.format("Landmark: %s", pp.getLabelText());
+        sb.append(s);
+        
         // Latitude
         value = pp.getPosition().latitude.degrees;
-        s = String.format("Latitude: %7.4f\u00B0", value);
+        s = String.format("\nLatitude: %7.4f\u00B0", value);
         sb.append(s);
         
         // Longitude
