@@ -3,18 +3,20 @@
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
-
 package gov.nasa.cms.features.placemarks;
 
 import gov.nasa.cms.CelestialMapper;
 import gov.nasa.cms.util.TableColumnManager;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.event.SelectEvent;
+import gov.nasa.worldwind.event.SelectListener;
 import gov.nasa.worldwind.formats.shapefile.Shapefile;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.ogc.kml.KMLConstants;
 import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
+import gov.nasa.worldwind.pick.PickedObject;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.util.measure.MeasureTool;
@@ -25,15 +27,19 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.geom.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.List;
 import java.util.stream.*;
 
 /**
  * @author : gknorman - 3/31/2021
- **/
+ *
+ */
 public class PlacenamesSearchPanel extends JPanel
 {
+
     private final PlacemarkSearchData placemarkSearchData;
     private WorldWindow wwd;
     private CelestialMapper cms;
@@ -43,16 +49,11 @@ public class PlacenamesSearchPanel extends JPanel
     private JTable table;
     private TableRowSorter sorter;
     private JScrollPane jsp;
+    private PointPlacemark pp;
     protected boolean ignoreSelectEvents = false;
 
     protected static final String SELECTION_CHANGED = "PlaceNamesPanel.SelectionChanged";
     private ListSelectionModel listSelectionModel;
-    protected ArrayList<Position> positions = new ArrayList<>();
-    protected ArrayList<Renderable> controlPoints = new ArrayList<>();
-    protected RenderableLayer applicationLayer;
-    protected CustomRenderableLayer layer;
-    protected CustomRenderableLayer controlPointsLayer;
-    protected CustomRenderableLayer shapeLayer;
     protected Path line;
     protected SurfaceShape surfaceShape;
     protected ScreenAnnotation annotation;
@@ -91,6 +92,11 @@ public class PlacenamesSearchPanel extends JPanel
     private int[] selectedRows;
     private ArrayList<Integer> pinnedRows;
     private boolean pinSelectedRows;
+    
+    public static final String LATITUDE_LABEL = "PlacenamesSearchPanel.LatitudeLabel";
+    public static final String LONGITUDE_LABEL = "PlacenamesSearchPanel.LongitudeLabel";
+    public static final String NAME_LABEL = "PlacenamesSearchPanel.LatitudeLabel";
+    public static final String ELEVATION_LABEL = "PlacenamesSearchPanel.LongitudeLabel";
 
     public PlacenamesSearchPanel(WorldWindow wwd, CelestialMapper celestialMapper)
     {
@@ -135,17 +141,20 @@ public class PlacenamesSearchPanel extends JPanel
         JPanel buttonRow = new JPanel(new GridLayout(1, 3, 5, 5));
         buttonRow.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         JButton resetButton = new JButton("Reset Table");
-        resetButton.addActionListener(e -> {
+        resetButton.addActionListener(e ->
+        {
             resetTable();
         });
 
         JButton showALlColumns = new JButton("Show all Columns");
-        showALlColumns.addActionListener(e -> {
+        showALlColumns.addActionListener(e ->
+        {
             showColumns();
         });
 
         JButton hideMostColumns = new JButton("Show only Name");
-        hideMostColumns.addActionListener(e -> {
+        hideMostColumns.addActionListener(e ->
+        {
             showOnlyName();
         });
 
@@ -202,31 +211,35 @@ public class PlacenamesSearchPanel extends JPanel
             }
 
             /**
-             * Updates the selection models of the table, depending on the state of the two flags:
-             * <code>toggle</code> and <code>extend</code>. Most changes to the selection that are the
-             * result of keyboard or mouse events received by the UI are channeled through this method
-             * so that the behavior may be overridden by a subclass. Some UIs may need more
-             * functionality than this method provides, such as when manipulating the lead for
-             * discontiguous selection, and may not call into this method for some selection changes.
+             * Updates the selection models of the table, depending on the state
+             * of the two flags: <code>toggle</code> and <code>extend</code>.
+             * Most changes to the selection that are the result of keyboard or
+             * mouse events received by the UI are channeled through this method
+             * so that the behavior may be overridden by a subclass. Some UIs
+             * may need more functionality than this method provides, such as
+             * when manipulating the lead for discontiguous selection, and may
+             * not call into this method for some selection changes.
              * <p>
              * This implementation uses the following conventions:
              * <ul>
-             * <li> <code>toggle</code>: <em>false</em>, <code>extend</code>: <em>false</em>.
-             *      Clear the previous selection and ensure the new cell is selected.
-             * <li> <code>toggle</code>: <em>false</em>, <code>extend</code>: <em>true</em>.
-             *      Extend the previous selection from the anchor to the specified cell,
-             *      clearing all other selections.
-             * <li> <code>toggle</code>: <em>true</em>, <code>extend</code>: <em>false</em>.
-             *      If the specified cell is selected, deselect it. If it is not selected, select it.
-             * <li> <code>toggle</code>: <em>true</em>, <code>extend</code>: <em>true</em>.
-             *      Apply the selection state of the anchor to all cells between it and the
-             *      specified cell.
+             * <li> <code>toggle</code>: <em>false</em>, <code>extend</code>:
+             * <em>false</em>. Clear the previous selection and ensure the new
+             * cell is selected.
+             * <li> <code>toggle</code>: <em>false</em>, <code>extend</code>:
+             * <em>true</em>. Extend the previous selection from the anchor to
+             * the specified cell, clearing all other selections.
+             * <li> <code>toggle</code>: <em>true</em>, <code>extend</code>:
+             * <em>false</em>. If the specified cell is selected, deselect it.
+             * If it is not selected, select it.
+             * <li> <code>toggle</code>: <em>true</em>, <code>extend</code>:
+             * <em>true</em>. Apply the selection state of the anchor to all
+             * cells between it and the specified cell.
              * </ul>
              *
-             * @param rowIndex    affects the selection at <code>row</code>
+             * @param rowIndex affects the selection at <code>row</code>
              * @param columnIndex affects the selection at <code>column</code>
-             * @param toggle      see description above
-             * @param extend      if true, extend the current selection
+             * @param toggle see description above
+             * @param extend if true, extend the current selection
              * @since 1.3
              */
 //            @Override
@@ -249,7 +262,7 @@ public class PlacenamesSearchPanel extends JPanel
         {
             TableColumn col = table.getColumnModel().getColumn(c);
             tips.setToolTip(col,
-                "<html>Click to sort table by column<br>Right Click to select which columns to show/hide</html>");
+                    "<html>Click to sort table by column<br>Right Click to select which columns to show/hide</html>");
         }
         header.addMouseMotionListener(tips);
 
@@ -272,22 +285,23 @@ public class PlacenamesSearchPanel extends JPanel
         this.allColumnModels = tcm.getAllColumns();
 
         this.allColumns = tcm.getAllColumns().stream()
-            .map(TableColumn::getHeaderValue)
-            .map(Object::toString)
-            .collect(Collectors.toList());
+                .map(TableColumn::getHeaderValue)
+                .map(Object::toString)
+                .collect(Collectors.toList());
 
         // Store each column name and it's position in the model's header
         // before any columns are hidden or moved by the user
         this.searchColumnMap = IntStream.range(0, allColumns.size())
-            .boxed()
-            .collect(Collectors.toMap(
-                i -> allColumns.get(i),
-                i -> Integer.valueOf(i),
-                (u, v) -> {
+                .boxed()
+                .collect(Collectors.toMap(
+                        i -> allColumns.get(i),
+                        i -> Integer.valueOf(i),
+                        (u, v) ->
+                {
                     throw new IllegalStateException(String.format("Duplicate key %s", u));
                 },
-                HashMap::new
-            ));
+                        HashMap::new
+                ));
 
         // We can add an actionlistener to the search options button now that the table exists
         addSearchOptionsListener(searchOptions);
@@ -299,7 +313,8 @@ public class PlacenamesSearchPanel extends JPanel
 
         this.setLayout(new BorderLayout());
 
-        placemarkSearchData.getRowList().forEach(o -> {
+        placemarkSearchData.getRowList().forEach(o ->
+        {
             Object[] data = ((ArrayList) o).toArray();
             model.addRow(data);
         });
@@ -333,30 +348,35 @@ public class PlacenamesSearchPanel extends JPanel
                 if (str.length() == 0)
                 {
                     sorter.setRowFilter(null);
-                }
-                else
+                } else
                 {
                     int[] columnsToSearch;
                     sorter.setRowFilter(
-                        RowFilter.regexFilter("(?i)" + str,
-                            searchColumnMap.entrySet().stream()
-                                .filter(a -> a.getValue() > -1)
-                                .map(Map.Entry::getValue)
-                                .mapToInt(Integer::intValue)
-                                .toArray())
+                            RowFilter.regexFilter("(?i)" + str,
+                                    searchColumnMap.entrySet().stream()
+                                            .filter(a -> a.getValue() > -1)
+                                            .map(Map.Entry::getValue)
+                                            .mapToInt(Integer::intValue)
+                                            .toArray())
                     );
                 }
             }
         });
 
-        model.addTableModelListener(new TableModelListener() {
+        model.addTableModelListener(new TableModelListener()
+        {
             @Override
-            public void tableChanged(TableModelEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
+            public void tableChanged(TableModelEvent e)
+            {
+                SwingUtilities.invokeLater(new Runnable()
+                {
                     @Override
-                    public void run() {
-                        if (selectedRowIndices.size()>0) {
-                            selectedRowIndices.forEach(integer -> {
+                    public void run()
+                    {
+                        if (selectedRowIndices.size() > 0)
+                        {
+                            selectedRowIndices.forEach(integer ->
+                            {
                                 table.addRowSelectionInterval(integer, integer);
                             });
                         }
@@ -366,7 +386,6 @@ public class PlacenamesSearchPanel extends JPanel
         });
 
         jsp = new JScrollPane(table);
-
 
 //        pinnedRows = new ArrayList<>();
 //
@@ -397,8 +416,6 @@ public class PlacenamesSearchPanel extends JPanel
 //
 //            });
 //        });
-
-
 //        exportLocations.setAlignmentX(Component.CENTER_ALIGNMENT);
 //
 //        JPanel rightPanel = new JPanel();
@@ -411,9 +428,7 @@ public class PlacenamesSearchPanel extends JPanel
 //        rpInnerPanel.add(exportLocations);
 ////        rightPanel.add(Box.createVerticalStrut(20));
 //        rightPanel.add(rpInnerPanel, BorderLayout.CENTER);
-
 //        rightPanel.add(box);
-
         this.add(topPanel, BorderLayout.NORTH);
         this.add(jsp, BorderLayout.CENTER);
 
@@ -431,7 +446,8 @@ public class PlacenamesSearchPanel extends JPanel
         TableColumnModel tableColumnModel = table.getColumnModel();
 
 //            System.out.println(tableModel.getColumnCount() + " : " + model.getColumnCount());
-        allColumnModels.forEach(tableColumn -> {
+        allColumnModels.forEach(tableColumn ->
+        {
             table.removeColumn(tableColumn);
             if (tableColumn.getHeaderValue().toString().equalsIgnoreCase("clean_name"))
             {
@@ -455,16 +471,19 @@ public class PlacenamesSearchPanel extends JPanel
 //        var modelColumnCount = tableModel.getColumnCount();
 //        System.out.println("Table Column Count: " + modelColumnCount);
 //        System.out.println("All Columns Size: " + allColumnModels.size());
-
-        Collections.list(tableColumnModel.getColumns()).forEach(tableColumn -> {
+        Collections.list(tableColumnModel.getColumns()).forEach(tableColumn ->
+        {
             table.removeColumn(tableColumn);
         });
 
-        allColumnModels.forEach(tableColumn -> {
+        allColumnModels.forEach(tableColumn ->
+        {
             var name = tableColumn.getHeaderValue().toString();
-            if(name.equals("name")){
+            if (name.equals("name"))
+            {
                 tableColumn.setPreferredWidth(100);
-            } else if(name.equals("clean_name")){
+            } else if (name.equals("clean_name"))
+            {
                 tableColumn.setPreferredWidth(150);
             }
 
@@ -479,9 +498,11 @@ public class PlacenamesSearchPanel extends JPanel
         RowSorter rs = table.getRowSorter();
         rs.setSortKeys(null);
 
-
         // Hide most of the extraneous columns
-        int[] columnsToHide = {1, 3, 4, 8, 9, 10, 15, 16};
+        int[] columnsToHide =
+        {
+            1, 3, 4, 8, 9, 10, 15, 16
+        };
 
         // Loop through all columns, visible or otherwise in the model
         for (int i = 0; i < tableModel.getColumnCount() - 1; i++)
@@ -495,8 +516,7 @@ public class PlacenamesSearchPanel extends JPanel
             {
                 // if the column is in the table already, it will have a value > 0
                 location = tableColumnModel.getColumnIndex(name);
-            }
-            catch (IllegalArgumentException e)
+            } catch (IllegalArgumentException e)
             {
                 // Don't need to do anything if the column isn't currently visible
 //                System.out.println(name + " not currently visible in table.");
@@ -510,8 +530,7 @@ public class PlacenamesSearchPanel extends JPanel
                 {
                     tableColumnModel.moveColumn(location, i);
                 }
-            }
-            else
+            } else
             {
                 // If the column doesn't exist in the table currently, add it and
                 // then move it to the correct position according to the model
@@ -530,12 +549,11 @@ public class PlacenamesSearchPanel extends JPanel
 //        var modelColumnCount = tableModel.getColumnCount();
 //        System.out.println("Table Column Count: " + modelColumnCount);
 //        System.out.println("All Columns Size: " + allColumnModels.size());
-
         // Helper method to size the visible columns for the default view
         tcm.setJTableColumnsWidth(table, tableWidth * 3,
-            8,15,7.75,7.75,
-            7.5,7.5,7.5,7.5,
-            7.5,9,7.5,7.5);
+                8, 15, 7.75, 7.75,
+                7.5, 7.5, 7.5, 7.5,
+                7.5, 9, 7.5, 7.5);
     }
 
     public static boolean contains(final int[] arr, final int key)
@@ -545,7 +563,8 @@ public class PlacenamesSearchPanel extends JPanel
 
     private void addSearchOptionsListener(JButton searchOptions)
     {
-        searchOptions.addActionListener(e -> {
+        searchOptions.addActionListener(e ->
+        {
             this.isSearchOptionsOpen = !isSearchOptionsOpen;
             if (searchOptionsDialog == null)
             {
@@ -555,8 +574,7 @@ public class PlacenamesSearchPanel extends JPanel
             if (isSearchOptionsOpen)
             {
                 this.searchOptionsDialog.setVisible(true);
-            }
-            else
+            } else
             {
                 this.searchOptionsDialog.setVisible(false);
             }
@@ -589,20 +607,21 @@ public class PlacenamesSearchPanel extends JPanel
 
         searchOptionsCBList = new ArrayList<JCheckBox>();
 
-        tcm.getAllColumns().forEach(tableColumn -> {
+        tcm.getAllColumns().forEach(tableColumn ->
+        {
             //  Create a menu item for all columns managed by the table column
             //  manager, checking to see if the column is shown or hidden.
             Object value = tableColumn.getHeaderValue();
             JCheckBox item = new JCheckBox(value.toString());
 
-            item.addActionListener(e -> {
+            item.addActionListener(e ->
+            {
                 if (item.isSelected())
                 {
                     // Remove / Add column from rowFilter's indices
                     this.searchColumnMap.put(value.toString(), allColumns.indexOf(value.toString()));
 //                    System.out.println("Enabling: " + value.toString() + " : " + allColumns.indexOf(value.toString()));
-                }
-                else
+                } else
                 {
                     this.searchColumnMap.put(value.toString(), -1);
 //                    System.out.println("Disabling: " + value.toString() + " : " + allColumns.indexOf(value.toString()));
@@ -612,8 +631,7 @@ public class PlacenamesSearchPanel extends JPanel
             try
             {
                 item.setSelected(true);
-            }
-            catch (IllegalArgumentException e)
+            } catch (IllegalArgumentException e)
             {
                 item.setSelected(false);
             }
@@ -623,29 +641,34 @@ public class PlacenamesSearchPanel extends JPanel
 
         JPanel searchOptionsButtons = new JPanel(new GridLayout(3, 1, 5, 5));
         JButton selectNone = new JButton("Deselect All");
-        selectNone.addActionListener(e -> {
-            searchOptionsCBList.forEach(jCheckBox -> {
+        selectNone.addActionListener(e ->
+        {
+            searchOptionsCBList.forEach(jCheckBox ->
+            {
                 jCheckBox.setSelected(false);
             });
         });
 
         JButton selectAll = new JButton("Select All");
-        selectAll.addActionListener(e -> {
-            searchOptionsCBList.forEach(jCheckBox -> {
+        selectAll.addActionListener(e ->
+        {
+            searchOptionsCBList.forEach(jCheckBox ->
+            {
                 jCheckBox.setSelected(true);
             });
         });
 
         JButton selectCoordinates = new JButton("Coord's & Name Only");
-        selectCoordinates.addActionListener(e -> {
-            searchOptionsCBList.forEach(jCheckBox -> {
-                if (jCheckBox.getText().equals("clean_name") ||
-                    jCheckBox.getText().equals("center_lon") ||
-                    jCheckBox.getText().equals("center_lat"))
+        selectCoordinates.addActionListener(e ->
+        {
+            searchOptionsCBList.forEach(jCheckBox ->
+            {
+                if (jCheckBox.getText().equals("clean_name")
+                        || jCheckBox.getText().equals("center_lon")
+                        || jCheckBox.getText().equals("center_lat"))
                 {
                     jCheckBox.setSelected(true);
-                }
-                else
+                } else
                 {
                     jCheckBox.setSelected(false);
                 }
@@ -672,7 +695,8 @@ public class PlacenamesSearchPanel extends JPanel
 
     private void addResetRowSortListener(JButton resetRowSort)
     {
-        resetRowSort.addActionListener(e -> {
+        resetRowSort.addActionListener(e ->
+        {
             RowSorter rs = table.getRowSorter();
             rs.setSortKeys(null);
         });
@@ -692,6 +716,7 @@ public class PlacenamesSearchPanel extends JPanel
     // https://docs.oracle.com/javase/tutorial/uiswing/examples/events/TableListSelectionDemoProject/src/events/TableListSelectionDemo.java
     class SharedListSelectionHandler extends DefaultListSelectionModel implements ListSelectionListener
     {
+
         private boolean selectionEnabled = true;
 
         public SharedListSelectionHandler()
@@ -717,7 +742,8 @@ public class PlacenamesSearchPanel extends JPanel
                 boolean isAdjusting = e.getValueIsAdjusting();
                 TableColumnModel tcm = table.getColumnModel();
 
-                Arrays.stream(table.getSelectedRows()).forEach(i -> {
+                Arrays.stream(table.getSelectedRows()).forEach(i ->
+                {
 //                    System.out.println(table.convertRowIndexToModel(i));
                 });
 
@@ -725,18 +751,18 @@ public class PlacenamesSearchPanel extends JPanel
                 // as they could be non-continuous between the first and last after the table
                 // has been filtered by the search text field
                 selectedRowIndices = Arrays.stream(table.getSelectedRows())
-                    .map(i -> table.convertRowIndexToModel(i))
-                    .boxed()
-                    .collect(Collectors.toList());
+                        .map(i -> table.convertRowIndexToModel(i))
+                        .boxed()
+                        .collect(Collectors.toList());
 
                 ArrayList rows = new ArrayList();
                 List specificRowData = new ArrayList();
                 Map<String, Position> positions = new HashMap<>();
 
                 sb.append("Event for indexes "
-                    + firstIndex + " - " + lastIndex
-                    + "; isAdjusting is " + isAdjusting
-                    + "; selected indexes:");
+                        + firstIndex + " - " + lastIndex
+                        + "; isAdjusting is " + isAdjusting
+                        + "; selected indexes:");
 
                 if (!lsm.isSelectionEmpty())
                 {
@@ -755,18 +781,16 @@ public class PlacenamesSearchPanel extends JPanel
                     {
                         sb.append(" " + i);
                         Vector vector = model.getDataVector().elementAt(
-                            table.convertRowIndexToModel(table.getSelectedRow()));
+                                table.convertRowIndexToModel(table.getSelectedRow()));
                         rows.add(vector);
-
-
 
                         String name = (String) model.getValueAt(i, tcm.getColumnIndex("clean_name"));
                         String category = (String) model.getValueAt(i, tcm.getColumnIndex("Category"));
 
                         Double longitude = Double.valueOf(
-                            String.valueOf(model.getValueAt(i, model.findColumn("center_lon"))));
+                                String.valueOf(model.getValueAt(i, model.findColumn("center_lon"))));
                         Double latitude = Double.valueOf(
-                            String.valueOf(model.getValueAt(i, model.findColumn("center_lat"))));
+                                String.valueOf(model.getValueAt(i, model.findColumn("center_lat"))));
                         specificRowData.add(new Vector(Arrays.asList(name, category, longitude, latitude)));
 
                         Angle lat, lon;
@@ -774,8 +798,7 @@ public class PlacenamesSearchPanel extends JPanel
                         if (longitude > 180.00)
                         {
                             lon = Angle.POS360.subtract(Angle.fromDegrees(longitude)).multiply(-1.0);
-                        }
-                        else
+                        } else
                         {
                             lon = Angle.fromDegrees(longitude);
                         }
@@ -783,15 +806,14 @@ public class PlacenamesSearchPanel extends JPanel
                         if (latitude > 90.00)
                         {
                             lat = Angle.POS180.subtract(Angle.fromDegrees(latitude)).multiply(-1.0);
-                        }
-                        else
+                        } else
                         {
                             lat = Angle.fromDegrees(latitude);
                         }
                         Position position = new Position(lat, lon, 0);
                         positions.put(name, position);
 
-                        PointPlacemark pp = new PointPlacemark(position);
+                        pp = new PointPlacemark(position);
 
                         var attrs = new PointPlacemarkAttributes();
                         attrs.setLabelColor("ffffffff");
@@ -802,15 +824,41 @@ public class PlacenamesSearchPanel extends JPanel
                         attrs.setLineWidth(2d);
                         attrs.setScale(1.0);
                         String fullLabel = name + "\n"
-                            + category + "\n"
-                            + "lon: " + longitude.toString() + "\n"
-                            + "lat: " + latitude.toString();
+                                + category + "\n"
+                                + "lon: " + longitude.toString() + "\n"
+                                + "lat: " + latitude.toString();
                         pp.setLabelText(name);
 
                         pp.setAttributes(attrs);
                         placemarksLayer.addRenderable(pp);
+
+                        wwd.addSelectListener(new SelectListener()
+                        {
+                            @Override
+                            public void selected(SelectEvent event)
+                            {
+                                if (event.getEventAction().equals(SelectEvent.HOVER))
+                                { // there are many of these
+                                    if (event.hasObjects())
+                                    {
+                                        if (event.getTopObject() instanceof PointPlacemark)
+                                        {
+                                            if(annotation == null)
+                                            {
+                                                makeAnnotation(position);
+                                            }
+                                            else
+                                            {
+                                                annotation.getAttributes().setVisible(false);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
                     }
                 }
+
                 var attrs = new BasicShapeAttributes();
                 attrs.setOutlineWidth(2);
                 attrs.setOutlineMaterial(new Material(Color.YELLOW));
@@ -818,7 +866,7 @@ public class PlacenamesSearchPanel extends JPanel
                 if (positions.size() > 0)
                 {
                     wwd.getView().goTo(positions.entrySet().iterator().next().getValue(),
-                        wwd.getView().getCurrentEyePosition().getElevation());
+                            wwd.getView().getCurrentEyePosition().getElevation());
                 }
 
                 sb.append("\n");
@@ -827,7 +875,6 @@ public class PlacenamesSearchPanel extends JPanel
 //                System.out.println(sb);
 //                rows.forEach(System.out::println);
 //                specificRowData.forEach(System.out::println);
-
                 placemarksLayer.setEnabled(true);
                 getWwd().getModel().getLayers().add(placemarksLayer);
             }
@@ -847,13 +894,61 @@ public class PlacenamesSearchPanel extends JPanel
         public void addSelectionInterval(int index0, int index1)
         {
             if (selectionEnabled)
+            {
                 super.addSelectionInterval(index0, index1);
+            }
         }
 
     }
 
+    private void makeAnnotation(Position pos)
+    {
+        String displayString = this.formatStatistics();
+        this.annotationAttributes = new AnnotationAttributes();
+        this.annotationAttributes.setFrameShape(AVKey.SHAPE_RECTANGLE);
+        this.annotationAttributes.setInsets(new Insets(10, 10, 10, 10));
+        this.annotationAttributes.setDrawOffset(new Point(0, 10));
+        this.annotationAttributes.setTextAlign(AVKey.CENTER);
+        this.annotationAttributes.setEffect(AVKey.TEXT_EFFECT_OUTLINE);
+        this.annotationAttributes.setFont(Font.decode("Arial-Bold-14"));
+        this.annotationAttributes.setTextColor(Color.WHITE);
+        this.annotationAttributes.setBackgroundColor(new Color(0, 0, 0, 180));
+        this.annotationAttributes.setSize(new Dimension(220, 0));
+        this.annotation = new ScreenAnnotation("", new Point(0, 0), this.annotationAttributes);
+        this.annotation.getAttributes().setVisible(false);
+        this.annotation.getAttributes().setDrawOffset(null); // use defaults
+        this.annotation.setPosition(pos);
+        this.annotation.getAttributes().setVisible(true);
+        
+        this.annotation.setText(displayString);
+        this.placemarksLayer.addRenderable(this.annotation);
+        wwd.redraw();
+    }
+
+
+
+    protected String formatStatistics()
+    {    
+        StringBuilder sb = new StringBuilder();
+        double value;
+        String s;
+        
+        // Latitude
+        value = pp.getPosition().latitude.degrees;
+        s = String.format("Latitude: %7.4f\u00B0", value);
+        sb.append(s);
+        
+        // Longitude
+        value = pp.getPosition().longitude.degrees;
+        s = String.format("\nLongitude: %7.4f\u00B0", value);
+        sb.append(s);
+        
+        return sb.toString();
+    }
+
     /**
-     * @return Instance of the custom renderable layer to use of our internal layers
+     * @return Instance of the custom renderable layer to use of our internal
+     * layers
      * @see MeasureTool
      */
     protected CustomRenderableLayer createCustomRenderableLayer()
