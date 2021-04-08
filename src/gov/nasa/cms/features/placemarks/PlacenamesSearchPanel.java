@@ -7,7 +7,7 @@ package gov.nasa.cms.features.placemarks;
 
 import gov.nasa.cms.CelestialMapper;
 import gov.nasa.cms.util.TableColumnManager;
-import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.event.SelectListener;
@@ -16,8 +16,10 @@ import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.ogc.kml.KMLConstants;
 import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
-import gov.nasa.worldwind.pick.PickedObject;
+import gov.nasa.worldwind.pick.*;
 import gov.nasa.worldwind.render.*;
+import gov.nasa.worldwind.render.airspaces.Airspace;
+import gov.nasa.worldwind.terrain.*;
 import gov.nasa.worldwind.util.*;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 
@@ -26,6 +28,7 @@ import javax.swing.Box;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.awt.geom.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -35,7 +38,6 @@ import java.util.stream.*;
 
 /**
  * @author : gknorman - 3/31/2021
- *
  */
 public class PlacenamesSearchPanel extends JPanel
 {
@@ -56,7 +58,7 @@ public class PlacenamesSearchPanel extends JPanel
     private ListSelectionModel listSelectionModel;
     protected Path line;
     protected SurfaceShape surfaceShape;
-    protected ScreenAnnotation annotation;
+    //    protected ScreenAnnotation annotation;
     protected String labelName;
 
     protected Color lineColor = Color.YELLOW;
@@ -90,6 +92,13 @@ public class PlacenamesSearchPanel extends JPanel
     private int[] selectedRows;
     private ArrayList<Integer> pinnedRows;
     private boolean pinSelectedRows;
+    HashMap<PointPlacemark, AbstractMap.SimpleEntry<ScreenAnnotation, Boolean>> savedPlacemarks;
+    private HashMap<PointPlacemark, AbstractMap.SimpleEntry<ScreenAnnotation, Boolean>> ppAnnotationMap;
+    private RenderableLayer annotationsLayer;
+    protected static final Double TARGET_RESOLUTION = 10d;
+
+    protected HighResolutionTerrain terrain;
+
 
     public PlacenamesSearchPanel(WorldWindow wwd, CelestialMapper celestialMapper)
     {
@@ -99,6 +108,11 @@ public class PlacenamesSearchPanel extends JPanel
         this.placemarkSearchData = new PlacemarkSearchData(wwd, cms);
         this.placemarksLayer = createCustomRenderableLayer();
         this.placemarksLayer.setName("Found Placemarks Layer");
+        this.ppAnnotationMap = new HashMap<>();
+        this.annotationsLayer = createCustomRenderableLayer();
+        this.annotationsLayer.setName("Annotations Layer");
+        this.terrain = new HighResolutionTerrain(getWwd().getModel().getGlobe(),
+            TARGET_RESOLUTION);
 
         this.makePanel();
     }
@@ -111,18 +125,18 @@ public class PlacenamesSearchPanel extends JPanel
         // Pops up search options Dialog, but can't add action listeners until Table is created
         JButton searchOptions = new JButton("Show/Hide Search Options");
         searchOptions.setToolTipText("Lets you choose which fields to query in the table");
-        
+
         // Label Text Button
         JButton labelButton = new JButton("Show/Hide Label");
         labelButton.setToolTipText("Toggle the placemark label text visibility");
         labelButton.addActionListener(e ->
         {
-            if(pp.getLabelText() == null)
+            if (pp.getLabelText() == null)
             {
-                pp.setLabelText(labelName);   
+                pp.setLabelText(labelName);
                 wwd.redraw();
             }
-            else if(pp.getLabelText() != null)
+            else if (pp.getLabelText() != null)
             {
                 pp.setLabelText(null);
                 wwd.redraw();
@@ -190,7 +204,6 @@ public class PlacenamesSearchPanel extends JPanel
 //                System.out.println("Gets called ");
                 fireTableCellUpdated(inRow, inCol);
             }
-
         };
 
         // Create Row Sorter, but override the click behavior so the third click on a column header will
@@ -274,7 +287,7 @@ public class PlacenamesSearchPanel extends JPanel
         {
             TableColumn col = table.getColumnModel().getColumn(c);
             tips.setToolTip(col,
-                    "<html>Click to sort table by column<br>Right Click to select which columns to show/hide</html>");
+                "<html>Click to sort table by column<br>Right Click to select which columns to show/hide</html>");
         }
         header.addMouseMotionListener(tips);
 
@@ -297,23 +310,23 @@ public class PlacenamesSearchPanel extends JPanel
         this.allColumnModels = tcm.getAllColumns();
 
         this.allColumns = tcm.getAllColumns().stream()
-                .map(TableColumn::getHeaderValue)
-                .map(Object::toString)
-                .collect(Collectors.toList());
+            .map(TableColumn::getHeaderValue)
+            .map(Object::toString)
+            .collect(Collectors.toList());
 
         // Store each column labelName and it's position in the model's header
         // before any columns are hidden or moved by the user
         this.searchColumnMap = IntStream.range(0, allColumns.size())
-                .boxed()
-                .collect(Collectors.toMap(
-                        i -> allColumns.get(i),
-                        i -> Integer.valueOf(i),
-                        (u, v) ->
+            .boxed()
+            .collect(Collectors.toMap(
+                i -> allColumns.get(i),
+                i -> Integer.valueOf(i),
+                (u, v) ->
                 {
                     throw new IllegalStateException(String.format("Duplicate key %s", u));
                 },
-                        HashMap::new
-                ));
+                HashMap::new
+            ));
 
         // We can add an actionlistener to the search options button now that the table exists
         addSearchOptionsListener(searchOptions);
@@ -360,16 +373,17 @@ public class PlacenamesSearchPanel extends JPanel
                 if (str.length() == 0)
                 {
                     sorter.setRowFilter(null);
-                } else
+                }
+                else
                 {
                     int[] columnsToSearch;
                     sorter.setRowFilter(
-                            RowFilter.regexFilter("(?i)" + str,
-                                    searchColumnMap.entrySet().stream()
-                                            .filter(a -> a.getValue() > -1)
-                                            .map(Map.Entry::getValue)
-                                            .mapToInt(Integer::intValue)
-                                            .toArray())
+                        RowFilter.regexFilter("(?i)" + str,
+                            searchColumnMap.entrySet().stream()
+                                .filter(a -> a.getValue() > -1)
+                                .map(Map.Entry::getValue)
+                                .mapToInt(Integer::intValue)
+                                .toArray())
                     );
                 }
             }
@@ -494,7 +508,8 @@ public class PlacenamesSearchPanel extends JPanel
             if (labelName.equals("labelName"))
             {
                 tableColumn.setPreferredWidth(100);
-            } else if (labelName.equals("clean_name"))
+            }
+            else if (labelName.equals("clean_name"))
             {
                 tableColumn.setPreferredWidth(150);
             }
@@ -512,9 +527,9 @@ public class PlacenamesSearchPanel extends JPanel
 
         // Hide most of the extraneous columns
         int[] columnsToHide =
-        {
-            1, 3, 4, 8, 9, 10, 15, 16
-        };
+            {
+                1, 3, 4, 8, 9, 10, 15, 16
+            };
 
         // Loop through all columns, visible or otherwise in the model
         for (int i = 0; i < tableModel.getColumnCount() - 1; i++)
@@ -528,7 +543,8 @@ public class PlacenamesSearchPanel extends JPanel
             {
                 // if the column is in the table already, it will have a value > 0
                 location = tableColumnModel.getColumnIndex(labelName);
-            } catch (IllegalArgumentException e)
+            }
+            catch (IllegalArgumentException e)
             {
                 // Don't need to do anything if the column isn't currently visible
 //                System.out.println(labelName + " not currently visible in table.");
@@ -542,7 +558,8 @@ public class PlacenamesSearchPanel extends JPanel
                 {
                     tableColumnModel.moveColumn(location, i);
                 }
-            } else
+            }
+            else
             {
                 // If the column doesn't exist in the table currently, add it and
                 // then move it to the correct position according to the model
@@ -563,9 +580,9 @@ public class PlacenamesSearchPanel extends JPanel
 //        System.out.println("All Columns Size: " + allColumnModels.size());
         // Helper method to size the visible columns for the default view
         tcm.setJTableColumnsWidth(table, tableWidth * 3,
-                8, 15, 7.75, 7.75,
-                7.5, 7.5, 7.5, 7.5,
-                7.5, 9, 7.5, 7.5);
+            8, 15, 7.75, 7.75,
+            7.5, 7.5, 7.5, 7.5,
+            7.5, 9, 7.5, 7.5);
     }
 
     public static boolean contains(final int[] arr, final int key)
@@ -586,7 +603,8 @@ public class PlacenamesSearchPanel extends JPanel
             if (isSearchOptionsOpen)
             {
                 this.searchOptionsDialog.setVisible(true);
-            } else
+            }
+            else
             {
                 this.searchOptionsDialog.setVisible(false);
             }
@@ -633,7 +651,8 @@ public class PlacenamesSearchPanel extends JPanel
                     // Remove / Add column from rowFilter's indices
                     this.searchColumnMap.put(value.toString(), allColumns.indexOf(value.toString()));
 //                    System.out.println("Enabling: " + value.toString() + " : " + allColumns.indexOf(value.toString()));
-                } else
+                }
+                else
                 {
                     this.searchColumnMap.put(value.toString(), -1);
 //                    System.out.println("Disabling: " + value.toString() + " : " + allColumns.indexOf(value.toString()));
@@ -643,7 +662,8 @@ public class PlacenamesSearchPanel extends JPanel
             try
             {
                 item.setSelected(true);
-            } catch (IllegalArgumentException e)
+            }
+            catch (IllegalArgumentException e)
             {
                 item.setSelected(false);
             }
@@ -676,11 +696,12 @@ public class PlacenamesSearchPanel extends JPanel
             searchOptionsCBList.forEach(jCheckBox ->
             {
                 if (jCheckBox.getText().equals("clean_name")
-                        || jCheckBox.getText().equals("center_lon")
-                        || jCheckBox.getText().equals("center_lat"))
+                    || jCheckBox.getText().equals("center_lon")
+                    || jCheckBox.getText().equals("center_lat"))
                 {
                     jCheckBox.setSelected(true);
-                } else
+                }
+                else
                 {
                     jCheckBox.setSelected(false);
                 }
@@ -731,6 +752,7 @@ public class PlacenamesSearchPanel extends JPanel
 
         private boolean selectionEnabled = true;
 
+
         public SharedListSelectionHandler()
         {
             super();
@@ -754,27 +776,27 @@ public class PlacenamesSearchPanel extends JPanel
                 boolean isAdjusting = e.getValueIsAdjusting();
                 TableColumnModel tcm = table.getColumnModel();
 
-                Arrays.stream(table.getSelectedRows()).forEach(i ->
-                {
-//                    System.out.println(table.convertRowIndexToModel(i));
-                });
+//                Arrays.stream(table.getSelectedRows()).forEach(i ->
+//                {
+////                    System.out.println(table.convertRowIndexToModel(i));
+//                });
 
                 // Turns out we do need the full list of indices for the selected rows
                 // as they could be non-continuous between the first and last after the table
                 // has been filtered by the search text field
                 selectedRowIndices = Arrays.stream(table.getSelectedRows())
-                        .map(i -> table.convertRowIndexToModel(i))
-                        .boxed()
-                        .collect(Collectors.toList());
+                    .map(i -> table.convertRowIndexToModel(i))
+                    .boxed()
+                    .collect(Collectors.toList());
 
                 ArrayList rows = new ArrayList();
                 List specificRowData = new ArrayList();
                 Map<String, Position> positions = new HashMap<>();
 
                 sb.append("Event for indexes "
-                        + firstIndex + " - " + lastIndex
-                        + "; isAdjusting is " + isAdjusting
-                        + "; selected indexes:");
+                    + firstIndex + " - " + lastIndex
+                    + "; isAdjusting is " + isAdjusting
+                    + "; selected indexes:");
 
                 if (!lsm.isSelectionEmpty())
                 {
@@ -788,21 +810,25 @@ public class PlacenamesSearchPanel extends JPanel
                     {
                         placemarksLayer.removeAllRenderables();
                         placemarksLayer.setEnabled(false);
+                        annotationsLayer.removeAllRenderables();
+                        annotationsLayer.setEnabled(false);
+                        ppAnnotationMap = new HashMap<>();
                     }
                     for (int i : selectedRowIndices)
                     {
                         sb.append(" " + i);
                         Vector vector = model.getDataVector().elementAt(
-                                table.convertRowIndexToModel(table.getSelectedRow()));
+                            table.convertRowIndexToModel(table.getSelectedRow()));
                         rows.add(vector);
 
                         labelName = (String) model.getValueAt(i, tcm.getColumnIndex("clean_name"));
                         String category = (String) model.getValueAt(i, tcm.getColumnIndex("Category"));
+//                        String elevation = (String) model.getValueAt(i, tcm.getColumnIndex("altitude"));
 
                         Double longitude = Double.valueOf(
-                                String.valueOf(model.getValueAt(i, model.findColumn("center_lon"))));
+                            String.valueOf(model.getValueAt(i, model.findColumn("center_lon"))));
                         Double latitude = Double.valueOf(
-                                String.valueOf(model.getValueAt(i, model.findColumn("center_lat"))));
+                            String.valueOf(model.getValueAt(i, model.findColumn("center_lat"))));
                         specificRowData.add(new Vector(Arrays.asList(labelName, category, longitude, latitude)));
 
                         Angle lat, lon;
@@ -810,7 +836,8 @@ public class PlacenamesSearchPanel extends JPanel
                         if (longitude > 180.00)
                         {
                             lon = Angle.POS360.subtract(Angle.fromDegrees(longitude)).multiply(-1.0);
-                        } else
+                        }
+                        else
                         {
                             lon = Angle.fromDegrees(longitude);
                         }
@@ -818,14 +845,21 @@ public class PlacenamesSearchPanel extends JPanel
                         if (latitude > 90.00)
                         {
                             lat = Angle.POS180.subtract(Angle.fromDegrees(latitude)).multiply(-1.0);
-                        } else
+                        }
+                        else
                         {
                             lat = Angle.fromDegrees(latitude);
                         }
-                        Position position = new Position(lat, lon, 0);
+
+                        // TODO - Copy example from line of sight on getting true elevation for a given coordinate
+                        // and setting the placemark to clamp to ground
+                        Position position = terrain.getGlobe().computePositionFromPoint(
+                            terrain.getSurfacePoint(lat, lon, 0));
+
                         positions.put(labelName, position);
 
                         pp = new PointPlacemark(position);
+                        pp.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
 
                         var attrs = new PointPlacemarkAttributes();
                         attrs.setLabelColor("ffffffff");
@@ -835,14 +869,20 @@ public class PlacenamesSearchPanel extends JPanel
                         attrs.setLabelOffset(new Offset(0.9d, 0.6d, AVKey.FRACTION, AVKey.FRACTION));
                         attrs.setLineWidth(2d);
                         attrs.setScale(1.0);
-                        String fullLabel = labelName + "\n"
-                                + category + "\n"
-                                + "lon: " + longitude.toString() + "\n"
-                                + "lat: " + latitude.toString();
+
+
                         pp.setLabelText(labelName);
 
                         pp.setAttributes(attrs);
+
+                        ppAnnotationMap.put(pp, new AbstractMap.SimpleEntry<ScreenAnnotation, Boolean>((makeAnnotation(position)),Boolean.FALSE));
                         placemarksLayer.addRenderable(pp);
+                        annotationsLayer.addRenderable(ppAnnotationMap.get(pp).getKey());
+                        System.out.println("Placemark Label: " + pp.getLabelText());
+                        System.out.println("Annotation Attributes: " + ppAnnotationMap.get(pp).getKey().getAttributes().toString());
+//                        System.out.println("Placemarks in Layer: " + placemarksLayer.getNumRenderables());
+//                        System.out.println("Annotations in Layer: " + annotationsLayer.getNumRenderables());
+
 
                         // Show or hide annotation layer
                         wwd.addSelectListener(new SelectListener()
@@ -850,28 +890,84 @@ public class PlacenamesSearchPanel extends JPanel
                             @Override
                             public void selected(SelectEvent event)
                             {
+                                String ea = event.getEventAction();
+                                if (ea.equals(SelectEvent.LEFT_CLICK) || ea.equals(SelectEvent.LEFT_DOUBLE_CLICK))
+                                {
+                                    if (event.hasObjects())
+                                    {
+                                        if (event.getTopObject() instanceof PointPlacemark)
+                                        {
+                                            PointPlacemark pp = (PointPlacemark) event.getTopObject();
+                                            ScreenAnnotation annotation = (ScreenAnnotation) ppAnnotationMap.get(pp).getKey();
+                                            if (annotation == null)
+                                            {
+                                                ppAnnotationMap.put(pp, new AbstractMap.SimpleEntry<ScreenAnnotation, Boolean>((makeAnnotation(position)),Boolean.FALSE));
+                                                annotationsLayer.addRenderable(ppAnnotationMap.get(pp).getKey());
+                                                ppAnnotationMap.get(pp).setValue(true);
+                                                wwd.redraw();
+                                            }
+                                            else if (!annotation.getAttributes().isVisible())
+                                            {
+                                                annotation.getAttributes().setVisible(true);
+                                                ppAnnotationMap.get(pp).setValue(true);
+                                                wwd.redraw();
+                                            } else {
+                                                annotation.getAttributes().setVisible(false);
+                                                ppAnnotationMap.get(pp).setValue(false);
+                                                wwd.redraw();
+                                            }
+                                        }
+                                    }
+                                }
                                 if (event.getEventAction().equals(SelectEvent.HOVER))
                                 { // there are many of these
                                     if (event.hasObjects())
                                     {
                                         if (event.getTopObject() instanceof PointPlacemark)
                                         {
-                                            if(annotation == null)
+                                            PointPlacemark pp = (PointPlacemark) event.getTopObject();
+                                            ScreenAnnotation annotation = (ScreenAnnotation) ppAnnotationMap.get(pp).getKey();
+
+                                            if (annotation == null)
                                             {
-                                                makeAnnotation(position);
+                                                ppAnnotationMap.put(pp, new AbstractMap.SimpleEntry<ScreenAnnotation, Boolean>((makeAnnotation(position)),Boolean.FALSE));
+                                                annotationsLayer.addRenderable(ppAnnotationMap.get(pp).getKey());
                                                 wwd.redraw();
                                             }
-                                            else if(annotation.getAttributes().isVisible())
+                                            else if (annotation.getAttributes().isVisible())
                                             {
-                                                annotation.getAttributes().setVisible(false);  
+                                                if(!ppAnnotationMap.get(pp).getValue())
+                                                {
+                                                    annotation.getAttributes().setVisible(false);
+                                                }
+
                                                 wwd.redraw();
                                             }
-                                            else if(!annotation.getAttributes().isVisible())
+                                            else if (!annotation.getAttributes().isVisible())
                                             {
-                                                annotation.getAttributes().setVisible(true);  
+                                                annotation.getAttributes().setVisible(true);
                                                 wwd.redraw();
                                             }
                                         }
+                                        else
+                                        {
+//                                            annotationsLayer.setEnabled(false);
+                                            ppAnnotationMap.forEach((pointPlacemark, simpleEntry) -> {
+                                                if(!ppAnnotationMap.get(pp).getValue()){
+                                                    simpleEntry.getKey().getAttributes().setVisible(false);
+                                                }
+                                            });
+                                            wwd.redraw();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        ppAnnotationMap.forEach((pointPlacemark, simpleEntry) -> {
+                                            if(!ppAnnotationMap.get(pp).getValue()){
+                                                simpleEntry.getKey().getAttributes().setVisible(false);
+                                            }
+                                        });
+                                        wwd.redraw();
                                     }
                                 }
                             }
@@ -879,14 +975,11 @@ public class PlacenamesSearchPanel extends JPanel
                     }
                 }
 
-                var attrs = new BasicShapeAttributes();
-                attrs.setOutlineWidth(2);
-                attrs.setOutlineMaterial(new Material(Color.YELLOW));
 
                 if (positions.size() > 0)
                 {
                     wwd.getView().goTo(positions.entrySet().iterator().next().getValue(),
-                            wwd.getView().getCurrentEyePosition().getElevation());
+                        wwd.getView().getCurrentEyePosition().getElevation());
                 }
 
                 sb.append("\n");
@@ -896,7 +989,10 @@ public class PlacenamesSearchPanel extends JPanel
 //                rows.forEach(System.out::println);
 //                specificRowData.forEach(System.out::println);
                 placemarksLayer.setEnabled(true);
+                annotationsLayer.setEnabled(true);
                 getWwd().getModel().getLayers().add(placemarksLayer);
+                getWwd().getModel().getLayers().add(annotationsLayer);
+                wwd.redraw();
             }
         }
 
@@ -918,10 +1014,9 @@ public class PlacenamesSearchPanel extends JPanel
                 super.addSelectionInterval(index0, index1);
             }
         }
-
     }
 
-    private void makeAnnotation(Position pos)
+    private ScreenAnnotation makeAnnotation(Position pos)
     {
         String displayString = this.formatStatistics();
         this.annotationAttributes = new AnnotationAttributes();
@@ -934,45 +1029,52 @@ public class PlacenamesSearchPanel extends JPanel
         this.annotationAttributes.setTextColor(Color.WHITE);
         this.annotationAttributes.setBackgroundColor(new Color(0, 0, 0, 180));
         this.annotationAttributes.setSize(new Dimension(220, 0));
-        this.annotation = new ScreenAnnotation("", new Point(0, 0), this.annotationAttributes);
-        this.annotation.getAttributes().setVisible(false);
-        this.annotation.getAttributes().setDrawOffset(new Point(0, 30)); // use defaults
-        this.annotation.setPosition(pos);
-        this.annotation.getAttributes().setVisible(true);
-        
-        this.annotation.setText(displayString);
-        this.placemarksLayer.addRenderable(this.annotation);
-        wwd.redraw();
+        ScreenAnnotation annotation = new ScreenAnnotation("", new Point(0, 0), this.annotationAttributes);
+        annotation.getAttributes().setVisible(false);
+        annotation.getAttributes().setDrawOffset(new Point(0, 30)); // use defaults
+        annotation.setPosition(pos);
+
+//        annotation.getAttributes().setVisible(true);
+
+        annotation.setText(displayString);
+        System.out.println(annotation.getText()
+            + " - Max Altitude: " + annotation.getMaxActiveAltitude()
+            + " - Min Altitude: "+ annotation.getMinActiveAltitude());
+        return annotation;
+//        this.placemarksLayer.addRenderable(this.annotation);
+//        wwd.redraw();
     }
 
-
-
     protected String formatStatistics()
-    {    
+    {
         StringBuilder sb = new StringBuilder();
         double value;
         String s;
-        
+
         String str = pp.getLabelText();
         s = String.format("Landmark: %s", pp.getLabelText());
         sb.append(s);
-        
+
         // Latitude
         value = pp.getPosition().latitude.degrees;
         s = String.format("\nLatitude: %7.4f\u00B0", value);
         sb.append(s);
-        
+
         // Longitude
         value = pp.getPosition().longitude.degrees;
         s = String.format("\nLongitude: %7.4f\u00B0", value);
         sb.append(s);
-        
+
+        // Longitude
+        value = pp.getPosition().getElevation();
+        s = String.format("\nElevation: %7.4f km\u00B0", value);
+        sb.append(s);
+
         return sb.toString();
     }
 
     /**
-     * @return Instance of the custom renderable layer to use of our internal
-     * layers
+     * @return Instance of the custom renderable layer to use of our internal layers
      * @see MeasureTool
      */
     protected CustomRenderableLayer createCustomRenderableLayer()
