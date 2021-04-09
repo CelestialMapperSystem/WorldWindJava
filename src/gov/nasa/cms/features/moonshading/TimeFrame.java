@@ -159,7 +159,8 @@ public class TimeFrame extends JDialog
                     startDate = dateTimeDialog.getStartDate();
                     endDate = dateTimeDialog.getEndDate();
                     
-                    setStartEndTime();
+                    setStartEndTime(); // Update start and end labels
+                    changeSlider(); // Update time frame slider
 
                     dateTimeDialog.setVisible(false);
                     playPauseButton.setIcon(new ImageIcon("cms-data/icons/pause-icon.png"));
@@ -261,8 +262,7 @@ public class TimeFrame extends JDialog
                 int shadingInterval;
                 int num = 0;//humber of days/hours/months to update by
                 int value = 0;//current day,month,hour 
-
-               changeSlider();//updates the slider to relfect start and end date inputted
+                
                 // While the end date/time is after the calendar date/time
                 while (endDate.after(dateTimeDialog.getCalendar().getTime()))
                 {                   
@@ -343,8 +343,7 @@ public class TimeFrame extends JDialog
         long diffInMillies = Math.abs(endDate.getTime() - startDate.getTime());//difference between start and end date in milliseconds
         LocalDate localDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(); //start date
         int month = localDate.getMonthValue(); //month value from start date
-       // JLabel[] dayLabels = this.createDayLabels(31);//array of day labels
-        JLabel[] dayLabels=new JLabel[31];
+        JLabel[] dayLabels=new JLabel[32];
         JLabel[] hourLabels = new JLabel[25];
         Hashtable<Integer, JLabel> table = new Hashtable<Integer, JLabel>();//table for JLabels
         System.out.println("Absolute time between Start & End in ms: " + diffInMillies);
@@ -383,21 +382,16 @@ public class TimeFrame extends JDialog
         
         // If start - end is less than a month, represent days
         if (diffInMillies < 2.628e+9 && diffInMillies>=6.048e+8)
-        {
-
-             
-                        
+        {            
             //time frame from 1-31
             if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12)
             {
-                //dayLabels = this.createDayLabels(31); //day labels   
-                // timeFrameSlider = new JSlider(0, 30, 0);
+                timeFrameSlider.setMinimum(1);
+                timeFrameSlider.setMaximum(31); 
                 timeFrameSlider.setPaintTicks(true);
                 timeFrameSlider.setPaintLabels(true);
                 timeFrameSlider.setMajorTickSpacing(1);
                 table = new Hashtable<Integer, JLabel>();
-                timeFrameSlider.setMinimum(1);
-                timeFrameSlider.setMaximum(31); 
                 for (int x = 1; x < 32; x++)
                 {
                     dayLabels[x]=new JLabel();
@@ -411,14 +405,12 @@ public class TimeFrame extends JDialog
             //time frame from 1-30
             if (month == 4 || month == 6 || month == 9 || month == 11)
             {
-                //dayLabels = this.createDayLabels(30); //day labels   
-                //timeFrameSlider = new JSlider(0, 31, 0);
+                timeFrameSlider.setMinimum(1);
+                timeFrameSlider.setMaximum(30); 
                 timeFrameSlider.setPaintTicks(true);
                 timeFrameSlider.setPaintLabels(true);
                 timeFrameSlider.setMajorTickSpacing(1);
                 table = new Hashtable<Integer, JLabel>();
-                timeFrameSlider.setMinimum(1);
-                timeFrameSlider.setMaximum(30); 
                 for (int x = 1; x < 31; x++)
                 {
                     dayLabels[x]=new JLabel();
@@ -433,8 +425,6 @@ public class TimeFrame extends JDialog
             //time frame from 1-28
             if (month == 2)
             {
-                //dayLabels = this.createDayLabels(28); //day labels   
-                //timeFrameSlider = new JSlider(0, 27, 0);
                 timeFrameSlider.setPaintTicks(true);
                 timeFrameSlider.setPaintLabels(true);
                 timeFrameSlider.setMajorTickSpacing(1);
@@ -456,7 +446,6 @@ public class TimeFrame extends JDialog
         //if we need time frame to represent months
         if (diffInMillies >= 2.628e+9)
         {
-
             timeFrameSlider.setPaintTicks(true);
             timeFrameSlider.setPaintLabels(true);
             timeFrameSlider.setLabelTable(null);
