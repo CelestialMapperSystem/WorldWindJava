@@ -16,6 +16,9 @@ https://icons8.com/license
 
 <a target="_blank" href="undefined/icons/set/place-marker">Place Marker icon</a> icon by <a target="_blank" href="">Icons8</a>
 
+<a target="_blank" href="undefined/icons/set/map-marker">Map Marker icon</a> icon by <a target="_blank" href="">Icons8</a>
+
+
 
 Source 002
 

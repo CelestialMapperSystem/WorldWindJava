@@ -22,7 +22,6 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.awt.geom.*;
 import java.util.List;
 import java.util.*;
@@ -80,7 +79,6 @@ public class PlacenamesSearchPanel extends JPanel
     protected HighResolutionTerrain terrain;
     private boolean noSearchColumns;
     private long timeSinceLastPick;
-    private Map lastSelected;
 
     public PlacenamesSearchPanel(WorldWindow wwd, CelestialMapper celestialMapper)
     {
@@ -102,6 +100,7 @@ public class PlacenamesSearchPanel extends JPanel
 
     private void makePanel()
     {
+        this.setLayout(new BorderLayout());
         jtf = new JTextField(15);
         JLabel searchLbl = new JLabel("Search Table Fields");
 
@@ -143,7 +142,7 @@ public class PlacenamesSearchPanel extends JPanel
         JPanel buttonRow = new JPanel(new GridLayout(1, 3, 5, 5));
         buttonRow.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 
-        JButton resetButton = new JButton("Reset Table");
+        JButton resetButton = new JButton("Reset Row/Column Order");
         resetButton.addActionListener(e ->
             resetTable());
 
@@ -153,7 +152,7 @@ public class PlacenamesSearchPanel extends JPanel
 
         JButton hideMostColumns = new JButton("Show only Name");
         hideMostColumns.addActionListener(e ->
-            showOnlyName());
+            showOnlyNameColumn());
 
         buttonRow.add(resetButton);
         buttonRow.add(showALlColumns);
@@ -163,9 +162,8 @@ public class PlacenamesSearchPanel extends JPanel
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         bottomPanel.add(buttonRow);
 
+        // Most important step in the initialization process
         createTable();
-
-
 
         // We can add an actionlistener to the search options button now that the table exists
         addSearchOptionsListener(searchOptions);
@@ -173,63 +171,32 @@ public class PlacenamesSearchPanel extends JPanel
         // Create the search options dialog
         createSearchOptionsDialog();
 
+        // Hides the misc columns for the default view
         resetTable();
 
-        this.setLayout(new BorderLayout());
+        addDocumentListenerToTextField();
 
-        PlacemarkSearchData.getRowList().forEach(o ->
-            model.addRow(o));
-
-        // https://stackoverflow.com/questions/4151850/how-to-keep-track-of-row-index-when-jtable-has-been-sorted-by-the-user
-        // After populating the table, we can set the modelRowIndex to 0
-        table.convertRowIndexToView(0);
-
-        // Needs to be a field to be manually refired when the user changes which columns to search
-        DocumentListener documentListener = new DocumentListener()
-        {
-            @Override
-            public void insertUpdate(DocumentEvent e)
-            {
-                search(jtf.getText());
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e)
-            {
-                search(jtf.getText());
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e)
-            {
-                search(jtf.getText());
-            }
-
-            public void search(String str)
-            {
-                if (str.length() == 0 || noSearchColumns)
-                {
-                    sorter.setRowFilter(null);
-                }
-                else
-                {
-
-                    sorter.setRowFilter(
-                        RowFilter.regexFilter("(?i)" + str,
-                            searchColumnMap.values().stream()
-                                .filter(integer -> integer > -1)
-                                .mapToInt(Integer::intValue)
-                                .toArray())
-                    );
-                }
-            }
-        };
-        jtf.getDocument().addDocumentListener(documentListener);
-
-
+        // Now that the table and it's listeners are ready to go, we add the table to a new ScrollPane
         JScrollPane jsp = new JScrollPane(table);
 
-//        pinnedRows = new ArrayList<>();
+        // TODO - Enable pinned rows functionality or move to different feature
+//        createPinnedRowsPanel();
+
+        this.add(topPanel, BorderLayout.NORTH);
+        this.add(jsp, BorderLayout.CENTER);
+
+        // TODO - Enable functionality of right panel buttons or move to different feature
+//        this.add(rightPanel, BorderLayout.EAST);
+        this.add(bottomPanel, BorderLayout.SOUTH);
+
+//        setSize(475, 300);
+        setVisible(true);
+    }
+
+    // TODO - Enable create pinned rows functionality or move to different feature
+    private void createPinnedRowsPanel()
+    {
+        //        pinnedRows = new ArrayList<>();
 //
 //        JButton saveLocations = new JButton("Pin Selected Locations");
 //        saveLocations.addActionListener(e -> {
@@ -271,15 +238,54 @@ public class PlacenamesSearchPanel extends JPanel
 ////        rightPanel.add(Box.createVerticalStrut(20));
 //        rightPanel.add(rpInnerPanel, BorderLayout.CENTER);
 //        rightPanel.add(box);
-        this.add(topPanel, BorderLayout.NORTH);
-        this.add(jsp, BorderLayout.CENTER);
+    }
 
-        // TODO - Enable functionality of right panel buttons or move to different feature
-//        this.add(rightPanel, BorderLayout.EAST);
-        this.add(bottomPanel, BorderLayout.SOUTH);
+    private void addDocumentListenerToTextField()
+    {
 
-//        setSize(475, 300);
-        setVisible(true);
+        // Needs to be a field to be manually refired when the user changes which columns to search
+        // however I couldn't find a way to manually fire the listener after all!
+        // The easiest way to fire the listener is to simply call jtf.setText(jtf.getText)
+        DocumentListener documentListener = new DocumentListener()
+        {
+            @Override
+            public void insertUpdate(DocumentEvent e)
+            {
+                search(jtf.getText());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e)
+            {
+                search(jtf.getText());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e)
+            {
+                search(jtf.getText());
+            }
+
+            public void search(String str)
+            {
+                if (str.length() == 0 || noSearchColumns)
+                {
+                    sorter.setRowFilter(null);
+                }
+                else
+                {
+
+                    sorter.setRowFilter(
+                        RowFilter.regexFilter("(?i)" + str,
+                            searchColumnMap.values().stream()
+                                .filter(integer -> integer > -1)
+                                .mapToInt(Integer::intValue)
+                                .toArray())
+                    );
+                }
+            }
+        };
+        jtf.getDocument().addDocumentListener(documentListener);
     }
 
     private void createTable()
@@ -373,9 +379,17 @@ public class PlacenamesSearchPanel extends JPanel
                 },
                 HashMap::new
             ));
+
+        // Last but not least, add each row of data from the main CSV to the Table model
+        PlacemarkSearchData.getRowList().forEach(o ->
+            model.addRow(o));
+
+        // https://stackoverflow.com/questions/4151850/how-to-keep-track-of-row-index-when-jtable-has-been-sorted-by-the-user
+        // After populating the table, we can set the modelRowIndex to 0
+        table.convertRowIndexToView(0);
     }
 
-    private void showOnlyName()
+    private void showOnlyNameColumn()
     {
 
         allColumnModels.forEach(tableColumn ->
@@ -388,13 +402,12 @@ public class PlacenamesSearchPanel extends JPanel
         });
 
         // Set clean_name column to a wider width
-        tcm.setJTableColumnsWidth(table, tableWidth, 50);
+        TableColumnManager.setJTableColumnsWidth(table, tableWidth, 50);
 
     }
 
     private void showColumns()
     {
-        TableModel tableModel = table.getModel();
         TableColumnModel tableColumnModel = table.getColumnModel();
 
         Collections.list(tableColumnModel.getColumns()).forEach(tableColumn ->
@@ -424,6 +437,10 @@ public class PlacenamesSearchPanel extends JPanel
         TableColumnModel tableColumnModel = table.getColumnModel();
         RowSorter rs = table.getRowSorter();
         rs.setSortKeys(null);
+
+        // Not sure if it's a good idea to remove their current search term if all they want is to
+        // reset their current view of the table columns and row order
+//        jtf.setText("");
 
         // Hide most of the extraneous columns
         int[] columnsToHide =
@@ -474,7 +491,7 @@ public class PlacenamesSearchPanel extends JPanel
 
 
         // Helper method to size the visible columns for the default view
-        tcm.setJTableColumnsWidth(table, tableWidth * 3,
+        TableColumnManager.setJTableColumnsWidth(table, tableWidth * 3,
             8, 15, 7.75, 7.75,
             7.5, 7.5, 7.5, 7.5,
             7.5, 9, 7.5, 7.5);
@@ -595,8 +612,7 @@ public class PlacenamesSearchPanel extends JPanel
                 if (!jCheckBox.isSelected())
                 {
                     jCheckBox.doClick(0);
-//                    jCheckBox.firePropertyChange(String.valueOf(ItemEvent.ITEM_STATE_CHANGED),
-//                            false,true);
+                    jCheckBox.getModel().setEnabled(true);
                 }
             });
         });
@@ -682,24 +698,12 @@ public class PlacenamesSearchPanel extends JPanel
         {
             if (!e.getValueIsAdjusting())
             {
-//                System.out.println("ListSelectionEvent: " + e.toString());
-                ListSelectionModel lsm = (ListSelectionModel) e.getSource();
-//                System.out.println("ListSelectionModel getSelectedIndices: " + lsm.getSelectedIndices());
-
-//                StringBuilder sb = new StringBuilder();
-
                 // The lsm doesn't get the correct row # after the rows have been filtered
                 // by the search text box
-//                int firstIndex = e.getFirstIndex();
-//                int lastIndex = e.getLastIndex();
-//                System.out.println("e firstIndex: " + firstIndex + " e lastIndex: " + lastIndex);
-//                boolean isAdjusting = e.getValueIsAdjusting();
-                TableColumnModel tcm = table.getColumnModel();
+                ListSelectionModel lsm = (ListSelectionModel) e.getSource();
 
-//                Arrays.stream(table.getSelectedRows()).forEach(i ->
-//                {
-//                    System.out.println("Table row selected: " + table.convertRowIndexToModel(i));
-//                });
+                // Use this to get the clean_name column value from each selected row
+                TableColumnModel tcm = table.getColumnModel();
 
                 // Turns out we do need the full list of indices for the selected rows
                 // as they could be non-continuous between the first and last after the table
@@ -709,7 +713,6 @@ public class PlacenamesSearchPanel extends JPanel
                     .boxed()
                     .collect(Collectors.toList());
 
-//                ArrayList rows = new ArrayList();
                 Map<String, Position> positions = new HashMap<>();
 
 //                sb.append("Event for listSelectionEvent indexes "
@@ -734,8 +737,8 @@ public class PlacenamesSearchPanel extends JPanel
                     selectedPPMap.entrySet().forEach(entry -> {
                         // Leaving stub here as a way of checking if a placemark is "selected" or not
                         // and should remain persistent on the globe or not until it's "deselected"
-//                        boolean isClicked = (boolean) entry.getValue().get("clicked");
-//                        if(!isClicked){
+//                        boolean isClicked = (boolean) entry.getValue().get("selected");
+//                        if(!isSelected){}
 
                         entry.getValue().put("clicked", false);
 
@@ -836,18 +839,13 @@ public class PlacenamesSearchPanel extends JPanel
                     wwd.redraw();
                 } // end if isSelectionEmpty
 
-//                System.out.println("Placemarks in Layer: " + placemarksLayer.getNumRenderables());
-//                System.out.println("Annotations in Layer: " + annotationsLayer.getNumRenderables());
-//                System.out.println("Entries in selectedPPMap: " + selectedPPMap.size());
-//                System.out.println("placemarksLayer Values Size:" + placemarksLayer.getValues().size());
-//                System.out.println("placemarksLayer numRenderables: " + placemarksLayer.getNumRenderables());
                 timeSinceLastPick = System.currentTimeMillis() - 1;
 
                 wwd.addSelectListener(event -> {
                     String ea = event.getEventAction();
                     if (!ea.equals(SelectEvent.ROLLOVER))
                     {
-                        System.out.println("Current selectListenerEvent: " + ea);
+//                        System.out.println("Current selectListenerEvent: " + ea);
 //                        System.out.println(event.getSource());
                     }
                     if (event.getEventAction().equals(SelectEvent.HOVER))
@@ -888,7 +886,6 @@ public class PlacenamesSearchPanel extends JPanel
                                         }
                                     }
                                 });
-//                                event.consume();
                             }
                         }
                     }// end if event.getTopObject() == SelectEvent.HOVER
@@ -917,10 +914,6 @@ public class PlacenamesSearchPanel extends JPanel
                         wwd.getView().getCurrentEyePosition().getElevation());
                 }
 
-                // Can uncomment for debugging purposes
-//                System.out.println(sb);
-//                rows.forEach(System.out::println);
-//                specificRowData.forEach(System.out::println);
                 placemarksLayer.setEnabled(true);
                 annotationsLayer.setEnabled(true);
                 annotationsLayer.setPickEnabled(false);
