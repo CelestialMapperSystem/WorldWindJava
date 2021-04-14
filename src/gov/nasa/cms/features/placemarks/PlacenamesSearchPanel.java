@@ -8,65 +8,47 @@ package gov.nasa.cms.features.placemarks;
 import gov.nasa.cms.CelestialMapper;
 import gov.nasa.cms.util.TableColumnManager;
 import gov.nasa.worldwind.*;
-import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.event.SelectEvent;
-import gov.nasa.worldwind.event.SelectListener;
-import gov.nasa.worldwind.formats.shapefile.Shapefile;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.layers.*;
-import gov.nasa.worldwind.ogc.kml.KMLConstants;
-import gov.nasa.worldwind.ogc.kml.impl.KMLExportUtil;
-import gov.nasa.worldwind.pick.*;
+import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.render.airspaces.Airspace;
-import gov.nasa.worldwind.terrain.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.terrain.HighResolutionTerrain;
+import gov.nasa.worldwind.util.UnitsFormat;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 
-import javax.swing.*;
 import javax.swing.Box;
+import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.*;
 
 /**
- * @author : gknorman - 3/31/2021
+ * @author : gknorman - 3/31/2021 & kdickinson - 04/07/2021
  */
 public class PlacenamesSearchPanel extends JPanel
 {
 
     private final PlacemarkSearchData placemarkSearchData;
-    private WorldWindow wwd;
-    private CelestialMapper cms;
+    private final WorldWindow wwd;
+    private final CelestialMapper cms;
     private JTextField jtf;
-    private JLabel searchLbl;
     private DefaultTableModel model;
     private JTable table;
     private TableRowSorter sorter;
-    private JScrollPane jsp;
-    private PointPlacemark pp;
     protected boolean ignoreSelectEvents = false;
 
-    protected static final String SELECTION_CHANGED = "PlaceNamesPanel.SelectionChanged";
-    private ListSelectionModel listSelectionModel;
     protected Path line;
     protected SurfaceShape surfaceShape;
-    //    protected ScreenAnnotation annotation;
-    protected String labelName;
 
     protected Color lineColor = Color.YELLOW;
     protected Color fillColor = new Color(.6f, .6f, .4f, .5f);
     protected double lineWidth = 2;
-
-    protected AnnotationAttributes annotationAttributes;
-
     protected boolean followTerrain = false;
     protected boolean showControlPoints = true;
     protected boolean showAnnotation = true;
@@ -88,17 +70,17 @@ public class PlacenamesSearchPanel extends JPanel
     private ArrayList<JCheckBox> searchOptionsCBList;
     private int tableWidth;
     private int tableHeight;
-    private List<Integer> selectedRowIndices;
-    private int[] selectedRows;
-    private ArrayList<Integer> pinnedRows;
-    private boolean pinSelectedRows;
+    //    private List<Integer> selectedRowIndices;
     HashMap<PointPlacemark, AbstractMap.SimpleEntry<ScreenAnnotation, Boolean>> savedPlacemarks;
-    private HashMap<PointPlacemark, AbstractMap.SimpleEntry<ScreenAnnotation, Boolean>> ppAnnotationMap;
-    private RenderableLayer annotationsLayer;
+    //    private HashMap<PointPlacemark, AbstractMap.SimpleEntry<ScreenAnnotation, Boolean>> ppAnnotationMap;
+    private HashMap<String, Map> selectedPPMap;
+    private CustomRenderableLayer annotationsLayer;
     protected static final Double TARGET_RESOLUTION = 10d;
 
     protected HighResolutionTerrain terrain;
-
+    private boolean noSearchColumns;
+    private long timeSinceLastPick;
+    private Map lastSelected;
 
     public PlacenamesSearchPanel(WorldWindow wwd, CelestialMapper celestialMapper)
     {
@@ -107,8 +89,9 @@ public class PlacenamesSearchPanel extends JPanel
         this.cms = celestialMapper;
         this.placemarkSearchData = new PlacemarkSearchData(wwd, cms);
         this.placemarksLayer = createCustomRenderableLayer();
-        this.placemarksLayer.setName("Found Placemarks Layer");
-        this.ppAnnotationMap = new HashMap<>();
+        this.placemarksLayer.setName("Selected Placemarks Layer");
+//        this.ppAnnotationMap = new HashMap<>();
+        this.selectedPPMap = new HashMap<>();
         this.annotationsLayer = createCustomRenderableLayer();
         this.annotationsLayer.setName("Annotations Layer");
         this.terrain = new HighResolutionTerrain(getWwd().getModel().getGlobe(),
@@ -120,27 +103,20 @@ public class PlacenamesSearchPanel extends JPanel
     private void makePanel()
     {
         jtf = new JTextField(15);
-        searchLbl = new JLabel("Search Table Fields");
+        JLabel searchLbl = new JLabel("Search Table Fields");
 
         // Pops up search options Dialog, but can't add action listeners until Table is created
         JButton searchOptions = new JButton("Show/Hide Search Options");
         searchOptions.setToolTipText("Lets you choose which fields to query in the table");
 
         // Label Text Button
-        JButton labelButton = new JButton("Show/Hide Label");
+        JButton labelButton = new JButton("Show/Hide Annotations");
         labelButton.setToolTipText("Toggle the placemark label text visibility");
         labelButton.addActionListener(e ->
         {
-            if (pp.getLabelText() == null)
-            {
-                pp.setLabelText(labelName);
-                wwd.redraw();
-            }
-            else if (pp.getLabelText() != null)
-            {
-                pp.setLabelText(null);
-                wwd.redraw();
-            }
+            showAnnotation = !showAnnotation;
+            annotationsLayer.setEnabled(showAnnotation);
+            wwd.redraw();
         });
 
         JButton resetRowSort = new JButton("Reset Row Order");
@@ -166,23 +142,18 @@ public class PlacenamesSearchPanel extends JPanel
 
         JPanel buttonRow = new JPanel(new GridLayout(1, 3, 5, 5));
         buttonRow.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+
         JButton resetButton = new JButton("Reset Table");
         resetButton.addActionListener(e ->
-        {
-            resetTable();
-        });
+            resetTable());
 
         JButton showALlColumns = new JButton("Show all Columns");
         showALlColumns.addActionListener(e ->
-        {
-            showColumns();
-        });
+            showColumns());
 
         JButton hideMostColumns = new JButton("Show only Name");
         hideMostColumns.addActionListener(e ->
-        {
-            showOnlyName();
-        });
+            showOnlyName());
 
         buttonRow.add(resetButton);
         buttonRow.add(showALlColumns);
@@ -192,141 +163,9 @@ public class PlacenamesSearchPanel extends JPanel
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         bottomPanel.add(buttonRow);
 
-        // Start building the table
-        String[] columnNames = placemarkSearchData.getHeaders();
+        createTable();
 
-        // The 0 argument is number rows.
-        model = new DefaultTableModel(columnNames, 0)
-        {
-            @Override
-            public void setValueAt(Object inValue, int inRow, int inCol)
-            {
-//                System.out.println("Gets called ");
-                fireTableCellUpdated(inRow, inCol);
-            }
-        };
 
-        // Create Row Sorter, but override the click behavior so the third click on a column header will
-        // reset the row order back to normal, without using the "row reset" button functions
-        // https://stackoverflow.com/questions/5477965/how-to-restore-the-original-row-order-with-jtables-row-sorter
-        sorter = new TableRowSorter<>(model)
-        {
-            @Override
-            public void toggleSortOrder(int column)
-            {
-                List<? extends SortKey> sortKeys = getSortKeys();
-                if (sortKeys.size() > 0)
-                {
-                    if (sortKeys.get(0).getSortOrder() == SortOrder.DESCENDING)
-                    {
-                        setSortKeys(null);
-                        return;
-                    }
-                }
-                super.toggleSortOrder(column);
-            }
-        };
-
-        table = new JTable(model)
-        {
-            @Override
-            public boolean isCellEditable(int row, int column)
-            {
-                return true;
-            }
-
-            /**
-             * Updates the selection models of the table, depending on the state
-             * of the two flags: <code>toggle</code> and <code>extend</code>.
-             * Most changes to the selection that are the result of keyboard or
-             * mouse events received by the UI are channeled through this method
-             * so that the behavior may be overridden by a subclass. Some UIs
-             * may need more functionality than this method provides, such as
-             * when manipulating the lead for discontiguous selection, and may
-             * not call into this method for some selection changes.
-             * <p>
-             * This implementation uses the following conventions:
-             * <ul>
-             * <li> <code>toggle</code>: <em>false</em>, <code>extend</code>:
-             * <em>false</em>. Clear the previous selection and ensure the new
-             * cell is selected.
-             * <li> <code>toggle</code>: <em>false</em>, <code>extend</code>:
-             * <em>true</em>. Extend the previous selection from the anchor to
-             * the specified cell, clearing all other selections.
-             * <li> <code>toggle</code>: <em>true</em>, <code>extend</code>:
-             * <em>false</em>. If the specified cell is selected, deselect it.
-             * If it is not selected, select it.
-             * <li> <code>toggle</code>: <em>true</em>, <code>extend</code>:
-             * <em>true</em>. Apply the selection state of the anchor to all
-             * cells between it and the specified cell.
-             * </ul>
-             *
-             * @param rowIndex affects the selection at <code>row</code>
-             * @param columnIndex affects the selection at <code>column</code>
-             * @param toggle see description above
-             * @param extend if true, extend the current selection
-             * @since 1.3
-             */
-//            @Override
-//            public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend)
-//            {
-//                if(!(toggle && jt.getSelectedRowCount() == 1))
-//                {
-//                    super.changeSelection(rowIndex, columnIndex, toggle, extend);
-//                }
-//            }
-        };
-
-        table.setRowSorter(sorter);
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-        JTableHeader header = table.getTableHeader();
-
-        ColumnHeaderToolTips tips = new ColumnHeaderToolTips();
-        for (int c = 0; c < table.getColumnCount(); c++)
-        {
-            TableColumn col = table.getColumnModel().getColumn(c);
-            tips.setToolTip(col,
-                "<html>Click to sort table by column<br>Right Click to select which columns to show/hide</html>");
-        }
-        header.addMouseMotionListener(tips);
-
-        listSelectionModel = table.getSelectionModel();
-        listSelectionModel.addListSelectionListener(new SharedListSelectionHandler());
-
-//        this.table.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
-//            if (!ignoreSelectEvents) {
-//                actionPerformed(new ActionEvent(e.getSource(), -1, SELECTION_CHANGED));
-//            }
-//        });
-        this.table.setToolTipText("<html>Click to select<br>Double-Click to rename</html>");
-
-        tableHeight = (int) (Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 3);
-        tableWidth = (int) (Toolkit.getDefaultToolkit().getScreenSize().getWidth() / 4);
-
-        table.setPreferredScrollableViewportSize(new Dimension(tableWidth, tableHeight));
-        this.tcm = new TableColumnManager(table);
-
-        this.allColumnModels = tcm.getAllColumns();
-
-        this.allColumns = tcm.getAllColumns().stream()
-            .map(TableColumn::getHeaderValue)
-            .map(Object::toString)
-            .collect(Collectors.toList());
-
-        // Store each column labelName and it's position in the model's header
-        // before any columns are hidden or moved by the user
-        this.searchColumnMap = IntStream.range(0, allColumns.size())
-            .boxed()
-            .collect(Collectors.toMap(
-                i -> allColumns.get(i),
-                i -> Integer.valueOf(i),
-                (u, v) ->
-                {
-                    throw new IllegalStateException(String.format("Duplicate key %s", u));
-                },
-                HashMap::new
-            ));
 
         // We can add an actionlistener to the search options button now that the table exists
         addSearchOptionsListener(searchOptions);
@@ -338,17 +177,15 @@ public class PlacenamesSearchPanel extends JPanel
 
         this.setLayout(new BorderLayout());
 
-        placemarkSearchData.getRowList().forEach(o ->
-        {
-            Object[] data = ((ArrayList) o).toArray();
-            model.addRow(data);
-        });
+        PlacemarkSearchData.getRowList().forEach(o ->
+            model.addRow(o));
 
         // https://stackoverflow.com/questions/4151850/how-to-keep-track-of-row-index-when-jtable-has-been-sorted-by-the-user
         // After populating the table, we can set the modelRowIndex to 0
         table.convertRowIndexToView(0);
 
-        jtf.getDocument().addDocumentListener(new DocumentListener()
+        // Needs to be a field to be manually refired when the user changes which columns to search
+        DocumentListener documentListener = new DocumentListener()
         {
             @Override
             public void insertUpdate(DocumentEvent e)
@@ -370,48 +207,27 @@ public class PlacenamesSearchPanel extends JPanel
 
             public void search(String str)
             {
-                if (str.length() == 0)
+                if (str.length() == 0 || noSearchColumns)
                 {
                     sorter.setRowFilter(null);
                 }
                 else
                 {
-                    int[] columnsToSearch;
+
                     sorter.setRowFilter(
                         RowFilter.regexFilter("(?i)" + str,
-                            searchColumnMap.entrySet().stream()
-                                .filter(a -> a.getValue() > -1)
-                                .map(Map.Entry::getValue)
+                            searchColumnMap.values().stream()
+                                .filter(integer -> integer > -1)
                                 .mapToInt(Integer::intValue)
                                 .toArray())
                     );
                 }
             }
-        });
+        };
+        jtf.getDocument().addDocumentListener(documentListener);
 
-        model.addTableModelListener(new TableModelListener()
-        {
-            @Override
-            public void tableChanged(TableModelEvent e)
-            {
-                SwingUtilities.invokeLater(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        if (selectedRowIndices.size() > 0)
-                        {
-                            selectedRowIndices.forEach(integer ->
-                            {
-                                table.addRowSelectionInterval(integer, integer);
-                            });
-                        }
-                    }
-                });
-            }
-        });
 
-        jsp = new JScrollPane(table);
+        JScrollPane jsp = new JScrollPane(table);
 
 //        pinnedRows = new ArrayList<>();
 //
@@ -466,12 +282,102 @@ public class PlacenamesSearchPanel extends JPanel
         setVisible(true);
     }
 
+    private void createTable()
+    {
+        // Start building the table
+        String[] columnNames = placemarkSearchData.getHeaders();
+
+        // The 0 argument is number rows.
+        model = new DefaultTableModel(columnNames, 0)
+        {
+            @Override
+            public void setValueAt(Object inValue, int inRow, int inCol)
+            {
+//                System.out.println("Gets called ");
+                fireTableCellUpdated(inRow, inCol);
+            }
+        };
+
+        // Create Row Sorter, but override the click behavior so the third click on a column header will
+        // reset the row order back to normal, without using the "row reset" button functions
+        // https://stackoverflow.com/questions/5477965/how-to-restore-the-original-row-order-with-jtables-row-sorter
+        sorter = new TableRowSorter<>(model)
+        {
+            @Override
+            public void toggleSortOrder(int column)
+            {
+                List<? extends SortKey> sortKeys = getSortKeys();
+                if (sortKeys.size() > 0)
+                {
+                    if (sortKeys.get(0).getSortOrder() == SortOrder.DESCENDING)
+                    {
+                        setSortKeys(null);
+                        return;
+                    }
+                }
+                super.toggleSortOrder(column);
+            }
+        };
+
+        table = new JTable(model)
+        {
+            @Override
+            public boolean isCellEditable(int row, int column)
+            {
+                return true;
+            }
+        };
+
+        table.setRowSorter(sorter);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+        JTableHeader header = table.getTableHeader();
+
+        ColumnHeaderToolTips tips = new ColumnHeaderToolTips();
+        for (int c = 0; c < table.getColumnCount(); c++)
+        {
+            TableColumn col = table.getColumnModel().getColumn(c);
+            tips.setToolTip(col,
+                "<html>Click to sort table by column<br>Right Click to select which columns to show/hide</html>");
+        }
+        header.addMouseMotionListener(tips);
+
+        ListSelectionModel listSelectionModel = table.getSelectionModel();
+        listSelectionModel.addListSelectionListener(new SharedListSelectionHandler());
+
+        this.table.setToolTipText("<html>Click to select<br>Double-Click to rename</html>");
+
+        tableHeight = (int) (Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 3);
+        tableWidth = (int) (Toolkit.getDefaultToolkit().getScreenSize().getWidth() / 4);
+
+        table.setPreferredScrollableViewportSize(new Dimension(tableWidth, tableHeight));
+        this.tcm = new TableColumnManager(table);
+
+        this.allColumnModels = tcm.getAllColumns();
+
+        this.allColumns = tcm.getAllColumns().stream()
+            .map(TableColumn::getHeaderValue)
+            .map(Object::toString)
+            .collect(Collectors.toList());
+
+        // Store each column labelName and it's position in the model's header
+        // before any columns are hidden or moved by the user
+        this.searchColumnMap = IntStream.range(0, allColumns.size())
+            .boxed()
+            .collect(Collectors.toMap(
+                i -> allColumns.get(i),
+                Integer::valueOf,
+                (u, v) ->
+                {
+                    throw new IllegalStateException(String.format("Duplicate key %s", u));
+                },
+                HashMap::new
+            ));
+    }
+
     private void showOnlyName()
     {
-        TableModel tableModel = table.getModel();
-        TableColumnModel tableColumnModel = table.getColumnModel();
 
-//            System.out.println(tableModel.getColumnCount() + " : " + model.getColumnCount());
         allColumnModels.forEach(tableColumn ->
         {
             table.removeColumn(tableColumn);
@@ -481,9 +387,9 @@ public class PlacenamesSearchPanel extends JPanel
             }
         });
 
-        // Set
-        tcm.setJTableColumnsWidth(table, tableWidth, 100);
-//            tcm.showColumn("clean_name");
+        // Set clean_name column to a wider width
+        tcm.setJTableColumnsWidth(table, tableWidth, 50);
+
     }
 
     private void showColumns()
@@ -491,12 +397,6 @@ public class PlacenamesSearchPanel extends JPanel
         TableModel tableModel = table.getModel();
         TableColumnModel tableColumnModel = table.getColumnModel();
 
-        // For debugging
-//        var columnCount = tableColumnModel.getColumnCount();
-//        System.out.println("Column Count: " + columnCount);
-//        var modelColumnCount = tableModel.getColumnCount();
-//        System.out.println("Table Column Count: " + modelColumnCount);
-//        System.out.println("All Columns Size: " + allColumnModels.size());
         Collections.list(tableColumnModel.getColumns()).forEach(tableColumn ->
         {
             table.removeColumn(tableColumn);
@@ -572,12 +472,7 @@ public class PlacenamesSearchPanel extends JPanel
         // Hiding has to be done after all of the columns exist in the table, or else
         Arrays.stream(columnsToHide).forEach(value -> tcm.hideColumn(value));
 
-        // For debugging
-//        var columnCount = tableColumnModel.getColumnCount();
-//        System.out.println("Column Count: " + columnCount);
-//        var modelColumnCount = tableModel.getColumnCount();
-//        System.out.println("Table Column Count: " + modelColumnCount);
-//        System.out.println("All Columns Size: " + allColumnModels.size());
+
         // Helper method to size the visible columns for the default view
         tcm.setJTableColumnsWidth(table, tableWidth * 3,
             8, 15, 7.75, 7.75,
@@ -590,6 +485,7 @@ public class PlacenamesSearchPanel extends JPanel
         return Arrays.stream(arr).anyMatch(i -> i == key);
     }
 
+
     private void addSearchOptionsListener(JButton searchOptions)
     {
         searchOptions.addActionListener(e ->
@@ -600,16 +496,10 @@ public class PlacenamesSearchPanel extends JPanel
                 return;
             }
 
-            if (isSearchOptionsOpen)
-            {
-                this.searchOptionsDialog.setVisible(true);
-            }
-            else
-            {
-                this.searchOptionsDialog.setVisible(false);
-            }
+            this.searchOptionsDialog.setVisible(isSearchOptionsOpen);
         });
     }
+
 
     private void createSearchOptionsDialog()
     {
@@ -621,7 +511,7 @@ public class PlacenamesSearchPanel extends JPanel
         searchOptionsDialog.setSize(new Dimension(200, 400));
 
         // Set the location and resizable
-        searchOptionsDialog.setLocation(bounds.x + 50, bounds.y + 200);
+        searchOptionsDialog.setLocation(bounds.x, bounds.y + 200);
         searchOptionsDialog.setResizable(true);
         searchOptionsDialog.setVisible(false);
 
@@ -650,13 +540,21 @@ public class PlacenamesSearchPanel extends JPanel
                 {
                     // Remove / Add column from rowFilter's indices
                     this.searchColumnMap.put(value.toString(), allColumns.indexOf(value.toString()));
+
+                    this.noSearchColumns = false;
 //                    System.out.println("Enabling: " + value.toString() + " : " + allColumns.indexOf(value.toString()));
                 }
                 else
                 {
+
                     this.searchColumnMap.put(value.toString(), -1);
 //                    System.out.println("Disabling: " + value.toString() + " : " + allColumns.indexOf(value.toString()));
                 }
+
+                // Can't think of any other way to manually fire the DocumentListener
+                // to tell it that the Rowfilter should be changed because the columns
+                // to search have changed:
+                jtf.setText(jtf.getText());
             });
 
             try
@@ -673,37 +571,61 @@ public class PlacenamesSearchPanel extends JPanel
 
         JPanel searchOptionsButtons = new JPanel(new GridLayout(3, 1, 5, 5));
         JButton selectNone = new JButton("Deselect All");
+
         selectNone.addActionListener(e ->
         {
+            this.noSearchColumns = true;
             searchOptionsCBList.forEach(jCheckBox ->
             {
-                jCheckBox.setSelected(false);
+
+                if (jCheckBox.isSelected())
+                {
+                    jCheckBox.doClick(0);
+                }
             });
         });
 
         JButton selectAll = new JButton("Select All");
+
         selectAll.addActionListener(e ->
         {
+            this.noSearchColumns = false;
             searchOptionsCBList.forEach(jCheckBox ->
             {
-                jCheckBox.setSelected(true);
+                if (!jCheckBox.isSelected())
+                {
+                    jCheckBox.doClick(0);
+//                    jCheckBox.firePropertyChange(String.valueOf(ItemEvent.ITEM_STATE_CHANGED),
+//                            false,true);
+                }
             });
         });
 
         JButton selectCoordinates = new JButton("Coord's & Name Only");
+
         selectCoordinates.addActionListener(e ->
         {
+            this.noSearchColumns = false;
             searchOptionsCBList.forEach(jCheckBox ->
             {
                 if (jCheckBox.getText().equals("clean_name")
                     || jCheckBox.getText().equals("center_lon")
                     || jCheckBox.getText().equals("center_lat"))
                 {
-                    jCheckBox.setSelected(true);
+                    if (!jCheckBox.isSelected())
+                    {
+                        jCheckBox.doClick(0);
+//                        jCheckBox.setSelected(true);
+                    }
                 }
                 else
                 {
-                    jCheckBox.setSelected(false);
+                    if (jCheckBox.isSelected())
+                    {
+                        jCheckBox.doClick(0);
+
+//                        jCheckBox.setSelected(false);
+                    }
                 }
             });
         });
@@ -749,9 +671,7 @@ public class PlacenamesSearchPanel extends JPanel
     // https://docs.oracle.com/javase/tutorial/uiswing/examples/events/TableListSelectionDemoProject/src/events/TableListSelectionDemo.java
     class SharedListSelectionHandler extends DefaultListSelectionModel implements ListSelectionListener
     {
-
         private boolean selectionEnabled = true;
-
 
         public SharedListSelectionHandler()
         {
@@ -760,229 +680,242 @@ public class PlacenamesSearchPanel extends JPanel
 
         public void valueChanged(ListSelectionEvent e)
         {
-
             if (!e.getValueIsAdjusting())
             {
-
+//                System.out.println("ListSelectionEvent: " + e.toString());
                 ListSelectionModel lsm = (ListSelectionModel) e.getSource();
+//                System.out.println("ListSelectionModel getSelectedIndices: " + lsm.getSelectedIndices());
 
-                StringBuilder sb = new StringBuilder();
+//                StringBuilder sb = new StringBuilder();
 
                 // The lsm doesn't get the correct row # after the rows have been filtered
                 // by the search text box
-                int firstIndex = e.getFirstIndex();
-                int lastIndex = e.getLastIndex();
-//                System.out.println("firstIndex: " + firstIndex + " lastIndex: " + lastIndex);
-                boolean isAdjusting = e.getValueIsAdjusting();
+//                int firstIndex = e.getFirstIndex();
+//                int lastIndex = e.getLastIndex();
+//                System.out.println("e firstIndex: " + firstIndex + " e lastIndex: " + lastIndex);
+//                boolean isAdjusting = e.getValueIsAdjusting();
                 TableColumnModel tcm = table.getColumnModel();
 
 //                Arrays.stream(table.getSelectedRows()).forEach(i ->
 //                {
-////                    System.out.println(table.convertRowIndexToModel(i));
+//                    System.out.println("Table row selected: " + table.convertRowIndexToModel(i));
 //                });
 
                 // Turns out we do need the full list of indices for the selected rows
                 // as they could be non-continuous between the first and last after the table
                 // has been filtered by the search text field
-                selectedRowIndices = Arrays.stream(table.getSelectedRows())
+                List<Integer> selectedRowIndices = Arrays.stream(table.getSelectedRows())
                     .map(i -> table.convertRowIndexToModel(i))
                     .boxed()
                     .collect(Collectors.toList());
 
-                ArrayList rows = new ArrayList();
-                List specificRowData = new ArrayList();
+//                ArrayList rows = new ArrayList();
                 Map<String, Position> positions = new HashMap<>();
 
-                sb.append("Event for indexes "
-                    + firstIndex + " - " + lastIndex
-                    + "; isAdjusting is " + isAdjusting
-                    + "; selected indexes:");
+//                sb.append("Event for listSelectionEvent indexes "
+//                    + firstIndex + " - " + lastIndex
+//                    + "; isAdjusting is " + isAdjusting
+//                    + "; selected indexes:" + lsm.getSelectedIndices());
 
                 if (!lsm.isSelectionEmpty())
                 {
                     // Find out which indexes are selected.
-                    selectedRows = table.getSelectedRows();
-                    int minIndex = selectedRowIndices.get(0);
-                    int maxIndex = selectedRowIndices.get(selectedRowIndices.size() - 1);
-                    System.out.println("minIndex: " + minIndex + " maxIndex: " + maxIndex);
+                    int[] selectedRows = table.getSelectedRows();
+//                    System.out.println("selectedRows:" + Arrays.stream(selectedRows).toArray());
+//                    System.out.println("selectedRowIndices: " + selectedRowIndices);
+//                    int minIndex = selectedRowIndices.get(0);
+//                    int maxIndex = selectedRowIndices.get(selectedRowIndices.size() - 1);
+//                    System.out.println("minIndex: " + minIndex + " maxIndex: " + maxIndex);
 
-                    if (getWwd().getModel().getLayers().getLayerByName(placemarksLayer.getName()) != null)
-                    {
-                        placemarksLayer.removeAllRenderables();
-                        placemarksLayer.setEnabled(false);
-                        annotationsLayer.removeAllRenderables();
-                        annotationsLayer.setEnabled(false);
-                        ppAnnotationMap = new HashMap<>();
-                    }
+                    placemarksLayer.setEnabled(false);
+                    annotationsLayer.setEnabled(false);
+
+                    // Reset all of the entries in the selected placemarks map to being invisible and NOT clicked
+                    selectedPPMap.entrySet().forEach(entry -> {
+                        // Leaving stub here as a way of checking if a placemark is "selected" or not
+                        // and should remain persistent on the globe or not until it's "deselected"
+//                        boolean isClicked = (boolean) entry.getValue().get("clicked");
+//                        if(!isClicked){
+
+                        entry.getValue().put("clicked", false);
+
+                        PointPlacemark pp = (PointPlacemark) entry.getValue().get("pointPlacemark");
+                        pp.setVisible(false);
+                        ScreenAnnotation screenAnnotation = (ScreenAnnotation) entry.getValue().get("annotation");
+                        screenAnnotation.getAttributes().setVisible(false);
+                        
+                        wwd.redraw();
+//                        }
+                    });
+
+//
                     for (int i : selectedRowIndices)
                     {
-                        sb.append(" " + i);
-                        Vector vector = model.getDataVector().elementAt(
-                            table.convertRowIndexToModel(table.getSelectedRow()));
-                        rows.add(vector);
+//
+                        String labelName = (String) model.getValueAt(i, tcm.getColumnIndex("clean_name"));
 
-                        labelName = (String) model.getValueAt(i, tcm.getColumnIndex("clean_name"));
-                        String category = (String) model.getValueAt(i, tcm.getColumnIndex("Category"));
-//                        String elevation = (String) model.getValueAt(i, tcm.getColumnIndex("altitude"));
-
-                        Double longitude = Double.valueOf(
-                            String.valueOf(model.getValueAt(i, model.findColumn("center_lon"))));
-                        Double latitude = Double.valueOf(
-                            String.valueOf(model.getValueAt(i, model.findColumn("center_lat"))));
-                        specificRowData.add(new Vector(Arrays.asList(labelName, category, longitude, latitude)));
-
-                        Angle lat, lon;
-
-                        if (longitude > 180.00)
+                        // If the placemark has not been created previously, then create it
+                        if (!selectedPPMap.containsKey(labelName))
                         {
-                            lon = Angle.POS360.subtract(Angle.fromDegrees(longitude)).multiply(-1.0);
-                        }
-                        else
-                        {
-                            lon = Angle.fromDegrees(longitude);
-                        }
 
-                        if (latitude > 90.00)
-                        {
-                            lat = Angle.POS180.subtract(Angle.fromDegrees(latitude)).multiply(-1.0);
-                        }
-                        else
-                        {
-                            lat = Angle.fromDegrees(latitude);
-                        }
+                            double longitude = Double.parseDouble(
+                                String.valueOf(model.getValueAt(i, model.findColumn("center_lon"))));
 
-                        // TODO - Copy example from line of sight on getting true elevation for a given coordinate
-                        // and setting the placemark to clamp to ground
-                        Position position = terrain.getGlobe().computePositionFromPoint(
-                            terrain.getSurfacePoint(lat, lon, 0));
+                            double latitude = Double.parseDouble(
+                                String.valueOf(model.getValueAt(i, model.findColumn("center_lat"))));
 
-                        positions.put(labelName, position);
+                            Angle lat, lon;
 
-                        pp = new PointPlacemark(position);
-                        pp.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
-
-                        var attrs = new PointPlacemarkAttributes();
-                        attrs.setLabelColor("ffffffff");
-                        attrs.setImageAddress("images/pushpins/plain-red.png");
-                        attrs.setLineMaterial(Material.RED);
-                        attrs.setImageOffset(new Offset(19d, 8d, AVKey.PIXELS, AVKey.PIXELS));
-                        attrs.setLabelOffset(new Offset(0.9d, 0.6d, AVKey.FRACTION, AVKey.FRACTION));
-                        attrs.setLineWidth(2d);
-                        attrs.setScale(1.0);
-
-
-                        pp.setLabelText(labelName);
-
-                        pp.setAttributes(attrs);
-
-                        ppAnnotationMap.put(pp, new AbstractMap.SimpleEntry<ScreenAnnotation, Boolean>((makeAnnotation(position)),Boolean.FALSE));
-                        placemarksLayer.addRenderable(pp);
-                        annotationsLayer.addRenderable(ppAnnotationMap.get(pp).getKey());
-                        System.out.println("Placemark Label: " + pp.getLabelText());
-                        System.out.println("Annotation Attributes: " + ppAnnotationMap.get(pp).getKey().getAttributes().toString());
-//                        System.out.println("Placemarks in Layer: " + placemarksLayer.getNumRenderables());
-//                        System.out.println("Annotations in Layer: " + annotationsLayer.getNumRenderables());
-
-
-                        // Show or hide annotation layer
-                        wwd.addSelectListener(new SelectListener()
-                        {
-                            @Override
-                            public void selected(SelectEvent event)
+                            if (longitude > 180.00)
                             {
-                                String ea = event.getEventAction();
-                                if (ea.equals(SelectEvent.LEFT_CLICK) || ea.equals(SelectEvent.LEFT_DOUBLE_CLICK))
-                                {
-                                    if (event.hasObjects())
-                                    {
-                                        if (event.getTopObject() instanceof PointPlacemark)
-                                        {
-                                            PointPlacemark pp = (PointPlacemark) event.getTopObject();
-                                            ScreenAnnotation annotation = (ScreenAnnotation) ppAnnotationMap.get(pp).getKey();
-                                            if (annotation == null)
-                                            {
-                                                ppAnnotationMap.put(pp, new AbstractMap.SimpleEntry<ScreenAnnotation, Boolean>((makeAnnotation(position)),Boolean.FALSE));
-                                                annotationsLayer.addRenderable(ppAnnotationMap.get(pp).getKey());
-                                                ppAnnotationMap.get(pp).setValue(true);
-                                                wwd.redraw();
-                                            }
-                                            else if (!annotation.getAttributes().isVisible())
-                                            {
-                                                annotation.getAttributes().setVisible(true);
-                                                ppAnnotationMap.get(pp).setValue(true);
-                                                wwd.redraw();
-                                            } else {
-                                                annotation.getAttributes().setVisible(false);
-                                                ppAnnotationMap.get(pp).setValue(false);
-                                                wwd.redraw();
-                                            }
-                                        }
-                                    }
-                                }
-                                if (event.getEventAction().equals(SelectEvent.HOVER))
-                                { // there are many of these
-                                    if (event.hasObjects())
-                                    {
-                                        if (event.getTopObject() instanceof PointPlacemark)
-                                        {
-                                            PointPlacemark pp = (PointPlacemark) event.getTopObject();
-                                            ScreenAnnotation annotation = (ScreenAnnotation) ppAnnotationMap.get(pp).getKey();
-
-                                            if (annotation == null)
-                                            {
-                                                ppAnnotationMap.put(pp, new AbstractMap.SimpleEntry<ScreenAnnotation, Boolean>((makeAnnotation(position)),Boolean.FALSE));
-                                                annotationsLayer.addRenderable(ppAnnotationMap.get(pp).getKey());
-                                                wwd.redraw();
-                                            }
-                                            else if (annotation.getAttributes().isVisible())
-                                            {
-                                                if(!ppAnnotationMap.get(pp).getValue())
-                                                {
-                                                    annotation.getAttributes().setVisible(false);
-                                                }
-
-                                                wwd.redraw();
-                                            }
-                                            else if (!annotation.getAttributes().isVisible())
-                                            {
-                                                annotation.getAttributes().setVisible(true);
-                                                wwd.redraw();
-                                            }
-                                        }
-                                        else
-                                        {
-//                                            annotationsLayer.setEnabled(false);
-                                            ppAnnotationMap.forEach((pointPlacemark, simpleEntry) -> {
-                                                if(!ppAnnotationMap.get(pp).getValue()){
-                                                    simpleEntry.getKey().getAttributes().setVisible(false);
-                                                }
-                                            });
-                                            wwd.redraw();
-                                        }
-                                    }
-                                    else
-                                    {
-                                        ppAnnotationMap.forEach((pointPlacemark, simpleEntry) -> {
-                                            if(!ppAnnotationMap.get(pp).getValue()){
-                                                simpleEntry.getKey().getAttributes().setVisible(false);
-                                            }
-                                        });
-                                        wwd.redraw();
-                                    }
-                                }
+                                lon = Angle.POS360.subtract(Angle.fromDegrees(longitude)).multiply(-1.0);
                             }
-                        });
-                    }
-                }
+                            else
+                            {
+                                lon = Angle.fromDegrees(longitude);
+                            }
 
+                            if (latitude > 90.00)
+                            {
+                                lat = Angle.POS180.subtract(Angle.fromDegrees(latitude)).multiply(-1.0);
+                            }
+                            else
+                            {
+                                lat = Angle.fromDegrees(latitude);
+                            }
+
+                            /*
+                            // Copied example from line of sight on getting true elevation for a given coordinate
+                            // setting the placemark to clamp to ground
+                             */
+
+                            Position position = terrain.getGlobe().computePositionFromPoint(
+                                terrain.getSurfacePoint(lat, lon, 0));
+
+                            positions.put(labelName, position);
+
+                            PointPlacemark pp = new PointPlacemark(position);
+                            pp.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+
+                            var attrs = new PointPlacemarkAttributes();
+                            attrs.setLabelColor("ffffffff");
+                            attrs.setImageAddress("images/pushpins/plain-red.png");
+                            attrs.setLineMaterial(Material.RED);
+                            attrs.setImageOffset(new Offset(19d, 8d, AVKey.PIXELS, AVKey.PIXELS));
+                            attrs.setLabelOffset(new Offset(0.9d, 0.6d, AVKey.FRACTION, AVKey.FRACTION));
+                            attrs.setLineWidth(2d);
+                            attrs.setScale(1.0);
+
+                            pp.setLabelText(labelName);
+
+                            pp.setAttributes(attrs);
+
+                            ScreenAnnotation annotation = makeAnnotation(position, pp);
+
+                            Map entry = new HashMap(Map.of(
+                                "pointPlacemark", pp,
+                                "annotation", annotation,
+                                "clicked", false
+                            ));
+//                            Vector vector = new Vector( Arrays.asList(pp,annotation,false));
+
+                            selectedPPMap.put(labelName, entry);
+                            placemarksLayer.addRenderable(pp);
+                            annotationsLayer.addRenderable(annotation);
+                        }
+                        else
+                        {
+                            PointPlacemark pointPlacemark = (PointPlacemark) selectedPPMap.get(labelName).get(
+                                "pointPlacemark");
+                            pointPlacemark.setVisible(true);
+                            positions.put(labelName, pointPlacemark.getPosition());
+                        }
+                    } // end for loop
+                    placemarksLayer.setEnabled(true);
+                    annotationsLayer.setEnabled(true);
+                    wwd.redraw();
+                } // end if isSelectionEmpty
+
+//                System.out.println("Placemarks in Layer: " + placemarksLayer.getNumRenderables());
+//                System.out.println("Annotations in Layer: " + annotationsLayer.getNumRenderables());
+//                System.out.println("Entries in selectedPPMap: " + selectedPPMap.size());
+//                System.out.println("placemarksLayer Values Size:" + placemarksLayer.getValues().size());
+//                System.out.println("placemarksLayer numRenderables: " + placemarksLayer.getNumRenderables());
+                timeSinceLastPick = System.currentTimeMillis() - 1;
+
+                wwd.addSelectListener(event -> {
+                    String ea = event.getEventAction();
+                    if (!ea.equals(SelectEvent.ROLLOVER))
+                    {
+                        System.out.println("Current selectListenerEvent: " + ea);
+//                        System.out.println(event.getSource());
+                    }
+                    if (event.getEventAction().equals(SelectEvent.HOVER))
+                    { // there are many of these
+                        if (event.hasObjects() && event.getTopObject() instanceof PointPlacemark)
+                        {
+                            // Have to make sure that the listener event isn't being fired twice by adding
+                            // a small delay of 1ms.
+
+                            // Also, this condition needs to be checked apart from whether the event has objects
+                            // otherwise when CTRL-CLICK selecting multiple rows, the wwd listener will fire multiple
+                            // times and the else condition will always be reached.
+                            if(System.currentTimeMillis() - timeSinceLastPick > 1)
+                            {
+                                System.out.println("Event hasObjects, invoking placeMarkEvent(HOVER)");
+                                placemarkEvent(event, "HOVER");
+                                event.consume();
+                            }
+                        } // end if event.hasObjects()
+                        else
+                        {
+                            if (SwingUtilities.isEventDispatchThread())
+                            {
+                                System.out.println("Event does not have Objects, hiding Annotations");
+                                selectedPPMap.forEach((key, value) -> {
+                                    ScreenAnnotation sc = (ScreenAnnotation) value.get("annotation");
+                                    if (sc.getAttributes().isVisible())
+                                    {
+                                        System.out.println(key + ": Is no longer Hovered!");
+                                        if (!(boolean) value.get("clicked"))
+                                        {
+                                            System.out.println(
+                                                key + ": has not been clicked, hiding annotation!");
+                                            sc.getAttributes().setVisible(false);
+                                            wwd.redraw();
+                                        } else {
+                                            System.out.println(key + ": has been CLICKED and Annotation should be visible");
+                                        }
+                                    }
+                                });
+//                                event.consume();
+                            }
+                        }
+                    }// end if event.getTopObject() == SelectEvent.HOVER
+                    else if ((event.getEventAction().equals(SelectEvent.LEFT_CLICK) || event.getEventAction().equals(
+                        SelectEvent.LEFT_DOUBLE_CLICK)))
+                    {
+                        if (event.hasObjects() && event.getTopObject() instanceof PointPlacemark)
+                        {
+                            // Have to make sure that the click event action isn't fired twice by adding even
+                            // a small delay of 1ms
+                            if(System.currentTimeMillis() - timeSinceLastPick > 1){
+                                System.out.println("Event hasObjects, invoking placeMarkEvent(CLICKED)");
+                                placemarkEvent(event, "CLICKED");
+                                event.consume();
+                            }
+                        }
+                    }
+
+                    timeSinceLastPick = System.currentTimeMillis();
+                });
 
                 if (positions.size() > 0)
                 {
+                    System.out.println("Current num of positions: " + positions.size());
                     wwd.getView().goTo(positions.entrySet().iterator().next().getValue(),
                         wwd.getView().getCurrentEyePosition().getElevation());
                 }
-
-                sb.append("\n");
 
                 // Can uncomment for debugging purposes
 //                System.out.println(sb);
@@ -990,8 +923,14 @@ public class PlacenamesSearchPanel extends JPanel
 //                specificRowData.forEach(System.out::println);
                 placemarksLayer.setEnabled(true);
                 annotationsLayer.setEnabled(true);
-                getWwd().getModel().getLayers().add(placemarksLayer);
-                getWwd().getModel().getLayers().add(annotationsLayer);
+                annotationsLayer.setPickEnabled(false);
+                if(getWwd().getModel().getLayers().getLayerByName(placemarksLayer.getName()) == null){
+                    getWwd().getModel().getLayers().add(placemarksLayer);
+                }
+                if(getWwd().getModel().getLayers().getLayerByName(annotationsLayer.getName()) == null){
+                    getWwd().getModel().getLayers().add(annotationsLayer);
+                }
+
                 wwd.redraw();
             }
         }
@@ -1005,54 +944,39 @@ public class PlacenamesSearchPanel extends JPanel
         {
             this.selectionEnabled = selectionEnabled;
         }
-
-        @Override
-        public void addSelectionInterval(int index0, int index1)
-        {
-            if (selectionEnabled)
-            {
-                super.addSelectionInterval(index0, index1);
-            }
-        }
     }
 
-    private ScreenAnnotation makeAnnotation(Position pos)
+    private ScreenAnnotation makeAnnotation(Position pos, PointPlacemark pp)
     {
-        String displayString = this.formatStatistics();
-        this.annotationAttributes = new AnnotationAttributes();
-        this.annotationAttributes.setFrameShape(AVKey.SHAPE_RECTANGLE);
-        this.annotationAttributes.setInsets(new Insets(10, 10, 10, 10));
-        this.annotationAttributes.setDrawOffset(new Point(0, 10));
-        this.annotationAttributes.setTextAlign(AVKey.CENTER);
-        this.annotationAttributes.setEffect(AVKey.TEXT_EFFECT_OUTLINE);
-        this.annotationAttributes.setFont(Font.decode("Arial-Bold-14"));
-        this.annotationAttributes.setTextColor(Color.WHITE);
-        this.annotationAttributes.setBackgroundColor(new Color(0, 0, 0, 180));
-        this.annotationAttributes.setSize(new Dimension(220, 0));
-        ScreenAnnotation annotation = new ScreenAnnotation("", new Point(0, 0), this.annotationAttributes);
+        String displayString = this.formatStatistics(pp);
+        AnnotationAttributes annotationAttributes = new AnnotationAttributes();
+        annotationAttributes.setFrameShape(AVKey.SHAPE_RECTANGLE);
+        annotationAttributes.setInsets(new Insets(10, 10, 10, 10));
+        annotationAttributes.setDrawOffset(new Point(0, 30));
+        annotationAttributes.setTextAlign(AVKey.CENTER);
+        annotationAttributes.setEffect(AVKey.TEXT_EFFECT_OUTLINE);
+        annotationAttributes.setFont(Font.decode("Arial-Bold-14"));
+        annotationAttributes.setTextColor(Color.WHITE);
+        annotationAttributes.setBackgroundColor(new Color(0, 0, 0, 180));
+        annotationAttributes.setSize(new Dimension(220, 0));
+        ScreenAnnotation annotation = new ScreenAnnotation("", new Point(0, 0), annotationAttributes);
         annotation.getAttributes().setVisible(false);
-        annotation.getAttributes().setDrawOffset(new Point(0, 30)); // use defaults
-        annotation.setPosition(pos);
-
+        annotation.getAttributes().setDrawOffset(new Point(0, 70)); // use defaults
+        annotation.setPosition(new Position(new LatLon(pos.getLatitude(), pos.getLongitude()), 0d));
 //        annotation.getAttributes().setVisible(true);
 
         annotation.setText(displayString);
-        System.out.println(annotation.getText()
-            + " - Max Altitude: " + annotation.getMaxActiveAltitude()
-            + " - Min Altitude: "+ annotation.getMinActiveAltitude());
         return annotation;
-//        this.placemarksLayer.addRenderable(this.annotation);
-//        wwd.redraw();
     }
 
-    protected String formatStatistics()
+    protected String formatStatistics(PointPlacemark pp)
     {
         StringBuilder sb = new StringBuilder();
         double value;
         String s;
 
         String str = pp.getLabelText();
-        s = String.format("Landmark: %s", pp.getLabelText());
+        s = String.format("Landmark: %s", str);
         sb.append(s);
 
         // Latitude
@@ -1098,6 +1022,80 @@ public class PlacenamesSearchPanel extends JPanel
             }
 
             super.render(dc);
+        }
+    }
+
+    private void placemarkEvent(SelectEvent event, String behavior)
+    {
+//        System.out.println(event.getTopObject().getClass()
+//            + " : " + event.getTopObject().toString());
+
+        timeSinceLastPick = System.currentTimeMillis();
+
+        Runnable hoverBehavior = () -> {
+            if (event.getTopObject() instanceof PointPlacemark)
+            {
+                PointPlacemark pp = (PointPlacemark) event.getTopObject();
+                var selected = selectedPPMap.get(pp.getLabelText());
+                ScreenAnnotation annotation = (ScreenAnnotation) selected.get("annotation");
+                System.out.println("Current Hovered Placemark: " + pp.getLabelText() + " " + pp);
+
+                if (!annotation.getAttributes().isVisible())
+                {
+                    annotation.getAttributes().setVisible(true);
+                }
+                wwd.redraw();
+            }
+        };
+        Runnable clickedBehavior = () -> {
+            if (event.getTopObject() instanceof PointPlacemark)
+            {
+                PointPlacemark pp = (PointPlacemark) event.getTopObject();
+                var selected = selectedPPMap.get(pp.getLabelText());
+                ScreenAnnotation annotation = (ScreenAnnotation) selected.get("annotation");
+
+                System.out.println("Current clicked Placemark: " + pp.getLabelText() + " " + pp);
+
+                boolean clicked = (boolean) selected.get("clicked");
+
+                System.out.println("isClicked before update?: " + clicked);
+
+                if (!clicked)
+                {
+                    annotation.getAttributes().setVisible(true);
+                    selected.put("clicked", true);
+                    wwd.redraw();
+                }
+                else
+                {
+                    annotation.getAttributes().setVisible(false);
+                    selected.put("clicked", false);
+                    wwd.redraw();
+                }
+            }
+        };
+
+        if (SwingUtilities.isEventDispatchThread())
+        {
+            if (behavior.equals("HOVER"))
+            {
+                hoverBehavior.run();
+            }
+            else if (behavior.equals("CLICKED"))
+            {
+                clickedBehavior.run();
+            }
+        }
+        else
+        {
+            if (behavior.equals("HOVER"))
+            {
+                SwingUtilities.invokeLater(hoverBehavior);
+            }
+            else if (behavior.equals("CLICKED"))
+            {
+                SwingUtilities.invokeLater(clickedBehavior);
+            }
         }
     }
 }

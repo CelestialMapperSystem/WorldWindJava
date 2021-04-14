@@ -102,7 +102,7 @@ public class TableColumnManager
      *  Add/remove support for a popup menu to the table header. The popup
      *  menu will give the user control over which columns are visible.
      *
-     *  @param  menuPopop when true support for displaying a popup menu is added
+     *  @param  menuPopup when true support for displaying a popup menu is added
      *					otherwise the popup menu is removed.
      */
     public void setMenuPopup(boolean menuPopup)
@@ -331,11 +331,25 @@ public class TableColumnManager
     {
         if (event.getSource() instanceof AbstractButton)
         {
+
             AbstractButton button = (AbstractButton)event.getSource();
             String column = event.getActionCommand();
 
-            if (button.isSelected())
+            if (button.isSelected()){
                 showColumn(column);
+                int columnCount = tcm.getColumnCount();
+                TableColumn cleanName = null;
+                try{
+                    cleanName = table.getColumn("clean_name");
+                } catch (IllegalArgumentException e){
+                    cleanName = null;
+                }
+
+                if(cleanName != null && columnCount > 1){
+                    cleanName.setPreferredWidth(150);
+                }
+
+            }
             else
                 hideColumn(column);
         }
