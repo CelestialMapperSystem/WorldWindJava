@@ -4,27 +4,31 @@
  * All Rights Reserved.
  */
 package gov.nasa.cms;
-
+        
 import gov.nasa.cms.features.CMSPlaceNamesMenu;
+import gov.nasa.cms.features.coordinates.*;
 import gov.nasa.cms.features.ApolloMenu;
+import gov.nasa.cms.features.ApolloDialog;
 import gov.nasa.cms.features.CMSProfile;
-import gov.nasa.cms.features.LayerManagerLayer;
-import gov.nasa.cms.features.LineOfSightController;
+import gov.nasa.cms.features.CMSToolBar;
+import gov.nasa.cms.features.ImportKML;
+import gov.nasa.cms.features.ImportedDataDialog;
 import gov.nasa.cms.features.MeasureDialog;
 import gov.nasa.cms.features.MoonElevationModel;
-import gov.nasa.worldwind.Configuration;
+import gov.nasa.cms.features.WMSLayerManager;
+import gov.nasa.cms.features.layermanager.LayerManagerDialog;
+import gov.nasa.cms.features.LineOfSightController;
+import gov.nasa.cms.layers.WorldMapLayer;
+import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.util.measure.MeasureTool;
 import gov.nasa.worldwind.layers.*;
-import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.geom.Angle;
-import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.MoonFlat;
 import gov.nasa.worldwind.render.ScreenImage;
 import gov.nasa.worldwind.util.Logging;
-import java.awt.Point;
-import java.awt.Rectangle;
+
+import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 import java.io.File;
@@ -32,6 +36,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * CelestialMapper.java
@@ -39,32 +44,45 @@ import javax.imageio.ImageIO;
  */
 public class CelestialMapper extends AppFrame
 {
-    //**************************************************************//
-    //********************  Main  **********************************//
-    //**************************************************************//
-    ActionListener controller;
-    protected RenderableLayer airspaceLayer;
+    protected ActionListener controller;
     private CMSPlaceNamesMenu cmsPlaceNamesMenu;
     private ApolloMenu apolloMenu;
-    private MoonElevationModel elevationModel;
     private CMSProfile profile;
     private MeasureDialog measureDialog;
     private MeasureTool measureTool;
-    //private SatelliteObject orbitalSatellite;
-    private CMSLineOfSight lineOfSight;
-    private LineOfSightController lineOfSightDialog;
+    private LineOfSightController lineOfSight;
+    private LayerManagerDialog layerManager;
+    private WMSLayerManager wmsLayerManager;
+    private MoonElevationModel elevationModel;
+    private ImportKML kmlImporter;
+    private ImportedDataDialog importedDataDialog;
     
     private boolean stereo;
     private boolean flat;
     private boolean isMeasureDialogOpen;
+    private boolean isWMSManagerOpen;
     private boolean resetWindow;
     private boolean sight;
+    private boolean isLayerManagerOpen;
+    private boolean isImportedDataDialogOpen;
 
     private JCheckBoxMenuItem stereoCheckBox;
     private JCheckBoxMenuItem flatGlobe;
     private JCheckBoxMenuItem measurementCheckBox;
-    private JCheckBoxMenuItem lineOfSightBox;
+    private JCheckBoxMenuItem wmsCheckBox;
+    private JCheckBoxMenuItem layerManagerCheckBox;
+    private JCheckBoxMenuItem importedDataCheckBox;
     private JMenuItem reset;
+    private JMenuItem exportMeasureTool;
+    
+    private CMSToolBar toolBar;
+
+    private MouseListener mouseListener;
+    private CoordinatesDialog coordinatesDialog;
+    private ApolloDialog apolloDialog;
+    private WorldMapLayer wml;
+    private CoordinatesDisplay coordDisplay;
+    private CMSWWOUnitsFormat unitsFormat;
 
     public void restart()
     {
@@ -73,19 +91,40 @@ public class CelestialMapper extends AppFrame
         this.initialize();
     }
 
+
     @Override
     public void initialize()
     {
         super.initialize();
-        getWwd().getModel().getLayers().add(new LayerManagerLayer(getWwd())); // add layer box UI
 
         // Make the menu bar
         makeMenuBar(this, this.controller);
+
+        // create minimap
+        createNewWML();
+
+        // create toolbar with buttons
+        this.toolBar = new CMSToolBar(this);
+        this.toolBar.createToolbar();
+
+        // create coordinates display layer
+        this.unitsFormat = new CMSWWOUnitsFormat();
+        this.unitsFormat.setShowUTM(true);
+        this.unitsFormat.setShowWGS84(false);
+        this.coordDisplay = new CoordinatesDisplay(this);
+
+        // Import the lunar elevation data
+        elevationModel = new MoonElevationModel(this.getWwd());
         
         // Display the ScreenImage CMS logo as a RenderableLayer
         this.renderLogo();
 
+        // TODO - Decide whether to use pack or not, to accommodate the space that the cmsToolBar overlaps WorldWindow.
+        // this.pack();
+
     }
+
+
 
     /**
      * Causes the View attached to the specified WorldWindow to animate to the
@@ -132,46 +171,76 @@ public class CelestialMapper extends AppFrame
     {
         JMenuBar menuBar = new JMenuBar();
 
+        //========"File"=========
+        JMenu file = new JMenu("File");
+        {
+           // WMS Layer Manager
+            wmsCheckBox = new JCheckBoxMenuItem("WMS Layer Panel");
+            wmsCheckBox.setSelected(isWMSManagerOpen);
+            wmsCheckBox.addActionListener((ActionEvent event) ->
+            {
+                isWMSManagerOpen = !isWMSManagerOpen;
+                if (isWMSManagerOpen)
+                {
+                    if (wmsLayerManager == null)
+                    {
+                        wmsLayerManager = new WMSLayerManager(this.getWwd(), this);
+                    }
+                    wmsLayerManager.setVisible(true);
+                }
+                else
+                {
+                    wmsLayerManager.setVisible(false);
+                }
+            });
+            file.add(wmsCheckBox);
+            
+            // Imported Data Dialog
+            importedDataCheckBox = new JCheckBoxMenuItem("Import Imagery & Elevations");
+            importedDataCheckBox.setSelected(isImportedDataDialogOpen);
+            importedDataCheckBox.addActionListener((ActionEvent event) ->
+            {
+                isImportedDataDialogOpen = !isImportedDataDialogOpen;
+                if (isImportedDataDialogOpen)
+                {
+                    if (importedDataDialog == null)
+                    {
+                        importedDataDialog = new ImportedDataDialog(this.getWwd(), this);
+                    }
+                    importedDataDialog.setVisible(true);
+                }
+                else
+                {
+                    importedDataDialog.setVisible(false);
+                }
+            });
+            file.add(importedDataCheckBox);
+            
+            // KML Measurement Export            
+            exportMeasureTool = new JMenuItem("Export Measure Tool");
+            exportMeasureTool.addActionListener((ActionEvent event) ->
+            {
+                try
+                {
+                    measureDialog.exportMeasureTool();
+                } catch (XMLStreamException ex)
+                {
+                    Logger.getLogger(CelestialMapper.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex)
+                {
+                    Logger.getLogger(CelestialMapper.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            file.add(exportMeasureTool);
+            
+            // KML Importer
+            kmlImporter = new ImportKML(this, this.getWwd(), file);
+        }
+        menuBar.add(file);
+                    
         //======== "CMS Place Names" ========          
         cmsPlaceNamesMenu = new CMSPlaceNamesMenu(this, this.getWwd());
         menuBar.add(cmsPlaceNamesMenu);
-
-        //======== "Tools" ========        
-        JMenu tools = new JMenu("Tools");
-        {
-            // Terrain Profiler
-            profile = new CMSProfile(this.getWwd());
-            tools.add(profile);
-            menuBar.add(tools);
-
-            // Measure Tool
-            measurementCheckBox = new JCheckBoxMenuItem("Measurement");
-            measurementCheckBox.setSelected(isMeasureDialogOpen);
-            measurementCheckBox.addActionListener((ActionEvent event) ->
-            {
-                isMeasureDialogOpen = !isMeasureDialogOpen;
-                if (isMeasureDialogOpen)
-                {
-                    // Only open if the MeasureDialog has never been opened
-                    if (measureDialog == null)
-                    {
-                        // Create the dialog from the WorldWindow, MeasureTool and AppFrame
-                        measureDialog = new MeasureDialog(getWwd(), measureTool, this);
-                    }
-                    // Display on screen
-                    measureDialog.setVisible(true);
-                } else // Hide the dialog
-                {
-                    measureDialog.setVisible(false);
-                }
-            });
-            tools.add(measurementCheckBox);
-        }
-        menuBar.add(tools);
-
-        //======== "Apollo" ========      
-        apolloMenu = new ApolloMenu(this.getWwd());
-        menuBar.add(apolloMenu);
 
         //======== "View" ========           
         JMenu view = new JMenu("View");
@@ -220,38 +289,12 @@ public class CelestialMapper extends AppFrame
                     Configuration.setValue(AVKey.GLOBE_CLASS_NAME, MoonFlat.class.getName());
                 } else 
                 {
-                    Configuration.setValue(AVKey.GLOBE_CLASS_NAME, "gov.nasa.worldwind.globes.Earth");
+                    Configuration.setValue(AVKey.GLOBE_CLASS_NAME, "gov.nasa.worldwind.globes.Moon");
                 }
                 restart();
+
             });
             view.add(flatGlobe);    
-            
-            //======== "Line of Sight" =========
-            this.lineOfSightBox = new JCheckBoxMenuItem("Line of Sight");
-//            this.lineOfSight = new CMSLineOfSight(this, this.getWwd());
-
-            this.lineOfSightBox.addActionListener((ActionEvent event) -> {
-                this.sight = ((JCheckBoxMenuItem) event.getSource()).getState();
-                if (sight) {
-                    if(lineOfSightDialog == null){
-                        lineOfSightDialog = new LineOfSightController(this, getWwd());
-                        SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            lineOfSightDialog.setVisible(sight);
-                        }});
-                    }
-//                    this.lineOfSight.activate();
-                } else {
-//                    this.lineOfSight.deactivate();
-                    lineOfSightDialog.setVisible(sight);
-                }
-                
-                
-            });
-            
-//            lineOfSightDialog = new LineOfSightController(this,this.getWwd());
-            view.add(lineOfSightBox);
-            
             
             //======== "Reset" =========
             reset = new JMenuItem("Reset");
@@ -261,6 +304,7 @@ public class CelestialMapper extends AppFrame
                 resetWindow = !resetWindow;
                 if (resetWindow)
                 {
+//                    Configuration.setValue(AVKey.GLOBE_CLASS_NAME, "gov.nasa.worldwind.globes.Moon");
                     restart(); //resets window to launch status
                 } 
             });
@@ -281,7 +325,8 @@ public class CelestialMapper extends AppFrame
             cmsLogo.setImageSource(ImageIO.read(new File("cms-data/cms-logo.png")));
             Rectangle view = getWwd().getView().getViewport();
             // Set the screen location to different points to offset the image size
-            cmsLogo.setScreenLocation(new Point(view.x + 55, view.y + 70));
+            cmsLogo.setScreenLocation(new Point(view.x + 70, view.y + 70));
+//            cmsLogo.setScreenLocation(new Point(view.x + 1000, view.y + 800));
         } catch (IOException ex) 
         {
             Logger.getLogger(CelestialMapper.class.getName()).log(Level.SEVERE, null, ex);
@@ -292,5 +337,311 @@ public class CelestialMapper extends AppFrame
         layer.setName("Logo");
 
         getWwd().getModel().getLayers().add(layer);
+    }
+
+    public LayerManagerDialog getLayerManager()
+    {
+        return layerManager;
+    }
+
+    public WMSLayerManager getWmsLayerManager()
+    {
+        return wmsLayerManager;
+    }
+
+    public boolean isWMSManagerOpen()
+    {
+        return isWMSManagerOpen;
+    }
+
+    public boolean isLayerManagerOpen()
+    {
+        return isLayerManagerOpen;
+    }
+
+    public void setLayerManager(LayerManagerDialog layerManager)
+    {
+        this.layerManager = layerManager;
+    }
+
+    public void setWmsLayerManager(WMSLayerManager wmsLayerManager)
+    {
+        this.wmsLayerManager = wmsLayerManager;
+    }
+
+    public void setWMSManagerOpen(boolean WMSManagerOpen)
+    {
+        isWMSManagerOpen = WMSManagerOpen;
+    }
+
+    public void setLayerManagerOpen(boolean layerManagerOpen)
+    {
+        isLayerManagerOpen = layerManagerOpen;
+    }
+
+    public boolean isMeasureDialogOpen()
+    {
+        return isMeasureDialogOpen;
+    }
+
+    public MeasureDialog getMeasureDialog()
+    {
+        return this.measureDialog;
+    }
+
+    public CMSPlaceNamesMenu getCmsPlaceNamesMenu()
+    {
+        return cmsPlaceNamesMenu;
+    }
+
+    public void setCmsPlaceNamesMenu(CMSPlaceNamesMenu cmsPlaceNamesMenu)
+    {
+        this.cmsPlaceNamesMenu = cmsPlaceNamesMenu;
+    }
+
+    public ApolloMenu getApolloMenu()
+    {
+        return apolloMenu;
+    }
+
+    public void setApolloMenu(ApolloMenu apolloMenu)
+    {
+        this.apolloMenu = apolloMenu;
+    }
+
+    public MoonElevationModel getElevationModel()
+    {
+        return elevationModel;
+    }
+
+    public void setElevationModel(MoonElevationModel elevationModel)
+    {
+        this.elevationModel = elevationModel;
+    }
+
+    public CMSProfile getProfile()
+    {
+        return profile;
+    }
+
+    public void setProfile(CMSProfile profile)
+    {
+        this.profile = profile;
+    }
+
+    public void setMeasureDialog(MeasureDialog measureDialog)
+    {
+        this.measureDialog = measureDialog;
+    }
+
+    public MeasureTool getMeasureTool()
+    {
+        return measureTool;
+    }
+
+    public void setMeasureTool(MeasureTool measureTool)
+    {
+        this.measureTool = measureTool;
+    }
+
+    public LineOfSightController getLineOfSight()
+    {
+        return lineOfSight;
+    }
+
+    public void setLineOfSight(LineOfSightController lineOfSight)
+    {
+        this.lineOfSight = lineOfSight;
+    }
+
+    public boolean isStereo()
+    {
+        return stereo;
+    }
+
+    public void setStereo(boolean stereo)
+    {
+        this.stereo = stereo;
+    }
+
+    public boolean isFlat()
+    {
+        return flat;
+    }
+
+    public void setFlat(boolean flat)
+    {
+        this.flat = flat;
+    }
+
+    public void setMeasureDialogOpen(boolean measureDialogOpen)
+    {
+        isMeasureDialogOpen = measureDialogOpen;
+    }
+
+    public boolean isResetWindow()
+    {
+        return resetWindow;
+    }
+
+    public void setResetWindow(boolean resetWindow)
+    {
+        this.resetWindow = resetWindow;
+    }
+
+    public boolean isSight()
+    {
+        return sight;
+    }
+
+    public void setSight(boolean sight)
+    {
+        this.sight = sight;
+    }
+
+    public JCheckBoxMenuItem getStereoCheckBox()
+    {
+        return stereoCheckBox;
+    }
+
+    public void setStereoCheckBox(JCheckBoxMenuItem stereoCheckBox)
+    {
+        this.stereoCheckBox = stereoCheckBox;
+    }
+
+    public JCheckBoxMenuItem getFlatGlobe()
+    {
+        return flatGlobe;
+    }
+
+    public void setFlatGlobe(JCheckBoxMenuItem flatGlobe)
+    {
+        this.flatGlobe = flatGlobe;
+    }
+
+    public JCheckBoxMenuItem getMeasurementCheckBox()
+    {
+        return measurementCheckBox;
+    }
+
+    public void setMeasurementCheckBox(JCheckBoxMenuItem measurementCheckBox)
+    {
+        this.measurementCheckBox = measurementCheckBox;
+    }
+
+    public JCheckBoxMenuItem getWmsCheckBox()
+    {
+        return wmsCheckBox;
+    }
+
+    public void setWmsCheckBox(JCheckBoxMenuItem wmsCheckBox)
+    {
+        this.wmsCheckBox = wmsCheckBox;
+    }
+
+    public JCheckBoxMenuItem getLayerManagerCheckBox()
+    {
+        return layerManagerCheckBox;
+    }
+
+    public void setLayerManagerCheckBox(JCheckBoxMenuItem layerManagerCheckBox)
+    {
+        this.layerManagerCheckBox = layerManagerCheckBox;
+    }
+
+    public JMenuItem getReset()
+    {
+        return reset;
+    }
+
+    public void setReset(JMenuItem reset)
+    {
+        this.reset = reset;
+    }
+
+    public CMSToolBar getToolBar()
+    {
+        return toolBar;
+    }
+
+    public void setToolBar(CMSToolBar toolBar)
+    {
+        this.toolBar = toolBar;
+    }
+
+    public MouseListener getMouseListener()
+    {
+        return mouseListener;
+    }
+
+    public void setMouseListener(MouseListener mouseListener)
+    {
+        this.mouseListener = mouseListener;
+    }
+
+    public void setLayerManagerisOpen(boolean b)
+    {
+        this.isLayerManagerOpen = b;
+    }
+
+    public CoordinatesDialog getCoordinatesDialog()
+    {
+        return this.coordinatesDialog;
+    }
+
+    public void setCoordinatesDialog(CoordinatesDialog coordinatesDialog)
+    {
+        this.coordinatesDialog = coordinatesDialog;
+    }
+
+    public ApolloDialog getLandingSites()
+    {
+        return apolloDialog;
+    }
+
+    public void setLandingSites(ApolloDialog dialog)
+    {
+        this.apolloDialog = dialog;
+    }
+
+    public void createNewWML(){
+        this.wml = new WorldMapLayer();
+
+        // IMPORTANT - the constructor doesn't provide a name
+        // Which the layertree needs later to label the checkbox
+        this.wml.setName("Mini Map");
+        this.wml.setIconFilePath("cms-data/icons/lunar_minimap_ldem_3_8bit.jpg");
+//        System.out.println(this.wml.getName());
+        this.wml.setResizeBehavior(AVKey.RESIZE_STRETCH);
+
+        // set location of minimap
+        // Use these two lines if pairing with logo in top left.
+//        this.wml.setPosition(AVKey.NORTHWEST);
+//        this.wml.setLocationOffset(new Vec4(0,-30));
+
+        //
+        this.wml.setPosition(AVKey.NORTHEAST);
+//        this.wml.setLocationOffset(new Vec4(0,-30));
+
+        // enable globe navigation by clicking the minimap
+        this.getWwd().addSelectListener(new ClickAndGoSelectListener(this.getWwd(), WorldMapLayer.class));
+
+        // add minimap to screen
+        this.getWwd().getModel().getLayers().add(wml);
+    }
+
+    public void setWML(WorldMapLayer worldMapLayer)
+    {
+        this.wml = worldMapLayer;
+    }
+
+    public WorldMapLayer getWML()
+    {
+        return this.wml;
+    }
+
+    public CMSWWOUnitsFormat getUnits()
+    {
+        return this.unitsFormat;
     }
 }

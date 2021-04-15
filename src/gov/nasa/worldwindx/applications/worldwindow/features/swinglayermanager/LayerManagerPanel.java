@@ -51,7 +51,6 @@ public class LayerManagerPanel extends AbstractFeaturePanel implements LayerMana
         layerTree = new LayerTree(new LayerTreeModel(layerList));
         layerTree.setOpaque(false);
         layerTree.setBorder(new EmptyBorder(10, 10, 10, 10));
-//        layerTree.setToolTipText(TOOL_TIP);
 
         this.layerTree.getModel().addTreeModelListener(this);
 
@@ -63,10 +62,6 @@ public class LayerManagerPanel extends AbstractFeaturePanel implements LayerMana
         np.setOpaque(false);
         np.add(scrollPane, BorderLayout.CENTER);
 
-        PanelTitle panelTitle = new PanelTitle("Available Layers", SwingConstants.CENTER);
-        panelTitle.setToolTipText(TOOL_TIP);
-
-        this.panel.add(panelTitle, BorderLayout.NORTH);
         this.panel.add(np, BorderLayout.CENTER);
 
         layerList.addPropertyChangeListener(new PropertyChangeListener()

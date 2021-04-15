@@ -87,6 +87,7 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
     protected int samples = 200;              // Number of position samples
     protected double minElevation = -9000;            // Minimum elevation along the profile
     protected double maxElevation = 10700;            // Maximum elevation along the profile
+    protected double meanElevation;
     protected double length;                  // Profile length along great circle in meter
     protected Position positions[];           // Position list
 
@@ -839,6 +840,7 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
             gl.glTranslated(locationSW.x(), locationSW.y(), locationSW.z());
             gl.glScaled(scale, scale, 1d);
 
+            
             if (!dc.isPickingMode()) {
                 // Draw grid - Set color using current layer opacity
                 this.drawGrid(dc, drawSize);
@@ -850,11 +852,14 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
                     // Draw GUI buttons
                     drawGUI(dc, drawSize);
 
+                    // Compute mean elevation
+                    meanElevation = (minElevation + maxElevation) / 2;
+                    
                     // Draw labels
-                    String label = String.format("min %.0fm   max %.0fm", this.minElevation, this.maxElevation);
+                    String label = String.format("min %.0fm   max %.0fm  mean %.0fm ", this.minElevation, this.maxElevation, this.meanElevation);
                     if (this.unit.equals(UNIT_IMPERIAL)) {
-                        label = String.format("min %.0fft   max %.0fft", this.minElevation * METER_TO_FEET,
-                                this.maxElevation * METER_TO_FEET);
+                        label = String.format("min %.0fft   max %.0fft  mean %.0fft", this.minElevation * METER_TO_FEET,
+                                this.maxElevation * METER_TO_FEET, this.meanElevation * METER_TO_FEET);
                     }
                     gl.glLoadIdentity();
                     gl.glDisable(GL.GL_CULL_FACE);
@@ -865,7 +870,16 @@ public class TerrainProfileLayer extends AbstractLayer implements PositionListen
                         if (this.unit.equals(UNIT_IMPERIAL)) {
                             label = String.format("%.0fft", pickedElevation * METER_TO_FEET);
                         }
-                        drawLabel(dc, label, locationSW.add3(new Vec4(width, -12, 0)), 1); // right aligned
+                        if(this.getIsMaximized())
+                        {
+                            drawLabel(dc, label, locationSW.add3(new Vec4(width, 420, 0)), 1); // right aligned
+                            
+                        }
+                        else // Minimized
+                        {
+                            drawLabel(dc, label, locationSW.add3(new Vec4(width, 100, 0)), 1); // right aligned
+                        }
+                        
                     }
                 }
             } else {

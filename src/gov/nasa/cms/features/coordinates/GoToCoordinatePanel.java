@@ -28,13 +28,16 @@
 package gov.nasa.cms.features.coordinates;
 
 import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.coords.MGRSCoord;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.util.Logging;
 
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.regex.*;
@@ -135,7 +138,21 @@ public class GoToCoordinatePanel extends JPanel
         JPanel gotoPanel = new JPanel(new GridLayout(0, 1, 0, 0));
         gotoPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         JButton gotoButton = new JButton("Go to location");
-        gotoButton.addActionListener(e -> coordinatesInputAction(e));
+        gotoButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent event)
+            {
+                LatLon latLon =  computeLatLonFromString(coordInput.getText(), wwd.getModel().getGlobe());
+                updateResult(latLon);
+                if (latLon != null)
+                {
+                    View view = wwd.getView();
+                    double distance = view.getCenterPoint().distanceTo3(view.getEyePoint());
+                    view.goTo(new Position(latLon, 0), distance);
+
+                }
+            }
+        });
         gotoPanel.add(gotoButton);
 
         controlPanel.add(coordLabelPanel);
@@ -147,17 +164,6 @@ public class GoToCoordinatePanel extends JPanel
                 new CompoundBorder(BorderFactory.createEmptyBorder(9, 9, 9, 9), new TitledBorder("Go to")));
 //        controlPanel.setMinimumSize(new Dimension(120,20));
         return controlPanel;
-    }
-
-    private void coordinatesInputAction(ActionEvent e){
-        LatLon latLon =  computeLatLonFromString(coordInput.getText(), wwd.getModel().getGlobe());
-        updateResult(latLon);
-        if (latLon != null)
-        {
-            View view = wwd.getView();
-            double distance = view.getCenterPoint().distanceTo3(view.getEyePoint());
-            view.goTo(new Position(latLon, 0), distance);
-        }
     }
 
     private void updateResult(LatLon latLon)
