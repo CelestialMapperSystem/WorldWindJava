@@ -19,7 +19,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
@@ -56,9 +58,9 @@ public class TimeFrame extends JDialog
     private LensFlareLayer lensFlareLayer;
     private WorldWindow wwd;
 
-    private Date startDate;
-    private Date endDate;
-    private Date currentDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    private LocalDateTime currentDate;
 
     private JLabel jan = new JLabel("Jan");
     private JLabel feb = new JLabel("Feb");
@@ -226,13 +228,12 @@ public class TimeFrame extends JDialog
         startDate = dateTimeDialog.getStartDate(); // Get the start date
         endDate = dateTimeDialog.getEndDate(); // Get the end date
         Calendar cal = dateTimeDialog.getCalendar(); // Get the calendar from DateTimePickerDialog
-        dateTimeDialog.getCalendar().setTime(startDate); // Set the calendar time to the start date time
+        dateTimeDialog.getCalendar().set(startDate.getYear(), startDate.getMonthValue()-1, startDate.getDayOfMonth());
         int durationTime = dateTimeDialog.getDuration(); //speed of animation 
-        LocalDate localDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(); //start date
-        int month = localDate.getMonthValue(); //month value from start date
-        int day = localDate.getDayOfMonth();//day of month from start date
-        int time = startDate.toInstant().atZone(ZoneId.systemDefault()).getHour();
-        long diffInMillies = Math.abs(endDate.getTime() - startDate.getTime());//difference between start and end date in milliseconds
+        int month = startDate.getMonthValue(); //month value from start date
+        int day = startDate.getDayOfMonth();//day of month from start date
+        int time = startDate.getHour();
+        long diffInMillies = Duration.between(startDate, endDate).toMillis();
 
         // Start a new thread to display dynamic shading
         Thread thread;
@@ -250,7 +251,7 @@ public class TimeFrame extends JDialog
                 int value = 0;//current day,month,hour 
                 
                 // While the end date/time is after the calendar date/time
-                while (endDate.after(dateTimeDialog.getCalendar().getTime()))
+                while (endDate.isAfter(startDate))
                 {                   
                     try
                     {
@@ -297,7 +298,9 @@ public class TimeFrame extends JDialog
                         //changeSlider();
                         
                         dateTimeDialog.getCalendar().add(shadingInterval, num); // Increment calendar by month,day,or hour
-                        startDate.setTime(cal.getTimeInMillis()); // Set the start time to the new calendar time
+                        TimeZone tz = cal.getTimeZone();
+                        ZoneId zoneId = tz.toZoneId();
+                        startDate.ofInstant(cal.toInstant(), zoneId); 
 
                         changeCurrentTime(); // Make sure to update current time
                         
@@ -326,15 +329,14 @@ public class TimeFrame extends JDialog
     {
         startDate = dateTimeDialog.getStartDate(); // Get the start date
         endDate = dateTimeDialog.getEndDate(); // Get the end date
-        long diffInMillies = Math.abs(endDate.getTime() - startDate.getTime());//difference between start and end date in milliseconds
-        LocalDate localDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(); //start date
+        long diffInMillies = Duration.between(startDate, endDate).toMillis();
+        Calendar cal = dateTimeDialog.getCalendar(); 
+        LocalDateTime localDate = LocalDateTime.ofInstant(cal.toInstant(), ZoneId.systemDefault());
         int month = localDate.getMonthValue(); //month value from start date
         JLabel[] dayLabels=new JLabel[32];
         JLabel[] hourLabels = new JLabel[25];
         Hashtable<Integer, JLabel> table = new Hashtable<Integer, JLabel>();//table for JLabels
-
-                        
-
+                    
         // If start - end is less than a week, change time frame to show hours
         if (diffInMillies < 6.048e+8)
         {
@@ -458,7 +460,7 @@ public class TimeFrame extends JDialog
     {                  
         if(dateTimeDialog.get12HourClockButton().isSelected())
         {
-            DateFormat df = new SimpleDateFormat("yyyy/MM/dd hh:mm aa");
+            DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy/MM/dd hh:mm");
             
             startDateTime.setText(df.format(startDate));          
             endDateTime.setText(df.format(endDate));
@@ -479,7 +481,7 @@ public class TimeFrame extends JDialog
     {
         if(dateTimeDialog.get12HourClockButton().isSelected())
         {
-            DateFormat df = new SimpleDateFormat("yyyy/MM/dd hh:mm aa");
+            DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy/MM/dd hh:mm aa");
             
             currentDate = startDate;
             currentDateTime.setText(df.format(currentDate));

@@ -13,9 +13,12 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -25,6 +28,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerDateModel;
+import javax.swing.SpinnerModel;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -47,13 +51,15 @@ public class DateTimePickerDialog extends JDialog
     private JRadioButton clock24Hour;
     private JRadioButton clock12Hour;
     private Calendar calendar;
-    private Date startDate;
-    private Date endDate;
-    private SpinnerDateModel model;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    private SpinnerModel model;
     
     private LatLon position;
-    private Date startTime;
-    private Date endTime;
+    Date startDateToConvert;
+    Date endDateToConvert;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private int animationDuration;
 
     public DateTimePickerDialog(WorldWindow wwdObject, Component component)
@@ -71,6 +77,7 @@ public class DateTimePickerDialog extends JDialog
         clock24Hour = new JRadioButton("24-hour clock");
         clock12Hour = new JRadioButton("12-hour clock");
         animationDuration = 2; // Default 
+        startDateToConvert = new Date();
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setLocation(new java.awt.Point(645, 180));
         getContentPane().setLayout(new GridBagLayout());
@@ -89,8 +96,9 @@ public class DateTimePickerDialog extends JDialog
         
         model = new SpinnerDateModel();
         calendar = new GregorianCalendar();
-        startDate = calendar.getTime();
-        model.setValue(startDate);
+        startDate = LocalDateTime.ofInstant(calendar.toInstant(), ZoneId.systemDefault());
+        startDateToConvert = Date.from(startDate.atZone(java.time.ZoneOffset.systemDefault()).toInstant());
+        model.setValue(startDateToConvert);
         startDateTime = new JSpinner(model);
         startDateTime.setToolTipText("Select a start date/time");
         startDateTime.addChangeListener(new ChangeListener()
@@ -98,8 +106,10 @@ public class DateTimePickerDialog extends JDialog
             @Override
             public void stateChanged(ChangeEvent e)
             {
-                startDate = (Date) ((JSpinner) e.getSource()).getValue(); // Set date from the JSpinner user input
-                calendar.setTime(startDate); // Set calendar time from the date
+                startDateToConvert = (Date) ((JSpinner) e.getSource()).getValue(); // Set date from the JSpinner user input
+                startDate = startDateToConvert.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                calendar.set(startDate.getYear(), startDate.getMonthValue()-1, startDate.getDayOfMonth(),
+                             startDate.getHour(), startDate.getMinute(), startDate.getSecond());
                 startTime=startDate;
             }
         });
@@ -127,14 +137,17 @@ public class DateTimePickerDialog extends JDialog
 
         endDateTime.setModel(new SpinnerDateModel(new java.util.Date(), null, null, java.util.Calendar.MINUTE));
         endDateTime.setToolTipText("Select a end date/time");
-        endDate = calendar.getTime();
-        endDate.setMonth((endDate.getMonth() - 1 + 12));
+        endDate = LocalDateTime.ofInstant(calendar.toInstant(), ZoneId.systemDefault());
+        endDateToConvert = Date.from(endDate.atZone(java.time.ZoneOffset.systemDefault()).toInstant());
         endDateTime.addChangeListener(new ChangeListener()
         {
             @Override
             public void stateChanged(ChangeEvent e)
             {
-                endDate = (Date) ((JSpinner) e.getSource()).getValue(); // Set date from the JSpinner user input
+                endDateToConvert = (Date) ((JSpinner) e.getSource()).getValue(); // Set date from the JSpinner user input
+                endDate = endDateToConvert.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                calendar.set(endDate.getYear(), endDate.getMonthValue()-1, endDate.getDayOfMonth(),
+                             endDate.getHour(), endDate.getMinute(), endDate.getSecond());
                 endTime = endDate;
             }
         });
@@ -215,12 +228,12 @@ public class DateTimePickerDialog extends JDialog
         return clock12Hour;
     }
     
-    public Date getStartDate()
+    public LocalDateTime getStartDate()
     {
         return startDate;
     }
     
-    public Date getEndDate()
+    public LocalDateTime getEndDate()
     {
         return endDate;
     }
@@ -237,7 +250,7 @@ public class DateTimePickerDialog extends JDialog
     
     public synchronized LatLon getPosition()
     {
-        calendar.setTime(startDate);
+        calendar.set(startDate.getYear(), startDate.getMonthValue()-1, startDate.getDayOfMonth());
         return position;
     }
     
