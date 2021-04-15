@@ -11,8 +11,6 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec4;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -223,18 +221,6 @@ public class TimeFrame extends JDialog
 
     }
 
-    //creates list of day labels dependent on the month
-    private JLabel[] createDayLabels(int x)
-    {
-        JLabel[] labels = new JLabel[x];
-        for (int i = 0; i < x; i++)
-        {
-            String day = Integer.toString(i);
-            labels[i] = new JLabel(day);
-        }
-        return labels;
-    }
-
     protected void startDynamicShading()
     {
         startDate = dateTimeDialog.getStartDate(); // Get the start date
@@ -346,21 +332,18 @@ public class TimeFrame extends JDialog
         JLabel[] dayLabels=new JLabel[32];
         JLabel[] hourLabels = new JLabel[25];
         Hashtable<Integer, JLabel> table = new Hashtable<Integer, JLabel>();//table for JLabels
-        System.out.println("Absolute time between Start & End in ms: " + diffInMillies);
 
                         
 
         // If start - end is less than a week, change time frame to show hours
         if (diffInMillies < 6.048e+8)
         {
-//            System.out.println("Helllooooooo");
-            System.out.println("Time is < 1 week (aka < 6.048e+8), changing to hours: " + diffInMillies);
             timeFrameSlider.setPaintTicks(true);
             timeFrameSlider.setPaintLabels(true);
             timeFrameSlider.setMajorTickSpacing(1);
             table = new Hashtable<Integer, JLabel>();
 
-            if (dateTimeDialog.getMilitaryButton().isSelected())
+            if (dateTimeDialog.get24HourClockButton().isSelected())
             {        
                 timeFrameSlider.setMinimum(0);
                 timeFrameSlider.setMaximum(23);                
@@ -473,7 +456,7 @@ public class TimeFrame extends JDialog
     // Sets the start and end date/time to either military or universal
     private void setStartEndTime()
     {                  
-        if(dateTimeDialog.getUniversalButton().isSelected())
+        if(dateTimeDialog.get12HourClockButton().isSelected())
         {
             DateFormat df = new SimpleDateFormat("yyyy/MM/dd hh:mm aa");
             
@@ -494,7 +477,7 @@ public class TimeFrame extends JDialog
     // Modifies the current date/time to change with the shading animation to either military or universal
     private void changeCurrentTime()
     {
-        if(dateTimeDialog.getUniversalButton().isSelected())
+        if(dateTimeDialog.get12HourClockButton().isSelected())
         {
             DateFormat df = new SimpleDateFormat("yyyy/MM/dd hh:mm aa");
             

@@ -39,14 +39,13 @@ public class DateTimePickerDialog extends JDialog
 {
 
     private JSlider animationSpeedSlider;
-    private JButton applyChangesButton;
     private JSpinner endDateTime;
-    private JLabel jLabel1;
-    private JLabel jLabel2;
-    private JLabel jLabel3;
+    private JLabel endDateLabel;
+    private JLabel startDateLabel;
+    private JLabel animationSpeedLabel;
     private JSpinner startDateTime;
-    private JRadioButton militaryTime;
-    private JRadioButton universalTime;
+    private JRadioButton clock24Hour;
+    private JRadioButton clock12Hour;
     private Calendar calendar;
     private Date startDate;
     private Date endDate;
@@ -64,22 +63,20 @@ public class DateTimePickerDialog extends JDialog
         this.setAlwaysOnTop(true);
         GridBagConstraints gridBagConstraints;
 
-        jLabel2 = new JLabel();
-        jLabel1 = new JLabel();
+        startDateLabel = new JLabel();
+        endDateLabel = new JLabel();
         endDateTime = new JSpinner();
-        jLabel3 = new JLabel();
+        animationSpeedLabel = new JLabel();
         animationSpeedSlider = new JSlider();
-        applyChangesButton = new JButton();
-        militaryTime = new JRadioButton("Military Time");
-        universalTime = new JRadioButton("Universal Time");
+        clock24Hour = new JRadioButton("24-hour clock");
+        clock12Hour = new JRadioButton("12-hour clock");
         animationDuration = 2; // Default 
-
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setLocation(new java.awt.Point(645, 180));
         getContentPane().setLayout(new GridBagLayout());
 
         //======== Start Date Time ========  
-        jLabel2.setText("Start date/time: ");
+        startDateLabel.setText("Start date/time: ");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -88,7 +85,7 @@ public class DateTimePickerDialog extends JDialog
         gridBagConstraints.ipady = 14;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new Insets(6, 6, 0, 0);
-        getContentPane().add(jLabel2, gridBagConstraints);
+        getContentPane().add(startDateLabel, gridBagConstraints);
         
         model = new SpinnerDateModel();
         calendar = new GregorianCalendar();
@@ -116,7 +113,7 @@ public class DateTimePickerDialog extends JDialog
         getContentPane().add(startDateTime, gridBagConstraints);
 
         //======== End Date Time ========  
-        jLabel1.setText("End date/time:");
+        endDateLabel.setText("End date/time:");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -126,13 +123,12 @@ public class DateTimePickerDialog extends JDialog
         gridBagConstraints.ipady = 14;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new Insets(6, 6, 0, 0);
-        getContentPane().add(jLabel1, gridBagConstraints);
+        getContentPane().add(endDateLabel, gridBagConstraints);
 
         endDateTime.setModel(new SpinnerDateModel(new java.util.Date(), null, null, java.util.Calendar.MINUTE));
         endDateTime.setToolTipText("Select a end date/time");
         endDate = calendar.getTime();
         endDate.setMonth((endDate.getMonth() - 1 + 12));
-
         endDateTime.addChangeListener(new ChangeListener()
         {
             @Override
@@ -152,14 +148,14 @@ public class DateTimePickerDialog extends JDialog
         getContentPane().add(endDateTime, gridBagConstraints);
 
         //======== Animation Speed ========  
-        jLabel3.setText("Animation Speed: ");
+        animationSpeedLabel.setText("Animation Speed: ");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(18, 6, 0, 0);
-        getContentPane().add(jLabel3, gridBagConstraints);
+        getContentPane().add(animationSpeedLabel, gridBagConstraints);
 
         animationSpeedSlider = new JSlider(0,5,2);
         animationSpeedSlider.setPaintTicks(true);
@@ -190,7 +186,7 @@ public class DateTimePickerDialog extends JDialog
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(18, 6, 0, 0);
-        getContentPane().add(universalTime, gridBagConstraints);
+        getContentPane().add(clock12Hour, gridBagConstraints);
         
          //======== Military Time ========  
         gridBagConstraints = new GridBagConstraints();
@@ -199,24 +195,24 @@ public class DateTimePickerDialog extends JDialog
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(18, 6, 0, 0);
-        getContentPane().add(militaryTime, gridBagConstraints);
+        getContentPane().add(clock24Hour, gridBagConstraints);
         
         // Put in a button group so user can only enable one at a time
         ButtonGroup buttonGroup = new ButtonGroup();
-        buttonGroup.add(universalTime);
-        buttonGroup.add(militaryTime);
-        militaryTime.setSelected(true);
+        buttonGroup.add(clock12Hour);
+        buttonGroup.add(clock24Hour);
+        clock24Hour.setSelected(true);
 
     }
     
-    public JRadioButton getMilitaryButton()
+    public JRadioButton get24HourClockButton()
     {
-        return militaryTime;
+        return clock24Hour;
     }
     
-    public JRadioButton getUniversalButton()
+    public JRadioButton get12HourClockButton()
     {
-        return universalTime;
+        return clock12Hour;
     }
     
     public Date getStartDate()
