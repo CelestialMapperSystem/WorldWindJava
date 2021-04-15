@@ -5,27 +5,11 @@
  */
 package gov.nasa.cms.features;
 
-import gov.nasa.cms.AppFrame;
-import gov.nasa.cms.CMSLineOfSight;
-import gov.nasa.cms.CelestialMapper;
+import gov.nasa.cms.*;
 import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.layers.TerrainProfileLayer;
-import gov.nasa.worldwind.util.measure.MeasureTool;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Frame;
-import java.awt.Rectangle;
-import java.awt.event.ItemEvent;
-import java.beans.PropertyChangeListener;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  *
