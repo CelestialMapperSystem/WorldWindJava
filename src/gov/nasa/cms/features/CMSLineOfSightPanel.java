@@ -28,16 +28,7 @@ public class CMSLineOfSightPanel extends JPanel {
     private final CMSLineOfSight lineOfSight;
     private LineOfSightController lineOfSightController;
 
-//    public CMSLineOfSightPanel(WorldWindow wwd, CMSLineOfSight lineOfSightObject) {
-//        super(new BorderLayout());
-//        this.wwd = wwd;
-//        this.lineOfSight = lineOfSightObject;
-//        
-//        mainPanel = new JPanel();
-//        mainPanel.setOpaque(false);
-//        this.makePanel(mainPanel);
-//    }
-    CMSLineOfSightPanel(WorldWindow wwd, CMSLineOfSight lineOfSightObject, LineOfSightController lineOfSightController) {
+CMSLineOfSightPanel(WorldWindow wwd, CMSLineOfSight lineOfSightObject, LineOfSightController lineOfSightController) {
         super(new BorderLayout());
         this.wwd = wwd;
         this.lineOfSight = lineOfSightObject;
