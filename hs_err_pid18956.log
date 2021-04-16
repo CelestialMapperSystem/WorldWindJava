@@ -1,0 +1,32 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x00007fffb24a6b8e, pid=18956, tid=16804
+#
+# JRE version: Java(TM) SE Runtime Environment 18.9 (11.0.10+8) (build 11.0.10+8-LTS-162)
+# Java VM: Java HotSpot(TM) 64-Bit Server VM 18.9 (11.0.10+8-LTS-162, mixed mode, tiered, compressed oops, g1 gc, windows-amd64)
+# Problematic frame:
+# C  [ig9icd64.dll+0x4d6b8e]
+#
+# No core dump will be written. Minidumps are not enabled by default on client versions of Windows
+#
+# If you would like to submit a bug report, please visit:
+#   https://bugreport.java.com/bugreport/crash.jsp
+# The crash happened outside the Java Virtual Machine in native code.
+# See problematic frame for where to report the bug.
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -agentlib:jdwp=transport=dt_socket,address=127.0.0.1:62844,suspend=y,server=n -Dsun.java2d.uiScale.enabled=false -Xmx1024m -Dsun.java2d.noddraw=true -Dsun.awt.noerasebackground=true -javaagent:C:\Users\gknorman\AppData\Local\JetBrains\IdeaIC2020.3\captureAgent\debugger-agent.jar -Dfile.encoding=UTF-8 gov.nasa.cms.CelestialMappingSystem -Djava.util.logging.config.file=logging.properties -Dgov.nasa.worldwind.stereo.mode=none
+
+Host: Intel(R) Core(TM) i5-8365U CPU @ 1.60GHz, 8 cores, 7G,  Windows 10 , 64 bit Build 17763 (10.0.17763.475)
+Time: Tue Mar 23 17:29:03 2021 Pacific Daylight Time elapsed time: 76.783450 seconds (0d 0h 1m 16s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x000001b4b136d000):  JavaThread "AWT-EventQueue-0" [_thread_in_native, id=16804, stack(0x000000902ab00000,0x000000902ac00000)]
+
+Stack: [0x000000902ab00000,0x000000902ac00000],  sp=0x000000902abfaaa8,  free space=1002k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+C  [ig9icd64.dll+0x4d6b8e]

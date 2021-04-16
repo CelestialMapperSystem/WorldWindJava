@@ -98,6 +98,7 @@ import java.util.List;
  */
 public class MeasureTool extends AVListImpl implements Disposable {
 
+
     public static final String SHAPE_LINE = "MeasureTool.ShapeLine";
     public static final String SHAPE_PATH = "MeasureTool.ShapePath";
     public static final String SHAPE_POLYGON = "MeasureTool.ShapePolygon";
