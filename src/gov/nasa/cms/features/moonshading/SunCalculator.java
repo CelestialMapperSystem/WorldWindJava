@@ -21,17 +21,23 @@ public class SunCalculator {
         // Calculate difference in days between the current Julian Day 
         // and JD 2451545.0, which is noon 1 January 2000 Universal Time
         {
+            
             // Calculate time of the day in UT decimal hours
             decimalHours = time.get(Calendar.HOUR_OF_DAY)
                     + (time.get(Calendar.MINUTE) + time.get(Calendar.SECOND) / 60.0)
                     / 60.0;
+            System.out.println(decimalHours);
             // Calculate current Julian Day
             long aux1 = (time.get(Calendar.MONTH) - 14) / 12;
+            System.out.println(aux1);
             long aux2 = (1461 * (time.get(Calendar.YEAR) + 4800 + aux1)) / 4
                     + (367 * (time.get(Calendar.MONTH) - 2 - 12 * aux1)) / 12
                     - (3 * ((time.get(Calendar.YEAR) + 4900 + aux1) / 100)) / 4
                     + time.get(Calendar.DAY_OF_MONTH) - 32075;
+            System.out.println(aux2);
             double julianDate = (double) (aux2) - 0.5 + decimalHours / 24.0;
+            System.out.println(julianDate);
+            
             // Calculate difference between current Julian Day and JD 2451545.0 
             elapsedJulianDays = julianDate - 2451545.0;
         }
