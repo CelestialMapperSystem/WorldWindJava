@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (C) 2012 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration.
+  ~ All Rights Reserved.
+  -->
+
+<!-- This shaded relief was created by USGS originally for the Lunar Mapping and Modeling Project (LMMP). The input used the Lunar Reconnaissance Orbiter (LRO) Lunar Orbiter Laser Altimeter (LOLA) digital elevation model by Goddard Space Flight Center as released in 2013 at 256ppd. -->
+<!--$Id: LOLAColor.xml 1382 2013-05-31 00:37:46Z tgaskins $-->
+<Layer version="1" layerType="TiledImageLayer">
+    <DisplayName>Cobrahead</DisplayName>
+    <Service serviceName="OGC:WMS" version="1.3">
+        <GetCapabilitiesURL>https://celestial.arc.nasa.gov/cgi-bin/mapserv?map=/data/cobrahead.map</GetCapabilitiesURL>
+        <GetMapURL>https://celestial.arc.nasa.gov/cgi-bin/mapserv?map=/data/cobrahead.map</GetMapURL>
+        <LayerNames>cobrahead_dtm_layer</LayerNames>
+    </Service>
+    <RetrievePropertiesFromService>true</RetrievePropertiesFromService>
+    <!-- day month year hours:minutes:seconds timezone -->
+    <DataCacheName>Moon/Cobra</DataCacheName> 
+    <ImageFormat>image/jpeg</ImageFormat>
+    <AvailableImageFormats>
+        <ImageFormat>image/jpeg</ImageFormat>
+        <ImageFormat>image/png</ImageFormat>
+    </AvailableImageFormats>
+    <FormatSuffix>.dds</FormatSuffix>
+    <NumLevels count="5" numEmpty="0"/>
+    <TileOrigin>
+        <LatLon units="degrees" latitude="23.73" longitude="-49.86"/>
+    </TileOrigin>
+    <LevelZeroTileDelta>
+        <LatLon units="degrees" latitude="36" longitude="36"/>
+    </LevelZeroTileDelta>
+    <TileSize>
+        <Dimension width="512" height="512"/>
+    </TileSize>
+    <Sector>
+        <SouthWest>
+            <LatLon units="degrees" latitude="23.73" longitude="-49.86"/>
+        </SouthWest>
+        <NorthEast>
+            <LatLon units="degrees" latitude="26.14" longitude="-48.45"/>
+        </NorthEast>
+    </Sector>
+    <ForceLevelZeroLoads>true</ForceLevelZeroLoads>
+    <RetainLevelZeroTiles>true</RetainLevelZeroTiles>
+    <UseTransparentTextures>false</UseTransparentTextures>
+    <RetrievalTimeouts>
+        <ReadTimeout>
+            <Time units="milliseconds" value="30000"/>
+        </ReadTimeout>
+    </RetrievalTimeouts>
+    <!-- The following lines are included just to show how to set the values to other than their defaults -->
+    <MaxAbsentTileAttempts>2</MaxAbsentTileAttempts>
+    <MinAbsentTileCheckInterval>1000</MinAbsentTileCheckInterval>
+</Layer>
