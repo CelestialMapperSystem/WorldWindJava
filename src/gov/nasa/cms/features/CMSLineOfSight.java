@@ -511,7 +511,7 @@ public class CMSLineOfSight extends JCheckBoxMenuItem
 //        System.out.println("Counter inside thread: " + debugCounter.get());
         // Intersect the line between this grid point and the selected position.
         Intersection[] intersections = this.terrain.intersect(
-            new Position(this.referencePosition, 0), new Position(gridPosition,
+            new Position(this.referencePosition), new Position(gridPosition,
                 0));
         if (intersections == null || intersections.length == 0)
         {
