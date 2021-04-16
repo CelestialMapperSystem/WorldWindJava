@@ -13,4 +13,4 @@ cms.jar
 .idea/uiDesigner.xml
 csv_output/
 doc/
-hs_err*
+hs_err_*

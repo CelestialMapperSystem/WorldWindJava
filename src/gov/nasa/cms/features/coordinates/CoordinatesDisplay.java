@@ -41,8 +41,10 @@ import gov.nasa.cms.features.coordinates.CMSUnitsFormat;
 import gov.nasa.worldwind.view.orbit.OrbitView;
 //import gov.nasa.worldwindx.applications.worldwindow.core.Constants;
 
-
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
+import java.beans.*;
 import java.util.Iterator;
 
 /**
@@ -53,6 +55,10 @@ public class CoordinatesDisplay
 {
     private CelestialMapper cms;
     private Layer coordinatesLayer;
+    protected static final Offset DEFAULT_OFFSET = new Offset(20d, 140d, AVKey.PIXELS, AVKey.INSET_PIXELS);
+    private AnnotationAttributes attrs;
+    private CMSCoordAnnotationLayer layer;
+    private ScreenAnnotation anno;
 
     public CoordinatesDisplay(CelestialMapper cms){
         this.cms = cms;
@@ -63,7 +69,28 @@ public class CoordinatesDisplay
         this.coordinatesLayer = this.createLayer();
 //        this.coordinatesLayer.setScreenLocation(new Point(view.x + 1000, view.y + 800));
         cms.getWwd().getModel().getLayers().add(coordinatesLayer);
+
         this.coordinatesLayer.setEnabled(true);
+
+        // The rerender method is working...it just isn't replacing the position of the annotation
+        // onscreen relative to the edge of the window like in the WorldWindow version of this class!
+//        cms.addComponentListener(new ComponentAdapter() {
+//            public void componentResized(ComponentEvent componentEvent) {
+//                SwingUtilities.invokeLater(() -> {
+//                    System.out.println("CMS has been resized!" +" - new size: " + cms.getSize());
+//                    cms.getCoordinatesDisplay().reRender();
+//                });
+//            }
+//        });
+    }
+
+    private void reRender()
+    {
+        Dimension wwSize = cms.getWwjPanel().getSize();
+        this.anno.setScreenPoint(new Point(wwSize.width, wwSize.height));
+        this.attrs.setDrawOffset(null);
+        layer.render(layer.getDc());
+
     }
 
     public Layer getCoordinatesLayer()
@@ -89,10 +116,10 @@ public class CoordinatesDisplay
 
     protected Layer doCreateLayer()
     {
-        ScreenAnnotation anno = new ScreenAnnotation("Dummy Text", new Point(100, 100));
+        this.anno = new ScreenAnnotation("Dummy Text", new Point(100, 100));
         anno.setAlwaysOnTop(true);
 
-        AnnotationAttributes attrs = anno.getAttributes();
+        this.attrs = anno.getAttributes();
         attrs.setTextColor(Color.WHITE);
         attrs.setFont(Font.decode("Consolas-Bold-15"));
         attrs.setEffect(AVKey.TEXT_EFFECT_OUTLINE);
@@ -111,10 +138,13 @@ public class CoordinatesDisplay
 //        attrs.setTextAlign(AVKey.RIGHT);
         attrs.setTextAlign(AVKey.LEFT);
         attrs.setAdjustWidthToText(AVKey.SIZE_FIXED);
-//        attrs.setDrawOffset(new Point(-width / 2, -height - 100));
-        attrs.setDrawOffset(new Point(-width -665, -height - 140));
+//        attrs.setDrawOffset(new Point(-width * 2, -height));
+//        attrs.setDrawOffset(new Point(-width / 2, -height - 140));
+        attrs.setDrawOffset(new Point(-width/2 + 90, -height - 225));
+//        attrs.setDrawOffset(new Point(-width / 2, -height - 20));
+//        attrs.setDrawOffset(null);
 
-        CoordAnnotationLayer layer = new CoordAnnotationLayer();
+        this.layer = new CMSCoordAnnotationLayer();
         layer.setValue(WorldWindowConstants.SCREEN_LAYER, true);
         layer.setPickEnabled(false);
         layer.addAnnotation(anno);
@@ -123,8 +153,10 @@ public class CoordinatesDisplay
         return layer;
     }
 
-    private class CoordAnnotationLayer extends AnnotationLayer
+    private class CMSCoordAnnotationLayer extends AnnotationLayer
     {
+        DrawContext dc;
+
         @Override
         public void render(DrawContext dc)
         {
@@ -132,12 +164,26 @@ public class CoordinatesDisplay
             Annotation anno = iter.next();
             if (anno != null && anno instanceof ScreenAnnotation)
             {
+                this.dc = dc;
                 anno.setText(formatText(dc));
                 Dimension wwSize = cms.getWwjPanel().getSize();
                 ((ScreenAnnotation) anno).setScreenPoint(new Point(wwSize.width, wwSize.height));
+//                System.out.println("wwSize: " + wwSize);
+//                ((ScreenAnnotation) anno).setScreenPoint(new Point((wwSize.width)/3, (3* wwSize.height)/4));
             }
 
             super.render(dc);
+        }
+
+        @Override
+        protected void doRender(DrawContext dc)
+        {
+            super.doRender(dc);
+        }
+
+        public DrawContext getDc()
+        {
+            return dc;
         }
     }
 

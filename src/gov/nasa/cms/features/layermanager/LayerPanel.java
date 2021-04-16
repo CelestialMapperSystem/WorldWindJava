@@ -8,6 +8,8 @@ import gov.nasa.worldwind.layers.placename.PlaceNameLayer;
 
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.event.*;
+import javax.swing.text.*;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.util.Vector;
@@ -159,8 +161,6 @@ public class LayerPanel extends JPanel
           Vector rootVector = new NamedVector("Root", rootNodes);
 
           tree = new JTree(rootVector);
-
-
           tree.setCellRenderer(new CheckBoxNodeRenderer(wwd, font_));
           tree.setCellEditor(new CheckBoxNodeEditor(wwd, tree, font_));
           tree.setEditable(true);
