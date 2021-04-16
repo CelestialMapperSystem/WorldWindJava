@@ -214,15 +214,10 @@ public class CMSLineOfSight extends JCheckBoxMenuItem
                     if (calculationDispatchThread != null)
                     {
                         calculationDispatchThread.interrupt();
-//                        calculationDispatchThread.stop();
                     }
 
                     while (threadPool.getActiveCount() > 0)
                     {
-//                        System.out.println("Threadpool still active: " + threadPool.getActiveCount());
-//                        threadPool.shutdown();
-//                        threadPool.invokeAll()
-//                        System.out.println("Threadpool shutdown?: " + threadPool.isShutdown());
                         threadPoolTasks.forEach(future -> future.cancel(true));
                         threadPool.purge();
                     }
@@ -242,12 +237,10 @@ public class CMSLineOfSight extends JCheckBoxMenuItem
 
                     mouseEvent.consume(); // tell the rest of WW that this event has been processed
 
-//                    clearLayers();
                     if (calculationDispatchThread != null
                         && calculationDispatchThread.isAlive())
                     {
                         calculationDispatchThread.interrupt();
-//                        calculationDispatchThread.stop();
                     }
 
                     if (threadPool.getActiveCount() > 0)
@@ -255,7 +248,6 @@ public class CMSLineOfSight extends JCheckBoxMenuItem
                         threadPoolTasks.forEach(future -> future.cancel(true));
                         threadPool.purge();
                     }
-
                     deactivate();
                     clearPositionLists();
                     wwd.redraw();
@@ -278,12 +270,10 @@ public class CMSLineOfSight extends JCheckBoxMenuItem
                         && calculationDispatchThread.isAlive())
                     {
                         calculationDispatchThread.interrupt();
-//                        calculationDispatchThread.stop();
                     }
 
                     if (threadPool.getActiveCount() > 0)
                     {
-
                         threadPoolTasks.forEach(future -> future.cancel(true));
                         threadPool.purge();
                     }
