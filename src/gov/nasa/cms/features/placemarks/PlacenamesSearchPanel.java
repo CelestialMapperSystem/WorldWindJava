@@ -860,7 +860,7 @@ public class PlacenamesSearchPanel extends JPanel
                             // times and the else condition will always be reached.
                             if(System.currentTimeMillis() - timeSinceLastPick > 1)
                             {
-                                System.out.println("Event hasObjects, invoking placeMarkEvent(HOVER)");
+//                                System.out.println("Event hasObjects, invoking placeMarkEvent(HOVER)");
                                 placemarkEvent(event, "HOVER");
                                 event.consume();
                             }
@@ -869,20 +869,20 @@ public class PlacenamesSearchPanel extends JPanel
                         {
                             if (SwingUtilities.isEventDispatchThread())
                             {
-                                System.out.println("Event does not have Objects, hiding Annotations");
+//                                System.out.println("Event does not have Objects, hiding Annotations");
                                 selectedPPMap.forEach((key, value) -> {
                                     ScreenAnnotation sc = (ScreenAnnotation) value.get("annotation");
                                     if (sc.getAttributes().isVisible())
                                     {
-                                        System.out.println(key + ": Is no longer Hovered!");
+//                                        System.out.println(key + ": Is no longer Hovered!");
                                         if (!(boolean) value.get("clicked"))
                                         {
-                                            System.out.println(
-                                                key + ": has not been clicked, hiding annotation!");
+//                                            System.out.println(
+//                                                key + ": has not been clicked, hiding annotation!");
                                             sc.getAttributes().setVisible(false);
                                             wwd.redraw();
                                         } else {
-                                            System.out.println(key + ": has been CLICKED and Annotation should be visible");
+//                                            System.out.println(key + ": has been CLICKED and Annotation should be visible");
                                         }
                                     }
                                 });
@@ -897,7 +897,7 @@ public class PlacenamesSearchPanel extends JPanel
                             // Have to make sure that the click event action isn't fired twice by adding even
                             // a small delay of 1ms
                             if(System.currentTimeMillis() - timeSinceLastPick > 1){
-                                System.out.println("Event hasObjects, invoking placeMarkEvent(CLICKED)");
+//                                System.out.println("Event hasObjects, invoking placeMarkEvent(CLICKED)");
                                 placemarkEvent(event, "CLICKED");
                                 event.consume();
                             }
@@ -909,7 +909,7 @@ public class PlacenamesSearchPanel extends JPanel
 
                 if (positions.size() > 0)
                 {
-                    System.out.println("Current num of positions: " + positions.size());
+//                    System.out.println("Current num of positions: " + positions.size());
                     wwd.getView().goTo(positions.entrySet().iterator().next().getValue(),
                         wwd.getView().getCurrentEyePosition().getElevation());
                 }
@@ -1031,7 +1031,7 @@ public class PlacenamesSearchPanel extends JPanel
                 PointPlacemark pp = (PointPlacemark) event.getTopObject();
                 var selected = selectedPPMap.get(pp.getLabelText());
                 ScreenAnnotation annotation = (ScreenAnnotation) selected.get("annotation");
-                System.out.println("Current Hovered Placemark: " + pp.getLabelText() + " " + pp);
+//                System.out.println("Current Hovered Placemark: " + pp.getLabelText() + " " + pp);
 
                 if (!annotation.getAttributes().isVisible())
                 {
@@ -1047,11 +1047,11 @@ public class PlacenamesSearchPanel extends JPanel
                 var selected = selectedPPMap.get(pp.getLabelText());
                 ScreenAnnotation annotation = (ScreenAnnotation) selected.get("annotation");
 
-                System.out.println("Current clicked Placemark: " + pp.getLabelText() + " " + pp);
+//                System.out.println("Current clicked Placemark: " + pp.getLabelText() + " " + pp);
 
                 boolean clicked = (boolean) selected.get("clicked");
 
-                System.out.println("isClicked before update?: " + clicked);
+//                System.out.println("isClicked before update?: " + clicked);
 
                 if (!clicked)
                 {

@@ -27,8 +27,10 @@ public class CMSLineOfSightPanel extends JPanel {
     protected JProgressBar progressBar;
     private final CMSLineOfSight lineOfSight;
     private LineOfSightController lineOfSightController;
+    private JPanel buttonPanel;
+    private JButton clearButton;
 
-CMSLineOfSightPanel(WorldWindow wwd, CMSLineOfSight lineOfSightObject, LineOfSightController lineOfSightController) {
+    CMSLineOfSightPanel(WorldWindow wwd, CMSLineOfSight lineOfSightObject, LineOfSightController lineOfSightController) {
         super(new BorderLayout());
         this.wwd = wwd;
         this.lineOfSight = lineOfSightObject;
@@ -62,7 +64,21 @@ CMSLineOfSightPanel(WorldWindow wwd, CMSLineOfSight lineOfSightObject, LineOfSig
         shapePanel.add(gridPoints);
         shapePanel.add(intersectionPoints);
         shapePanel.add(intersectionLines);
-        shapePanel.add(progressBar, BorderLayout.SOUTH); // 
+        shapePanel.add(progressBar, BorderLayout.SOUTH); //
+
+        buttonPanel = new JPanel(new GridLayout(1,1,5,5));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+
+        clearButton = new JButton("Clear Results");
+
+        clearButton.addActionListener(e -> {
+            lineOfSight.resetAll();
+        });
+        buttonPanel.add(clearButton);
+
+
+
+
         
         // Iterate through all components in shapePanel to set the checkboxes
         // to selected by default
@@ -85,7 +101,8 @@ CMSLineOfSightPanel(WorldWindow wwd, CMSLineOfSight lineOfSightObject, LineOfSig
         // Add the border padding in the dialog
         outerPanel.setBorder(new CompoundBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10), new TitledBorder("Line of Sight")));
         outerPanel.setToolTipText("Control Panel for Line of Sight Analysis");
-        outerPanel.add(shapePanel);
+        outerPanel.add(shapePanel, BorderLayout.CENTER);
+        outerPanel.add(buttonPanel, BorderLayout.SOUTH);
         this.add(outerPanel, BorderLayout.NORTH);
 
     } // end makePanel();
