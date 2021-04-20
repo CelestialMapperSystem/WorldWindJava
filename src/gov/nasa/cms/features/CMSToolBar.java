@@ -22,7 +22,7 @@ import java.util.ArrayList;
 */
 public class CMSToolBar
 {
-    private final CelestialMapper frame;
+    private CelestialMapper frame;
     private JToolBar toolBar;
 
     private boolean isLayerManagerOpen = false;
@@ -58,7 +58,7 @@ public class CMSToolBar
         buttons.add(new JButton("Measurements"));
         buttons.add(new JButton("Coordinates"));
         buttons.add(new JButton("Profiler"));
-        buttons.add(new JButton("Sight Lines"));
+        buttons.add(new JButton("Line of Sight"));
         buttons.add(new JButton("Landing Sites"));
         buttons.add(new JButton("Search Lunar Features"));
         buttons.add(new JButton("Placemarks"));
@@ -128,7 +128,7 @@ public class CMSToolBar
                     setButtonIcon("cms-data/icons/icons8-bell-curve-48.png", button);
                     button.addActionListener(e -> showProfiler());
                     break;
-                case "Sight Lines":
+                case "Line of Sight":
                     setButtonIcon("cms-data/icons/icons8-head-profile-48.png", button);
                     button.addActionListener(e -> showLineOfSight());
                     break;
@@ -300,5 +300,45 @@ public class CMSToolBar
 //                frame.setMeasureDialogOpen(false);
             }
         }
+    }
+
+    public void update()
+    {
+
+    }
+
+    public void restart()
+    {
+        if(frame.getMeasureDialog() != null)
+        frame.getMeasureDialog().setVisible(false);
+        frame.setMeasureDialog(null);
+
+        if(frame.getLayerManager() != null)
+        frame.getLayerManager().setVisible(false);
+        frame.setLayerManager(null);
+
+        if(frame.getCoordinatesDialog() != null)
+        frame.getCoordinatesDialog().setVisible(false);
+        frame.setCoordinatesDialog(null);
+
+        if(frame.getProfile() != null)
+        frame.getProfile().setVisible(false);
+        frame.setProfile(null);
+
+        if(frame.getLineOfSight() != null)
+        frame.getLineOfSight().setVisible(false);
+        frame.setLineOfSight(null);
+
+        if(frame.getSearchPlacenamesDialog() != null)
+        frame.getSearchPlacenamesDialog().setVisible(false);
+        frame.setSearchPlacenamesDialog(null);
+
+        if(frame.getPointPlacemarkDialog() != null)
+        frame.getPointPlacemarkDialog().setVisible(false);
+        frame.setPointPlacemarkDialog(null);
+
+        this.frame = null;
+        this.toolBar.removeAll();
+        this.toolBar = null;
     }
 }

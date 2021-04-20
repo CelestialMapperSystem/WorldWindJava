@@ -19,13 +19,14 @@ import javax.swing.JDialog;
  */
 public class LayerManagerDialog
 {
+    private final WorldWindow wwd;
     private JDialog dialog;
     private LayerPanel layerPanel;
     
     public LayerManagerDialog(WorldWindow wwd, Component component)
     {
         layerPanel = new LayerPanel(wwd);
-        
+        this.wwd = wwd;
         // Create the dialog
         dialog = new JDialog((Frame) component);
         this.dialog.setPreferredSize(new Dimension(340, 460));
@@ -55,5 +56,9 @@ public class LayerManagerDialog
     {
         dialog.setVisible(visible);
     }
-    
+
+    public void update()
+    {
+        layerPanel.update(wwd);
+    }
 }
