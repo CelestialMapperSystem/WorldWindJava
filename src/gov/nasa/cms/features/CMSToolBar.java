@@ -58,7 +58,7 @@ public class CMSToolBar
         buttons.add(new JButton("Measurements"));
         buttons.add(new JButton("Coordinates"));
         buttons.add(new JButton("Profiler"));
-        buttons.add(new JButton("Line of Sight"));
+        buttons.add(new JButton("Sight Lines"));
         buttons.add(new JButton("Landing Sites"));
         buttons.add(new JButton("Search Lunar Features"));
         buttons.add(new JButton("Placemarks"));
@@ -128,7 +128,7 @@ public class CMSToolBar
                     setButtonIcon("cms-data/icons/icons8-bell-curve-48.png", button);
                     button.addActionListener(e -> showProfiler());
                     break;
-                case "Line of Sight":
+                case "Sight Lines":
                     setButtonIcon("cms-data/icons/icons8-head-profile-48.png", button);
                     button.addActionListener(e -> showLineOfSight());
                     break;
