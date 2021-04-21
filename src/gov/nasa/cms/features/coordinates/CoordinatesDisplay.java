@@ -36,60 +36,46 @@ import gov.nasa.worldwind.geom.coords.UTMCoord;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.pick.PickedObject;
 import gov.nasa.worldwind.render.*;
-//import gov.nasa.worldwind.util.CMSUnitsFormat;
-import gov.nasa.cms.features.coordinates.CMSUnitsFormat;
 import gov.nasa.worldwind.view.orbit.OrbitView;
-//import gov.nasa.worldwindx.applications.worldwindow.core.Constants;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
 import java.util.Iterator;
 
 /**
- * @author tag
- * @version $Id: CoordinatesDisplay.java 1171 2013-02-11 21:45:02Z dcollins $
+ * @author tag, rewritten for CMS by gknorman 03/2021
+ * @version $Id: CoordinatesDisplay.java 1172 2021-04-21 21:45:02Z gknorman $
  */
 public class CoordinatesDisplay
 {
-    private CelestialMapper cms;
+    private double previousHeight;
+    private final CelestialMapper cms;
     private Layer coordinatesLayer;
     protected static final Offset DEFAULT_OFFSET = new Offset(20d, 140d, AVKey.PIXELS, AVKey.INSET_PIXELS);
     private AnnotationAttributes attrs;
     private CMSCoordAnnotationLayer layer;
     private ScreenAnnotation anno;
+    private double previousWidth;
+    private int width;
+    private int height;
 
     public CoordinatesDisplay(CelestialMapper cms){
         this.cms = cms;
+        Dimension wwSize = cms.getSize();
+        this.previousWidth = wwSize.getWidth();
+        this.previousHeight = wwSize.getHeight();
+
+//        System.out.println("getSize()  .width: " + wwSize.getWidth());
+//        System.out.println("getSize()  .height: " + wwSize.getHeight());
+
         this.initialize(cms);
     }
 
     public void initialize(CelestialMapper cms){
+
         this.coordinatesLayer = this.createLayer();
-//        this.coordinatesLayer.setScreenLocation(new Point(view.x + 1000, view.y + 800));
         cms.getWwd().getModel().getLayers().add(coordinatesLayer);
 
         this.coordinatesLayer.setEnabled(true);
-
-        // The rerender method is working...it just isn't replacing the position of the annotation
-        // onscreen relative to the edge of the window like in the WorldWindow version of this class!
-//        cms.addComponentListener(new ComponentAdapter() {
-//            public void componentResized(ComponentEvent componentEvent) {
-//                SwingUtilities.invokeLater(() -> {
-//                    System.out.println("CMS has been resized!" +" - new size: " + cms.getSize());
-//                    cms.getCoordinatesDisplay().reRender();
-//                });
-//            }
-//        });
-    }
-
-    private void reRender()
-    {
-        Dimension wwSize = cms.getWwjPanel().getSize();
-        this.anno.setScreenPoint(new Point(wwSize.width, wwSize.height));
-        this.attrs.setDrawOffset(null);
-        layer.render(layer.getDc());
 
     }
 
@@ -116,7 +102,7 @@ public class CoordinatesDisplay
 
     protected Layer doCreateLayer()
     {
-        this.anno = new ScreenAnnotation("Dummy Text", new Point(100, 100));
+        this.anno = new ScreenAnnotation("Dummy Text", new Point(200, 200));
         anno.setAlwaysOnTop(true);
 
         this.attrs = anno.getAttributes();
@@ -133,22 +119,35 @@ public class CoordinatesDisplay
         attrs.setInsets(new Insets(10, 0, 0, 10));
 
 
-        int width = 340, height = 200;
+        this.width = 340; 
+        this.height = 200;
         attrs.setSize(new Dimension(width, height));
 //        attrs.setTextAlign(AVKey.RIGHT);
         attrs.setTextAlign(AVKey.LEFT);
         attrs.setAdjustWidthToText(AVKey.SIZE_FIXED);
-//        attrs.setDrawOffset(new Point(-width * 2, -height));
-//        attrs.setDrawOffset(new Point(-width / 2, -height - 140));
-        attrs.setDrawOffset(new Point(-width/2 + 90, -height - 225));
-//        attrs.setDrawOffset(new Point(-width / 2, -height - 20));
-//        attrs.setDrawOffset(null);
 
         this.layer = new CMSCoordAnnotationLayer();
         layer.setValue(WorldWindowConstants.SCREEN_LAYER, true);
         layer.setPickEnabled(false);
         layer.addAnnotation(anno);
         layer.setName("Coordinates Display");
+
+//        System.out.println(attrs.getDrawOffset().toString());
+
+
+        Dimension wwSize = cms.getSize();
+        if(wwSize.getWidth() != previousWidth)
+        {
+            this.previousWidth = wwSize.getWidth();
+//            System.out.println("getSize()  .width: " + wwSize.getWidth());
+        }
+
+        if(wwSize.getHeight() != previousHeight)
+        {
+            this.previousHeight = wwSize.getHeight();
+//            System.out.println("getSize()  .height: " + wwSize.getHeight());
+        }
+
 
         return layer;
     }
@@ -164,12 +163,45 @@ public class CoordinatesDisplay
             Annotation anno = iter.next();
             if (anno != null && anno instanceof ScreenAnnotation)
             {
+
                 this.dc = dc;
                 anno.setText(formatText(dc));
+
+                // Need to update the minimap's dimensions regardless of
+                // whether the mouse is over the map and "picking" a point.
+                // Otherwise the coordinates display won't update it's
+                // position to fit under the minimap until the user mouses
+                // over the map!
+                cms.getWML().drawIcon(dc);
+
                 Dimension wwSize = cms.getWwjPanel().getSize();
-                ((ScreenAnnotation) anno).setScreenPoint(new Point(wwSize.width, wwSize.height));
-//                System.out.println("wwSize: " + wwSize);
-//                ((ScreenAnnotation) anno).setScreenPoint(new Point((wwSize.width)/3, (3* wwSize.height)/4));
+                ((ScreenAnnotation) anno).setScreenPoint(new Point(
+                    // Added a manual offset of 168px to better line up the
+                    // left aligned display to the edge of the minimap
+                    (int) cms.getWML().getLocationSW().getX() + 168,
+
+                    // Added a manual offset of the previously set annotation
+                    // height minus 15 px to create some more spacing between
+                    // the minimap and the coordinates display
+                    (int) cms.getWML().getLocationSW().getY() - height - 15
+                ));
+//
+                // We don't need the offset anymore since the draw point is
+                // being created relative to the minimap instead of the window!!
+//                attrs.setDrawOffset(new Point(
+//                    0,0
+//                ));
+
+                if(wwSize.getWidth() != previousWidth)
+                {
+                    previousWidth = wwSize.width;
+                }
+
+                if(wwSize.getHeight() != previousHeight)
+                {
+
+                    previousHeight = wwSize.height;
+                }
             }
 
             super.render(dc);
@@ -259,28 +291,24 @@ public class CoordinatesDisplay
                 }
                 catch (Exception e)
                 {
-                    sb.append(String.format(
-                        this.cms.getUnits().getStringValue(CMSUnitsFormat.LABEL_UTM_ZONE) + "\n"));
-                    sb.append(String.format(
-                        this.cms.getUnits().getStringValue(CMSUnitsFormat.LABEL_UTM_EASTING) + "\n"));
-                    sb.append(String.format(
-                        this.cms.getUnits().getStringValue(CMSUnitsFormat.LABEL_UTM_NORTHING) + "\n"));
+                    sb.append(this.cms.getUnits().getStringValue(
+                        CMSUnitsFormat.LABEL_UTM_ZONE)).append("\n");
+                    sb.append(this.cms.getUnits().getStringValue(
+                        CMSUnitsFormat.LABEL_UTM_EASTING)).append("\n");
+                    sb.append(this.cms.getUnits().getStringValue(
+                        CMSUnitsFormat.LABEL_UTM_NORTHING)).append("\n");
                 }
             }
             else
             {
-                sb.append(
-                    String.format(this.cms.getUnits().getStringValue(CMSUnitsFormat.LABEL_UTM_ZONE) + "\n"));
-                sb.append(String.format(
-                    this.cms.getUnits().getStringValue(CMSUnitsFormat.LABEL_UTM_EASTING) + "\n"));
-                sb.append(String.format(
-                    this.cms.getUnits().getStringValue(CMSUnitsFormat.LABEL_UTM_NORTHING) + "\n"));
+                sb.append(this.cms.getUnits().getStringValue(
+                    CMSUnitsFormat.LABEL_UTM_ZONE)).append("\n");
+                sb.append(this.cms.getUnits().getStringValue(
+                    CMSUnitsFormat.LABEL_UTM_EASTING)).append("\n");
+                sb.append(this.cms.getUnits().getStringValue(
+                    CMSUnitsFormat.LABEL_UTM_NORTHING)).append("\n");
             }
         }
-//        else
-//        {
-//            sb.append(datum);
-//        }
 
         return sb.toString();
     }

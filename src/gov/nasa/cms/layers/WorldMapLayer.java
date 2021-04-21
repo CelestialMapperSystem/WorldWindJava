@@ -76,6 +76,7 @@ public class WorldMapLayer extends AbstractLayer
 
     // Draw it as ordered with an eye distance of 0 so that it shows up in front of most other things.
     protected OrderedIcon orderedImage = new OrderedIcon();
+    private Vec4 locationSW;
 
     protected class OrderedIcon implements OrderedRenderable
     {
@@ -373,7 +374,7 @@ public class WorldMapLayer extends AbstractLayer
         this.frameStampForPicking = dc.getFrameTimeStamp();
     }
 
-    protected void drawIcon(DrawContext dc)
+    public void drawIcon(DrawContext dc)
     {
         if (this.getIconFilePath() == null)
             return;
@@ -416,7 +417,7 @@ public class WorldMapLayer extends AbstractLayer
             // Translate and scale
             ogsh.pushModelviewIdentity(gl);
             double scale = this.computeScale(viewport);
-            Vec4 locationSW = this.computeLocation(viewport, scale);
+            locationSW = this.computeLocation(viewport, scale);
             gl.glTranslated(locationSW.x(), locationSW.y(), locationSW.z());
             // Scale to 0..1 space
             gl.glScaled(scale, scale, 1);
@@ -552,12 +553,12 @@ public class WorldMapLayer extends AbstractLayer
         }
     }
 
-    protected double getScaledIconWidth()
+    public double getScaledIconWidth()
     {
         return this.iconWidth * this.iconScale;
     }
 
-    protected double getScaledIconHeight()
+    public double getScaledIconHeight()
     {
         return this.iconHeight * this.iconScale;
     }
@@ -747,5 +748,20 @@ public class WorldMapLayer extends AbstractLayer
     public String toString()
     {
         return Logging.getMessage("layers.Earth.WorldMapLayer.Name");
+    }
+
+    public int getIconWidth()
+    {
+        return iconWidth;
+    }
+
+    public int getIconHeight()
+    {
+        return iconHeight;
+    }
+
+    public Vec4 getLocationSW()
+    {
+        return locationSW;
     }
 }
