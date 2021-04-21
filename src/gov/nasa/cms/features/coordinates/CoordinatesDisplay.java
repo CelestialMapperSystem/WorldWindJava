@@ -39,6 +39,7 @@ import gov.nasa.worldwind.render.*;
 //import gov.nasa.worldwind.util.CMSUnitsFormat;
 import gov.nasa.cms.features.coordinates.CMSUnitsFormat;
 import gov.nasa.worldwind.view.orbit.OrbitView;
+import gov.nasa.worldwindx.applications.worldwindow.core.Controller;
 //import gov.nasa.worldwindx.applications.worldwindow.core.Constants;
 
 import javax.swing.*;
@@ -53,19 +54,42 @@ import java.util.Iterator;
  */
 public class CoordinatesDisplay
 {
+    private double previousHeight;
     private CelestialMapper cms;
     private Layer coordinatesLayer;
     protected static final Offset DEFAULT_OFFSET = new Offset(20d, 140d, AVKey.PIXELS, AVKey.INSET_PIXELS);
     private AnnotationAttributes attrs;
     private CMSCoordAnnotationLayer layer;
     private ScreenAnnotation anno;
+    private Controller controller;
+    private double previousWidth;
+    private int width;
+    private int height;
 
     public CoordinatesDisplay(CelestialMapper cms){
         this.cms = cms;
+        Dimension wwSize = cms.getSize();
+        this.previousWidth = wwSize.getWidth();
+        this.previousHeight = wwSize.getHeight();
+
+        System.out.println("getSize()  .width: " + wwSize.getWidth());
+        System.out.println("getSize()  .height: " + wwSize.getHeight());
+
+//        this.controller = new Controller();
+//        try
+//        {
+//            controller.start("../src/gov/nasa/cms/config/cmsConfiguration.xml",
+//                cms.getSize());
+//        }
+//        catch (Exception e)
+//        {
+//            e.printStackTrace();
+//        }
         this.initialize(cms);
     }
 
     public void initialize(CelestialMapper cms){
+
         this.coordinatesLayer = this.createLayer();
 //        this.coordinatesLayer.setScreenLocation(new Point(view.x + 1000, view.y + 800));
         cms.getWwd().getModel().getLayers().add(coordinatesLayer);
@@ -116,7 +140,7 @@ public class CoordinatesDisplay
 
     protected Layer doCreateLayer()
     {
-        this.anno = new ScreenAnnotation("Dummy Text", new Point(100, 100));
+        this.anno = new ScreenAnnotation("Dummy Text", new Point(200, 200));
         anno.setAlwaysOnTop(true);
 
         this.attrs = anno.getAttributes();
@@ -133,14 +157,15 @@ public class CoordinatesDisplay
         attrs.setInsets(new Insets(10, 0, 0, 10));
 
 
-        int width = 340, height = 200;
+        this.width = 340; 
+        this.height = 200;
         attrs.setSize(new Dimension(width, height));
 //        attrs.setTextAlign(AVKey.RIGHT);
         attrs.setTextAlign(AVKey.LEFT);
         attrs.setAdjustWidthToText(AVKey.SIZE_FIXED);
 //        attrs.setDrawOffset(new Point(-width * 2, -height));
 //        attrs.setDrawOffset(new Point(-width / 2, -height - 140));
-        attrs.setDrawOffset(new Point(-width/2 + 90, -height - 225));
+//        attrs.setDrawOffset(new Point(-width/2, -height));
 //        attrs.setDrawOffset(new Point(-width / 2, -height - 20));
 //        attrs.setDrawOffset(null);
 
@@ -149,6 +174,23 @@ public class CoordinatesDisplay
         layer.setPickEnabled(false);
         layer.addAnnotation(anno);
         layer.setName("Coordinates Display");
+
+        System.out.println(attrs.getDrawOffset().toString());
+
+
+        Dimension wwSize = cms.getSize();
+        if(wwSize.getWidth() != previousWidth)
+        {
+            this.previousWidth = wwSize.getWidth();
+            System.out.println("getSize()  .width: " + wwSize.getWidth());
+        }
+
+        if(wwSize.getHeight() != previousHeight)
+        {
+            this.previousHeight = wwSize.getHeight();
+            System.out.println("getSize()  .height: " + wwSize.getHeight());
+        }
+
 
         return layer;
     }
@@ -167,9 +209,34 @@ public class CoordinatesDisplay
                 this.dc = dc;
                 anno.setText(formatText(dc));
                 Dimension wwSize = cms.getWwjPanel().getSize();
-                ((ScreenAnnotation) anno).setScreenPoint(new Point(wwSize.width, wwSize.height));
+                ((ScreenAnnotation) anno).setScreenPoint(new Point(
+                    (int) (cms.getWidth() - width/2),
+                    (int) (cms.getHeight()/2 - height/2)
+                ));
 //                System.out.println("wwSize: " + wwSize);
-//                ((ScreenAnnotation) anno).setScreenPoint(new Point((wwSize.width)/3, (3* wwSize.height)/4));
+                attrs.setDrawOffset(new Point(
+                    (int) (-cms.getWidth()/4.5 + width),
+                    (int) (-cms.getHeight()/4.5 + height)));
+
+                if(wwSize.getWidth() != previousWidth)
+                {
+                    System.out.println(
+                        "cms.getWwjPanel... wwSize.width: " + wwSize.width);
+                    System.out.println("getSize()  .width: " + wwSize.getWidth());
+
+                    System.out.println(attrs.getDrawOffset().toString());
+                    System.out.println(attrs.toString());
+                    previousWidth = wwSize.width;
+                }
+
+                if(wwSize.getHeight() != previousHeight)
+                {
+                    System.out.println(
+                        "cms.getWwjPanel... wwSize.height: " + wwSize.height);
+                    System.out.println("getSize()  .height: " + wwSize.getHeight());
+
+                    previousHeight = wwSize.height;
+                }
             }
 
             super.render(dc);
