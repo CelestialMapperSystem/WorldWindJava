@@ -975,6 +975,8 @@ public class CMSLineOfSight extends JCheckBoxMenuItem
         originPlacemark.setAttributes(selectedLocationAttributes);
         originPlacemark.setValue(AVKey.DISPLAY_NAME, p.toString());
         originPlacemark.setLineEnabled(true);
+        originPlacemark.setAlwaysOnTop(true);
+
         this.gridOrigin.addRenderable(originPlacemark);
 //        System.out.println(pm.getAttributes());
     }
