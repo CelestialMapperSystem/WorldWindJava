@@ -92,7 +92,10 @@ public class CelestialMapper extends AppFrame
     {
         getWwd().shutdown();
         getContentPane().remove(wwjPanel); //removing component's parent must be JPanel
+//        this.toolBar.restart();
+        this.toolBar = null;
         this.initialize();
+//        layerManager.update();
     }
 
 
@@ -307,7 +310,7 @@ public class CelestialMapper extends AppFrame
                 resetWindow = !resetWindow;
                 if (resetWindow)
                 {
-//                    Configuration.setValue(AVKey.GLOBE_CLASS_NAME, "gov.nasa.worldwind.globes.Moon");
+                    Configuration.setValue(AVKey.GLOBE_CLASS_NAME, "gov.nasa.worldwind.globes.Moon");
                     restart(); //resets window to launch status
                 } 
             });

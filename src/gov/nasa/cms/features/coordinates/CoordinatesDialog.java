@@ -32,11 +32,7 @@ public class CoordinatesDialog
         dialog.setLocation(bounds.x, bounds.y + 60);
         dialog.setResizable(true);
 
-        // Can't seem to set a minimum size for the tool using BorderLayout
-
-//        dialog.setPreferredSize(new Dimension(120,20));
-//        dialog.setMinimumSize(new Dimension(120,20));
-//        coodinatePanel.setMinimumSize(new Dimension(120,20));
+//        dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         // Add the GoToCoordinatePanel to the dialog
         dialog.getContentPane().add(coodinatePanel, BorderLayout.CENTER);
