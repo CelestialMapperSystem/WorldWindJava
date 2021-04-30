@@ -1,6 +1,7 @@
 
 package gov.nasa.cms.features.layermanager;
 
+import gov.nasa.cms.CelestialMapper;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.layers.Layer;
 
@@ -22,14 +23,17 @@ import java.util.EventObject;
 public class CheckBoxNodeEditor extends AbstractCellEditor implements TreeCellEditor
 {
 
+	private final CelestialMapper cms;
 	protected CheckBoxNodeRenderer renderer = null ;
 	private ChangeEvent changeEvent = null;
 	protected JTree tree = null ;
 
-	public CheckBoxNodeEditor( WorldWindow wwd, JTree tree, Font f )
+	public CheckBoxNodeEditor( WorldWindow wwd, JTree tree, Font f,
+		CelestialMapper cms)
 	{
 		this.tree = tree;
-		this.renderer = new CheckBoxNodeRenderer( wwd, f );
+		this.renderer = new CheckBoxNodeRenderer( wwd, f, cms );
+		this.cms = cms;
 	}
 
 	public Object getCellEditorValue()
@@ -107,10 +111,20 @@ public class CheckBoxNodeEditor extends AbstractCellEditor implements TreeCellEd
 					// But it seems that both the Editor and Renderer need to have non-null results
 					// for the layer look up in order for multiple checkboxes to be selected and
 					// multiple layers to be shown at the same time.
-				if ( layer != null )
-				{
-					layer.setEnabled((node.isSelected()));
-				}
+//					String text = node.getText();
+//					System.out.println(node.getText() + " : " + node.isSelected());
+
+					if(layer != null  && layer.getName().equals("Mini Map")){
+						cms.enableWML(node.isSelected());
+//						layer.setEnabled( node.isSelected());
+						cms.getWML().setOpacity(node.isSelected() ?
+							1 * 0.6 : 0 * 0.6);
+//						cms.getWML().getIc
+					}
+					else if ( layer != null )
+					{
+						layer.setEnabled( node.isSelected());
+					}
 			});
 		}
 		return editor;

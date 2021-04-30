@@ -1,5 +1,6 @@
 package gov.nasa.cms.features.layermanager;
 
+import gov.nasa.cms.CelestialMapper;
 import gov.nasa.cms.layers.WorldMapLayer;
 import gov.nasa.cms.util.PanelTitle;
 import gov.nasa.worldwind.WorldWindow;
@@ -17,6 +18,7 @@ import java.util.Vector;
 public class LayerPanel extends JPanel
 {
 
+     private final CelestialMapper cms;
      private JPanel layersPanel = null;
      private JPanel treePanel_ = null;
      private JTree tree_ = null;
@@ -29,19 +31,20 @@ public class LayerPanel extends JPanel
 
      // Font problem : too thin, use the textfield one
      private Font font_ = UIManager.getFont("Textfield.font");
-     private WorldMapLayer wml;
 
-     public LayerPanel(WorldWindow wwd)
+     public LayerPanel(WorldWindow wwd, CelestialMapper cms)
      {
           this.wwd = wwd;
+          this.cms = cms;
 
           makePanel();
      }
 
-     public LayerPanel(WorldWindow wwd, Dimension size)
+     public LayerPanel(WorldWindow wwd, Dimension size, CelestialMapper cms)
      {
           this.wwd = wwd;
           this.size_ = size;
+          this.cms = cms;
 
           makePanel();
      }
@@ -161,8 +164,8 @@ public class LayerPanel extends JPanel
           Vector rootVector = new NamedVector("Root", rootNodes);
 
           tree = new JTree(rootVector);
-          tree.setCellRenderer(new CheckBoxNodeRenderer(wwd, font_));
-          tree.setCellEditor(new CheckBoxNodeEditor(wwd, tree, font_));
+          tree.setCellRenderer(new CheckBoxNodeRenderer(wwd, font_, cms));
+          tree.setCellEditor(new CheckBoxNodeEditor(wwd, tree, font_, cms));
           tree.setEditable(true);
 
           tree.expandRow(6); 

@@ -5,6 +5,7 @@
  */
 package gov.nasa.cms.features.layermanager;
 
+import gov.nasa.cms.CelestialMapper;
 import gov.nasa.worldwind.WorldWindow;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -23,9 +24,9 @@ public class LayerManagerDialog
     private JDialog dialog;
     private LayerPanel layerPanel;
     
-    public LayerManagerDialog(WorldWindow wwd, Component component)
+    public LayerManagerDialog(WorldWindow wwd, CelestialMapper component)
     {
-        layerPanel = new LayerPanel(wwd);
+        layerPanel = new LayerPanel(wwd, component);
         this.wwd = wwd;
         // Create the dialog
         dialog = new JDialog((Frame) component);

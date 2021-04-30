@@ -1,6 +1,7 @@
 
 package gov.nasa.cms.features.layermanager;
 
+import gov.nasa.cms.CelestialMapper;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.layers.Layer;
 
@@ -18,6 +19,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 public class CheckBoxNodeRenderer implements TreeCellRenderer
 {
+	private final CelestialMapper cms;
 	private JCheckBox leafRenderer = new JCheckBox();
 	private DefaultTreeCellRenderer nonLeafRenderer = new DefaultTreeCellRenderer();
 	private Color selectionBorderColor;
@@ -29,10 +31,12 @@ public class CheckBoxNodeRenderer implements TreeCellRenderer
 	private WorldWindow wwd;
 	private CheckBoxNode node;
 
-	public CheckBoxNodeRenderer( WorldWindow wwd, Font fontValue )
+	public CheckBoxNodeRenderer( WorldWindow wwd, Font fontValue,
+		CelestialMapper cms)
 	{
 		this.wwd = wwd ;
 		this.fontValue = fontValue ;
+		this.cms = cms;
 
 		Boolean booleanValue = (Boolean) UIManager.get("Tree.drawsFocusBorderAroundIcon");
 
@@ -89,15 +93,27 @@ public class CheckBoxNodeRenderer implements TreeCellRenderer
 
 					// Need to use the shortened name of the layer to look it up in wwd for some reason
 					Layer layer = wwd.getModel().getLayers().getLayerByName( node.getText() );
+//					String text = node.getText();
+//					System.out.println(node.getText() + " : " + node.isSelected());
 
 					// I expect that this code only executes once when the tree is first filled
 					// But it seems that both the Editor and Renderer need to have non-null results
 					// for the layer look up in order for multiple checkboxes to be selected and
 					// multiple layers to be shown at the same time.
-					if ( layer != null )	
+//					if(layer != null  && layer.getName().equals("Mini Map")){
+//						cms.enableWML(leafRenderer.isSelected());
+//						layer.setEnabled( leafRenderer.isSelected());
+//						cms.getWML().setOpacity(leafRenderer.isSelected() ?
+//							1 * 0.6 : 0 * 0.6);
+////						cms.getWML().getIc
+//					}
+//					else
+						if ( layer != null )
 					{
 						layer.setEnabled( leafRenderer.isSelected());
 					}
+
+
 				}
 			}
 
@@ -107,7 +123,7 @@ public class CheckBoxNodeRenderer implements TreeCellRenderer
 		{
 			c = nonLeafRenderer.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 		}
-
+		wwd.redraw();
 		return c;
 	}
 

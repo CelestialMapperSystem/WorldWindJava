@@ -639,6 +639,10 @@ public class CelestialMapper extends AppFrame
         return this.wml;
     }
 
+    public void enableWML(boolean enable){
+        this.wml.setEnabled(enable);
+    }
+
     public CMSWWOUnitsFormat getUnits()
     {
         return this.unitsFormat;
