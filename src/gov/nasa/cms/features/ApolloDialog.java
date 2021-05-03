@@ -43,19 +43,19 @@ public class ApolloDialog
     private Border titledBorder;
     private ApolloAnnotationsCheckBox apolloAnnotations;
 
-    public ApolloDialog(WorldWindow wwd, CelestialMapper cms)
+    public ApolloDialog(WorldWindow wwd, CelestialMapper celestialMapper)
     {
         this.panel = new JPanel(new GridLayout(0, 1, 0, 0));
         this.titledBorder = new TitledBorder("Show Apollo Locations");
 //        super("Apollo");
-        dialog = new JDialog((Frame) cms);
+        dialog = new JDialog((Frame) celestialMapper);
         this.dialog.setPreferredSize(new Dimension(200, 250));
         this.dialog.getContentPane().setLayout(new BorderLayout());
         this.dialog.setResizable(true);
         this.dialog.setModal(false);
         this.dialog.setTitle("Apollo Landing Sites");
         dialog.getContentPane().add(panel, BorderLayout.CENTER);
-        Rectangle bounds = cms.getBounds();
+        Rectangle bounds = celestialMapper.getBounds();
         dialog.setLocation(bounds.x + 860, bounds.y + 60);
         dialog.setResizable(true); // Set false to resizable until we can expand panels with dialog
 
@@ -63,6 +63,15 @@ public class ApolloDialog
         this.setWwd(wwd);
         setupApolloMenu();
         colladaViewer = new CMSColladaViewer(this.getWwd());
+
+        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                celestialMapper.getLandingSites().setVisible(false);
+                celestialMapper.setLandingSitesOpen(false);
+
+            }
+        });
 
         // Set dialog to be visible always
         dialog.setVisible(true);

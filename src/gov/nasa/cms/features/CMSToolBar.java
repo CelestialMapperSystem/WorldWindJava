@@ -16,13 +16,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 /*
 @author: Geoff Norman - Ames Intern - 03/2021
 */
 public class CMSToolBar
 {
-    private CelestialMapper frame;
+    private CelestialMapper celestialMapper;
     private JToolBar toolBar;
 
     private boolean isLayerManagerOpen = false;
@@ -34,9 +35,9 @@ public class CMSToolBar
     private boolean isPlacemarksOpen = false;
     private boolean isPlaceNamesSearchOpen = false;
 
-    public CMSToolBar(CelestialMapper frame)
+    public CMSToolBar(CelestialMapper celestialMapper)
     {
-        this.frame = frame;
+        this.celestialMapper = celestialMapper;
         this.toolBar = null;
     }
 
@@ -77,7 +78,7 @@ public class CMSToolBar
 
         // Have to add this as a child of AppPanel, the parent of CelestialMapper
         // so it gets removed at the same time as wwjPanel when reset is called
-        this.frame.getWwjPanel().add(toolBar, BorderLayout.NORTH);
+        this.celestialMapper.getWwjPanel().add(toolBar, BorderLayout.NORTH);
     }
 
     public JToolBar getToolBar()
@@ -90,7 +91,8 @@ public class CMSToolBar
         this.toolBar = toolBar;
     }
 
-    private void initializeButtons(ArrayList<JButton> buttons) throws IOException
+    private void initializeButtons(ArrayList<JButton> buttons)
+        throws IOException
     {
         for (JButton button : buttons)
         {
@@ -112,12 +114,15 @@ public class CMSToolBar
             {
                 case "Layer Manager":
 //                System.out.println(buttonText + " = LAYER_MANAGER: " + buttonText.equals(BUTTON.LAYER_MANAGER.name));
-                    setButtonIcon("cms-data/icons/icons8-layers-48.png", button);
+                    setButtonIcon("cms-data/icons/icons8-layers-48.png",
+                        button);
                     button.addActionListener(e -> showLayerManager());
                     break;
                 case "Measurements":
 //                System.out.println(buttonText + " = MEASUREMENTS: " + buttonText.equals(BUTTON.MEASUREMENTS.name));
-                    setButtonIcon("cms-data/icons/icons8-measurement-tool-48.png", button);
+                    setButtonIcon(
+                        "cms-data/icons/icons8-measurement-tool-48.png",
+                        button);
                     button.addActionListener(e -> showMeasureTool());
                     break;
                 case "Coordinates":
@@ -125,99 +130,176 @@ public class CMSToolBar
                     button.addActionListener(e -> showCoordinatesDialog());
                     break;
                 case "Profiler":
-                    setButtonIcon("cms-data/icons/icons8-bell-curve-48.png", button);
+                    setButtonIcon("cms-data/icons/icons8-bell-curve-48.png",
+                        button);
                     button.addActionListener(e -> showProfiler());
                     break;
                 case "Sight Lines":
-                    setButtonIcon("cms-data/icons/icons8-head-profile-48.png", button);
+                    setButtonIcon("cms-data/icons/icons8-head-profile-48.png",
+                        button);
                     button.addActionListener(e -> showLineOfSight());
                     break;
                 case "Search Lunar Features":
-                    setButtonIcon("cms-data/icons/icons8-map-marker-48.png", button);
+                    setButtonIcon("cms-data/icons/icons8-map-marker-48.png",
+                        button);
                     button.addActionListener(e -> showPlacenamesSearch());
                     break;
                 case "Landing Sites":
-                    setButtonIcon("cms-data/icons/icons8-launchpad-48.png", button);
+                    setButtonIcon("cms-data/icons/icons8-launchpad-48.png",
+                        button);
                     button.addActionListener(e -> showLandingSites());
                     break;
                 case "Placemarks":
-                    setButtonIcon("cms-data/icons/icons8-place-marker-48.png", button);
+                    setButtonIcon("cms-data/icons/icons8-place-marker-48.png",
+                        button);
                     button.addActionListener(e -> showPlacemarks());
                     break;
             }
         }
     }
 
-    private void setButtonIcon(String path, AbstractButton button) throws IOException
+    private void setButtonIcon(String path, AbstractButton button)
+        throws IOException
     {
         button.setIcon(new ImageIcon(ImageIO.read(new File(path))));
     }
 
     private void showPlacenamesSearch()
     {
-        this.isPlaceNamesSearchOpen = !isPlaceNamesSearchOpen;
-        if (isPlaceNamesSearchOpen)
-        {
-            if (frame.getSearchPlacenamesDialog() == null)
+
+//        this.isPlaceNamesSearchOpen = !isPlaceNamesSearchOpen;
+//        if (isPlaceNamesSearchOpen)
+//        {
+
+        /*
+        * There's now a substantial GUI blocking delay when creating
+        * the table so we need to execute this on the EDT... or at least a new
+        * Thread.
+        * Problem with the Runnable interface is that I can't
+        * guarantee without using a ThreadPoolExecutor / Futures
+        * implementation that the thread is finished BEFORE attempting to
+        * open up the dialog. SwingWorker at least has the get() method which
+        *  blocks the next code blocks until it's actually finished.
+        * https://docs.oracle.com/javase/tutorial/uiswing/concurrency/simple.html
+        */
+            SwingWorker createPlacenamesDialog = new SwingWorker<SearchPlacenamesDialog, Void>()
             {
-                frame.setSearchPlacenamesDialog(new SearchPlacenamesDialog(frame.getWwd(), frame));
+                @Override
+                protected SearchPlacenamesDialog doInBackground() throws Exception
+                {
+                    return new SearchPlacenamesDialog(celestialMapper.getWwd(), celestialMapper);
+                }
+
+                @Override
+                public void done() {
+                    try
+                    {
+                        celestialMapper.setSearchPlacenamesDialog(get());
+                        celestialMapper.getSearchPlacenamesDialog().setVisible(true);
+                        celestialMapper.setSearchPlacenamesDialogOpen(true);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    catch (ExecutionException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            };
+
+            if (celestialMapper.getSearchPlacenamesDialog() == null)
+            {
+                createPlacenamesDialog.execute();
+//                Runnable createPlacenamesDialog = () -> {
+//                    celestialMapper.setSearchPlacenamesDialog(
+//                        new SearchPlacenamesDialog(celestialMapper.getWwd(),
+//                            celestialMapper));
+//                };
+//                new Thread(createPlacenamesDialog).start();
+
+            } else {
+                if(!celestialMapper.isSearchPlacenamesDialogOpen())    {
+
+                    celestialMapper.getSearchPlacenamesDialog().setVisible(true);
+                    celestialMapper.setSearchPlacenamesDialogOpen(true);
+                }
+                else
+                {
+                    celestialMapper.getSearchPlacenamesDialog().setVisible(false);
+                    celestialMapper.setSearchPlacenamesDialogOpen(false);
+                }
             }
-            frame.getSearchPlacenamesDialog().setVisible(true);
-        }
-        else
-        {
-            frame.getSearchPlacenamesDialog().setVisible(false);
-        }
     }
 
     private void showPlacemarks()
     {
-        this.isPlacemarksOpen = !isPlacemarksOpen;
-        if (isPlacemarksOpen)
+//        this.isPlacemarksOpen = !isPlacemarksOpen;
+//        if (isPlacemarksOpen)
+//        {
+        if (celestialMapper.getPointPlacemarkDialog() == null)
         {
-            if (frame.getPointPlacemarkDialog() == null)
-            {
-                frame.setPointPlacemarkDialog(new PointPlacemarkDialog(frame.getWwd(), frame));
-            }
-            frame.getPointPlacemarkDialog().setVisible(true);
+            celestialMapper.setPointPlacemarkDialog(
+                new PointPlacemarkDialog(celestialMapper.getWwd(),
+                    celestialMapper));
+        }
+
+        if (!celestialMapper.isPointPlacemarkDialogOpen())
+        {
+            celestialMapper.getPointPlacemarkDialog().setVisible(true);
+            celestialMapper.setPointPlacemarkDialogOpen(true);
         }
         else
         {
-            frame.getPointPlacemarkDialog().setVisible(false);
+            celestialMapper.getPointPlacemarkDialog().setVisible(false);
+            celestialMapper.setPointPlacemarkDialogOpen(false);
         }
     }
 
     private void showLandingSites()
     {
-        this.isLandingSitesOpen = !isLandingSitesOpen;
-        if (isLandingSitesOpen)
+//        this.isLandingSitesOpen = !isLandingSitesOpen;
+//        if (isLandingSitesOpen)
+//        {
+        if (celestialMapper.getLandingSites() == null)
         {
-            if (frame.getLandingSites() == null)
-            {
-                frame.setLandingSites(new ApolloDialog(frame.getWwd(), frame));
-            }
-            frame.getLandingSites().setVisible(true);
+            celestialMapper.setLandingSites(new ApolloDialog(
+                celestialMapper.getWwd(), celestialMapper));
+        }
+
+        if (!celestialMapper.isLandingSitesOpen())
+        {
+            celestialMapper.getLandingSites().setVisible(true);
+            celestialMapper.setLandingSitesOpen(true);
         }
         else
         {
-            frame.getLandingSites().setVisible(false);
+            celestialMapper.getLandingSites().setVisible(false);
+            celestialMapper.setLandingSitesOpen(false);
         }
     }
 
     private void showLineOfSight()
     {
-        this.isLineOfSightOpen = !isLineOfSightOpen;
-        if (isLineOfSightOpen)
+//        this.isLineOfSightOpen = !isLineOfSightOpen;
+//        if (isLineOfSightOpen) {
+        if (celestialMapper.getLineOfSight() == null)
         {
-            if (frame.getLineOfSight() == null)
-            {
-                frame.setLineOfSight(new LineOfSightController(frame, frame.getWwd()));
-            }
-            frame.getLineOfSight().setVisible(true);
+            celestialMapper.setLineOfSight(
+                new LineOfSightController(celestialMapper,
+                    celestialMapper.getWwd()));
+        }
+
+        if (!celestialMapper.isLineOfSightOpen())
+        {
+            celestialMapper.getLineOfSight().setVisible(true);
+            celestialMapper.setLineOfSightOpen(true);
         }
         else
         {
-            frame.getLineOfSight().setVisible(false);
+            celestialMapper.getLineOfSight().setVisible(false);
+            celestialMapper.setLineOfSightOpen(false);
         }
     }
 
@@ -226,53 +308,67 @@ public class CMSToolBar
         this.isProfilerOpen = !isProfilerOpen;
         if (isProfilerOpen)
         {
-            if (frame.getProfile() == null)
+            if (celestialMapper.getProfile() == null)
             {
-                frame.setProfile(new CMSProfile(frame.getWwd(), frame));
+                celestialMapper.setProfile(
+                    new CMSProfile(celestialMapper.getWwd(),
+                        celestialMapper));
             }
-            frame.getProfile().setVisible(true);
+            celestialMapper.getProfile().setVisible(true);
         }
         else
         {
-            frame.getProfile().setVisible(false);
+            celestialMapper.getProfile().setVisible(false);
         }
     }
 
-
-
     private void showCoordinatesDialog()
     {
-        this.isCoordinatesDialogOpen = !isCoordinatesDialogOpen;
-        if (isCoordinatesDialogOpen)
+//        this.isCoordinatesDialogOpen = !isCoordinatesDialogOpen;
+//        if (isCoordinatesDialogOpen)
+//        {
+        if (celestialMapper.getCoordinatesDialog() == null)
         {
-            if (frame.getCoordinatesDialog() == null)
-            {
-                frame.setCoordinatesDialog(new CoordinatesDialog(frame.getWwd(), frame));
-            }
-            frame.getCoordinatesDialog().setVisible(true);
+            celestialMapper.setCoordinatesDialog(
+                new CoordinatesDialog(celestialMapper.getWwd(),
+                    celestialMapper));
+        }
+
+        if (!celestialMapper.isCoordinatesDialogOpen())
+        {
+            celestialMapper.getCoordinatesDialog().setVisible(true);
+            celestialMapper.setCoordinatesDialogOpen(true);
         }
         else
         {
-            frame.getCoordinatesDialog().setVisible(false);
+            celestialMapper.getCoordinatesDialog().setVisible(false);
+            celestialMapper.setCoordinatesDialogOpen(false);
         }
     }
 
     public void showLayerManager()
     {
         {
-            this.isLayerManagerOpen = !isLayerManagerOpen;
-            if (isLayerManagerOpen)
+//            this.isLayerManagerOpen = !isLayerManagerOpen;
+//            if (isLayerManagerOpen)
+//            {
+            if (celestialMapper.getLayerManager() == null)
             {
-                if (frame.getLayerManager() == null)
-                {
-                    frame.setLayerManager(new LayerManagerDialog(frame.getWwd(), frame));
-                }
-                frame.getLayerManager().setVisible(true);
-//                frame.setLayerManagerisOpen(true);
+                celestialMapper.setLayerManager(
+                    new LayerManagerDialog(celestialMapper.getWwd(),
+                        celestialMapper));
             }
+            if (!celestialMapper.isLayerManagerOpen())
+            {
+                celestialMapper.getLayerManager().setVisible(true);
+                celestialMapper.setLayerManagerOpen(true);
+            }
+//                frame.setLayerManagerisOpen(true);
+//            }
             else
             {
-                frame.getLayerManager().setVisible(false);
+                celestialMapper.getLayerManager().setVisible(false);
+                celestialMapper.setLayerManagerOpen(false);
 //                frame.setLayerManagerisOpen(false);
             }
         }
@@ -281,23 +377,29 @@ public class CMSToolBar
     public void showMeasureTool()
     {
         {
-            this.isMeasureDialogOpen = !isMeasureDialogOpen;
-            if (isMeasureDialogOpen)
+//            this.isMeasureDialogOpen = !isMeasureDialogOpen;
+//            if (isMeasureDialogOpen)
+//            {
+            // Only open if the MeasureDialog has never been opened
+            if (celestialMapper.getMeasureDialog() == null)
             {
-                // Only open if the MeasureDialog has never been opened
-                if (frame.getMeasureDialog() == null)
-                {
-                    // Create the dialog from the WorldWindow, MeasureTool and AppFrame
-                    frame.setMeasureDialog(new MeasureDialog(frame.getWwd(), frame.getMeasureTool(), frame));
-                }
+                // Create the dialog from the WorldWindow, MeasureTool and AppFrame
+                celestialMapper.setMeasureDialog(
+                    new MeasureDialog(celestialMapper.getWwd(),
+                        celestialMapper.getMeasureTool(),
+                        celestialMapper));
+            }
+            if (!celestialMapper.isMeasureDialogOpen())
+            {
+
                 // Display on screen
-                frame.getMeasureDialog().setVisible(true);
-//                frame.setMeasureDialogOpen(true);
+                celestialMapper.getMeasureDialog().setVisible(true);
+                celestialMapper.setMeasureDialogOpen(true);
             }
             else // Hide the dialog
             {
-                frame.getMeasureDialog().setVisible(false);
-//                frame.setMeasureDialogOpen(false);
+                celestialMapper.getMeasureDialog().setVisible(false);
+                celestialMapper.setMeasureDialogOpen(false);
             }
         }
     }
@@ -309,35 +411,35 @@ public class CMSToolBar
 
     public void restart()
     {
-        if(frame.getMeasureDialog() != null)
-        frame.getMeasureDialog().setVisible(false);
-        frame.setMeasureDialog(null);
+        if (celestialMapper.getMeasureDialog() != null)
+            celestialMapper.getMeasureDialog().setVisible(false);
+        celestialMapper.setMeasureDialog(null);
 
-        if(frame.getLayerManager() != null)
-        frame.getLayerManager().setVisible(false);
-        frame.setLayerManager(null);
+        if (celestialMapper.getLayerManager() != null)
+            celestialMapper.getLayerManager().setVisible(false);
+        celestialMapper.setLayerManager(null);
 
-        if(frame.getCoordinatesDialog() != null)
-        frame.getCoordinatesDialog().setVisible(false);
-        frame.setCoordinatesDialog(null);
+        if (celestialMapper.getCoordinatesDialog() != null)
+            celestialMapper.getCoordinatesDialog().setVisible(false);
+        celestialMapper.setCoordinatesDialog(null);
 
-        if(frame.getProfile() != null)
-        frame.getProfile().setVisible(false);
-        frame.setProfile(null);
+        if (celestialMapper.getProfile() != null)
+            celestialMapper.getProfile().setVisible(false);
+        celestialMapper.setProfile(null);
 
-        if(frame.getLineOfSight() != null)
-        frame.getLineOfSight().setVisible(false);
-        frame.setLineOfSight(null);
+        if (celestialMapper.getLineOfSight() != null)
+            celestialMapper.getLineOfSight().setVisible(false);
+        celestialMapper.setLineOfSight(null);
 
-        if(frame.getSearchPlacenamesDialog() != null)
-        frame.getSearchPlacenamesDialog().setVisible(false);
-        frame.setSearchPlacenamesDialog(null);
+        if (celestialMapper.getSearchPlacenamesDialog() != null)
+            celestialMapper.getSearchPlacenamesDialog().setVisible(false);
+        celestialMapper.setSearchPlacenamesDialog(null);
 
-        if(frame.getPointPlacemarkDialog() != null)
-        frame.getPointPlacemarkDialog().setVisible(false);
-        frame.setPointPlacemarkDialog(null);
+        if (celestialMapper.getPointPlacemarkDialog() != null)
+            celestialMapper.getPointPlacemarkDialog().setVisible(false);
+        celestialMapper.setPointPlacemarkDialog(null);
 
-        this.frame = null;
+        this.celestialMapper = null;
         this.toolBar.removeAll();
         this.toolBar = null;
     }

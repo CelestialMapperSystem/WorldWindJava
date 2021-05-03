@@ -19,11 +19,11 @@ public class CoordinatesDialog
     private final Rectangle bounds;
     private final GoToCoordinatePanel coodinatePanel;
 
-    public CoordinatesDialog(WorldWindow wwdObject, CelestialMapper component)
+    public CoordinatesDialog(WorldWindow wwdObject, CelestialMapper celestialMapper)
     {
-        this.dialog = new JDialog(component);
+        this.dialog = new JDialog(celestialMapper);
         this.coodinatePanel = new GoToCoordinatePanel(wwdObject);
-        this.bounds = component.getBounds();
+        this.bounds = celestialMapper.getBounds();
 
         dialog.getContentPane().setLayout(new BorderLayout());
         dialog.setTitle("Coordinates Input");
@@ -36,6 +36,13 @@ public class CoordinatesDialog
 
         // Add the GoToCoordinatePanel to the dialog
         dialog.getContentPane().add(coodinatePanel, BorderLayout.CENTER);
+        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                celestialMapper.getCoordinatesDialog().setVisible(false);
+                celestialMapper.setCoordinatesDialogOpen(false);
+            }
+        });
 
         dialog.pack();
 

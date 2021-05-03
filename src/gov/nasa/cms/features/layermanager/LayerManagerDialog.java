@@ -24,12 +24,12 @@ public class LayerManagerDialog
     private JDialog dialog;
     private LayerPanel layerPanel;
     
-    public LayerManagerDialog(WorldWindow wwd, CelestialMapper component)
+    public LayerManagerDialog(WorldWindow wwd, CelestialMapper celestialMapper)
     {
-        layerPanel = new LayerPanel(wwd, component);
+        layerPanel = new LayerPanel(wwd, celestialMapper);
         this.wwd = wwd;
         // Create the dialog
-        dialog = new JDialog((Frame) component);
+        dialog = new JDialog(celestialMapper);
         this.dialog.setPreferredSize(new Dimension(340, 460));
         this.dialog.getContentPane().setLayout(new BorderLayout());
         this.dialog.setResizable(true);
@@ -38,13 +38,20 @@ public class LayerManagerDialog
         
         // Add the layer panel to the dialog and set the location
         dialog.getContentPane().add(layerPanel, BorderLayout.CENTER);
-        Rectangle bounds = component.getBounds();
+        Rectangle bounds = celestialMapper.getBounds();
         dialog.setLocation(bounds.x + 860, bounds.y + 300); 
         
         dialog.setResizable(false); // Set false to resizable until we can expand panels with dialog
         
         // Set dialog to be visible always
         dialog.setVisible(true);
+        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                celestialMapper.getLayerManager().setVisible(false);
+                celestialMapper.setLayerManagerOpen(false);
+            }
+        });
         
         dialog.pack();
     }
@@ -61,5 +68,10 @@ public class LayerManagerDialog
     public void update()
     {
         layerPanel.update(wwd);
+    }
+
+    public boolean isVisible()
+    {
+        return this.isVisible();
     }
 }
