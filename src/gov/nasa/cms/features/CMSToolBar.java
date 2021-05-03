@@ -6,17 +6,17 @@
 
 package gov.nasa.cms.features;
 
-import gov.nasa.cms.*;
+import gov.nasa.cms.CelestialMapper;
 import gov.nasa.cms.features.coordinates.CoordinatesDialog;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
-
+import gov.nasa.cms.features.placemarks.SearchPlacenamesDialog;
+import gov.nasa.cms.features.placemarks.PointPlacemarkDialog;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.io.*;
 import java.util.ArrayList;
-
+import gov.nasa.cms.features.moonshading.MoonShadingDialog;
 
 /*
 @author: Geoff Norman - Ames Intern - 03/2021
@@ -24,14 +24,17 @@ import java.util.ArrayList;
 public class CMSToolBar
 {
     private final CelestialMapper frame;
-    
+    private JToolBar toolBar;
+
     private boolean isLayerManagerOpen = false;
     private boolean isMeasureDialogOpen = false;
     private boolean isCoordinatesDialogOpen = false;
     private boolean isProfilerOpen = false;
     private boolean isLineOfSightOpen = false;
-    private boolean isLandingSitesOpen;
-    private JToolBar toolBar;
+    private boolean isLandingSitesOpen = false;
+    private boolean isPlacemarksOpen = false;
+    private boolean isPlaceNamesSearchOpen = false;
+    private boolean isMoonShadingDialogOpen = false;
 
     public CMSToolBar(CelestialMapper frame)
     {
@@ -39,7 +42,8 @@ public class CMSToolBar
         this.toolBar = null;
     }
 
-    public void createToolbar() {
+    public void createToolbar()
+    {
         // The original constructor in worldwindow.ToolBarImpl relies completely
         // on an XML based configuration and initialization.
         // Will attempt to create a new GradientToolBar() object without requiring the
@@ -50,6 +54,7 @@ public class CMSToolBar
         toolBar.setFloatable(false);
         toolBar.setOpaque(false);
 
+        // To wire up a new button, start by adding a new JButton object here:
         ArrayList<JButton> buttons = new ArrayList<>(5);
         buttons.add(new JButton("Layer Manager"));
         buttons.add(new JButton("Measurements"));
@@ -57,9 +62,13 @@ public class CMSToolBar
         buttons.add(new JButton("Profiler"));
         buttons.add(new JButton("Sight Lines"));
         buttons.add(new JButton("Landing Sites"));
+        buttons.add(new JButton("Search Lunar Features"));
+        buttons.add(new JButton("Placemarks"));
+        buttons.add(new JButton("Moon Shading"));
 
         try
         {
+            // Use this method to add the correction actionlistener to each button
             initializeButtons(buttons);
         }
         catch (IOException e)
@@ -71,8 +80,7 @@ public class CMSToolBar
 
         // Have to add this as a child of AppPanel, the parent of CelestialMapper
         // so it gets removed at the same time as wwjPanel when reset is called
-        this.frame.getWwjPanel().add(toolBar,BorderLayout.NORTH);
-
+        this.frame.getWwjPanel().add(toolBar, BorderLayout.NORTH);
     }
 
     public JToolBar getToolBar()
@@ -87,9 +95,9 @@ public class CMSToolBar
 
     private void initializeButtons(ArrayList<JButton> buttons) throws IOException
     {
-        for (JButton button: buttons)
+        for (JButton button : buttons)
         {
-            button.setPreferredSize(new Dimension(50,80));
+            button.setPreferredSize(new Dimension(50, 80));
             button.setFocusPainted(false);
 
             button.setHorizontalTextPosition(AbstractButton.CENTER);
@@ -103,82 +111,47 @@ public class CMSToolBar
             // convoluted If / Else tree to make sure that this first button
             // wasn't being given multiple ActionListeners AND that each button was
             //
-            if (button.getText().equals("Layer Manager"))
+            switch (buttonText)
             {
+                case "Layer Manager":
 //                System.out.println(buttonText + " = LAYER_MANAGER: " + buttonText.equals(BUTTON.LAYER_MANAGER.name));
-                setButtonIcon("cms-data/icons/icons8-layers-48.png", button);
-                button.addActionListener((ActionEvent ev) -> {
-                    showLayerManager();
-                });
-            }
-            else if (button.getText().equals("Measurements"))
-            {
+                    setButtonIcon("cms-data/icons/icons8-layers-48.png", button);
+                    button.addActionListener(e -> showLayerManager());
+                    break;
+                case "Measurements":
 //                System.out.println(buttonText + " = MEASUREMENTS: " + buttonText.equals(BUTTON.MEASUREMENTS.name));
-                     setButtonIcon("cms-data/icons/icons8-measurement-tool-48.png",button);
-                     button.addActionListener((ActionEvent e) -> {
-                         showMeasureTool();
-                     });
+                    setButtonIcon("cms-data/icons/icons8-measurement-tool-48.png", button);
+                    button.addActionListener(e -> showMeasureTool());
+                    break;
+                case "Coordinates":
+                    setButtonIcon("cms-data/icons/icons8-grid-48.png", button);
+                    button.addActionListener(e -> showCoordinatesDialog());
+                    break;
+                case "Profiler":
+                    setButtonIcon("cms-data/icons/icons8-bell-curve-48.png", button);
+                    button.addActionListener(e -> showProfiler());
+                    break;
+                case "Sight Lines":
+                    setButtonIcon("cms-data/icons/icons8-head-profile-48.png", button);
+                    button.addActionListener(e -> showLineOfSight());
+                    break;
+                case "Search Lunar Features":
+                    setButtonIcon("cms-data/icons/icons8-map-marker-48.png", button);
+                    button.addActionListener(e -> showPlacenamesSearch());
+                    break;
+                case "Landing Sites":
+                    setButtonIcon("cms-data/icons/icons8-launchpad-48.png", button);
+                    button.addActionListener(e -> showLandingSites());
+                    break;
+                case "Placemarks":
+                    setButtonIcon("cms-data/icons/icons8-place-marker-48.png", button);
+                    button.addActionListener(e -> showPlacemarks());
+                    break;
+                case "Moon Shading":
+                    setButtonIcon("cms-data/icons/icons8-moon-48.png", button);
+                    button.addActionListener(e -> showMoonShading());
+                    break;
             }
-            else if (button.getText().equals("Coordinates"))
-            {
-                setButtonIcon("cms-data/icons/icons8-grid-48.png", button);
-                button.addActionListener((ActionEvent e) -> showCoordinatesDialog());
-
-            }
-            else if (button.getText().equals("Profiler"))
-            {
-                setButtonIcon("cms-data/icons/icons8-bell-curve-48.png", button);
-                button.addActionListener(e -> showProfiler());
-
-            }
-            else if (button.getText().equals("Sight Lines"))
-            {
-                setButtonIcon("cms-data/icons/icons8-head-profile-48.png", button);
-                button.addActionListener(e -> showLineOfSight());
-            } else if (button.getText().equals("Landing Sites"))
-            {
-                setButtonIcon("cms-data/icons/icons8-launchpad-48.png", button);
-                button.addActionListener(e -> showLandingSites());
-            }
-        }
-    }
-
-    private void showLandingSites()
-    {
-        this.isLandingSitesOpen = !isLandingSitesOpen;
-        if(isLandingSitesOpen){
-            if(frame.getLandingSites() == null){
-                frame.setLandingSites(new ApolloDialog(frame.getWwd(),frame));
-            }
-            frame.getLandingSites().setVisible(true);
-        } else {
-            frame.getLandingSites().setVisible(false);
-        }
-    }
-
-    private void showLineOfSight()
-    {
-        this.isLineOfSightOpen = !isLineOfSightOpen;
-        if(isLineOfSightOpen){
-            if(frame.getLineOfSight() == null){
-                frame.setLineOfSight(new LineOfSightController(frame, frame.getWwd()));
-            }
-            frame.getLineOfSight().setVisible(true);
-        } else {
-            frame.getLineOfSight().setVisible(false);
-        }
-    }
-
-    private void showProfiler()
-    {
-        this.isProfilerOpen = !isProfilerOpen;
-        if(isProfilerOpen){
-            if(frame.getProfile() == null){
-                frame.setProfile(new CMSProfile(frame.getWwd(), frame));
-            }
-            frame.getProfile().setVisible(true);
-        } else {
-            frame.getProfile().setVisible(false);
         }
     }
 
@@ -187,11 +160,116 @@ public class CMSToolBar
         button.setIcon(new ImageIcon(ImageIO.read(new File(path))));
     }
 
+    private void showPlacenamesSearch()
+    {
+        this.isPlaceNamesSearchOpen = !isPlaceNamesSearchOpen;
+        if (isPlaceNamesSearchOpen)
+        {
+            if (frame.getSearchPlacenamesDialog() == null)
+            {
+                frame.setSearchPlacenamesDialog(new SearchPlacenamesDialog(frame.getWwd(), frame));
+            }
+            frame.getSearchPlacenamesDialog().setVisible(true);
+        }
+        else
+        {
+            frame.getSearchPlacenamesDialog().setVisible(false);
+        }
+    }
+
+    private void showPlacemarks()
+    {
+        this.isPlacemarksOpen = !isPlacemarksOpen;
+        if (isPlacemarksOpen)
+        {
+            if (frame.getPointPlacemarkDialog() == null)
+            {
+                frame.setPointPlacemarkDialog(new PointPlacemarkDialog(frame.getWwd(), frame));
+            }
+            frame.getPointPlacemarkDialog().setVisible(true);
+        }
+        else
+        {
+            frame.getPointPlacemarkDialog().setVisible(false);
+        }
+    }
+    
+    private void showMoonShading()
+    {
+        this.isMoonShadingDialogOpen = !isMoonShadingDialogOpen ;
+        if (isMoonShadingDialogOpen )
+        {
+            if (frame.getMoonShadingDialog() == null)
+            {
+                frame.setMoonShadingDialog(new MoonShadingDialog(frame.getWwd(), frame));
+            }
+            frame.getMoonShadingDialog().setVisible(true);
+        }
+        else
+        {
+            frame.getMoonShadingDialog().setVisible(false);
+        }
+    }
+
+    private void showLandingSites()
+    {
+        this.isLandingSitesOpen = !isLandingSitesOpen;
+        if (isLandingSitesOpen)
+        {
+            if (frame.getLandingSites() == null)
+            {
+                frame.setLandingSites(new ApolloDialog(frame.getWwd(), frame));
+            }
+            frame.getLandingSites().setVisible(true);
+        }
+        else
+        {
+            frame.getLandingSites().setVisible(false);
+        }
+    }
+
+    private void showLineOfSight()
+    {
+        this.isLineOfSightOpen = !isLineOfSightOpen;
+        if (isLineOfSightOpen)
+        {
+            if (frame.getLineOfSight() == null)
+            {
+                frame.setLineOfSight(new LineOfSightController(frame, frame.getWwd()));
+            }
+            frame.getLineOfSight().setVisible(true);
+        }
+        else
+        {
+            frame.getLineOfSight().setVisible(false);
+        }
+    }
+
+    private void showProfiler()
+    {
+        this.isProfilerOpen = !isProfilerOpen;
+        if (isProfilerOpen)
+        {
+            if (frame.getProfile() == null)
+            {
+                frame.setProfile(new CMSProfile(frame.getWwd(), frame));
+            }
+            frame.getProfile().setVisible(true);
+        }
+        else
+        {
+            frame.getProfile().setVisible(false);
+        }
+    }
+
+
+
     private void showCoordinatesDialog()
     {
         this.isCoordinatesDialogOpen = !isCoordinatesDialogOpen;
-        if(isCoordinatesDialogOpen){
-            if(frame.getCoordinatesDialog() == null)
+        if (isCoordinatesDialogOpen)
+        {
+            if (frame.getCoordinatesDialog() == null)
             {
                 frame.setCoordinatesDialog(new CoordinatesDialog(frame.getWwd(), frame));
             }
@@ -203,7 +281,8 @@ public class CMSToolBar
         }
     }
 
-    public void showLayerManager(){
+    public void showLayerManager()
+    {
         {
             this.isLayerManagerOpen = !isLayerManagerOpen;
             if (isLayerManagerOpen)
@@ -220,12 +299,12 @@ public class CMSToolBar
                 frame.getLayerManager().setVisible(false);
 //                frame.setLayerManagerisOpen(false);
             }
-        };
+        }
     }
 
-    public void showMeasureTool(){
+    public void showMeasureTool()
+    {
         {
-
             this.isMeasureDialogOpen = !isMeasureDialogOpen;
             if (isMeasureDialogOpen)
             {
@@ -246,35 +325,4 @@ public class CMSToolBar
             }
         }
     }
-
-//    public MouseListener createToolbarButtonMouseListener(){
-//        MouseListener mouseListener = new MouseListener() {
-//            @Override
-//            public void mouseClicked(MouseEvent e) {
-//                showLayerManager();
-//            }
-//
-//            @Override
-//            public void mousePressed(MouseEvent e) {
-//
-//            }
-//
-//            @Override
-//            public void mouseReleased(MouseEvent e) {
-//
-//            }
-//
-//            @Override
-//            public void mouseEntered(MouseEvent e) {
-//
-//            }
-//
-//            @Override
-//            public void mouseExited(MouseEvent e) {
-//
-//            }
-//        };
-//        return mouseListener;
-//    }
-
 }

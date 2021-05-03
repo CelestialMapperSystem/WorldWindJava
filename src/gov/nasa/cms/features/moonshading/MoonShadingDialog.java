@@ -68,6 +68,12 @@ public class MoonShadingDialog
           
     }
      
+     public void setVisible(boolean visible)
+     {
+         dialog.setVisible(visible);
+         timeFrame.setVisible(visible);
+     }
+     
     public void resetDialog()
     {
         moonShadingPanel.resetMoonShadingProperties();

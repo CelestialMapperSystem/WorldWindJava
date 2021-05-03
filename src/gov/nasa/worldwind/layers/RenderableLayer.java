@@ -26,8 +26,20 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class RenderableLayer extends AbstractLayer
 {
+
+    /**
+     *
+     */
     protected Collection<Renderable> renderables = new ConcurrentLinkedQueue<Renderable>();
+
+    /**
+     *
+     */
     protected Iterable<Renderable> renderablesOverride;
+
+    /**
+     *
+     */
     protected PickSupport pickSupport = new PickSupport();
 
     /** Creates a new <code>RenderableLayer</code> with a null <code>delegateOwner</code> */
@@ -235,6 +247,9 @@ public class RenderableLayer extends AbstractLayer
         this.clearRenderables();
     }
 
+    /**
+     *
+     */
     protected void clearRenderables()
     {
         if (this.renderables != null && this.renderables.size() > 0)
@@ -251,6 +266,10 @@ public class RenderableLayer extends AbstractLayer
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public int getNumRenderables()
     {
         if (this.renderablesOverride != null)
@@ -380,6 +399,9 @@ public class RenderableLayer extends AbstractLayer
         this.disposeRenderables();
     }
 
+    /**
+     *
+     */
     protected void disposeRenderables()
     {
         if (this.renderables != null && this.renderables.size() > 0)
@@ -408,21 +430,39 @@ public class RenderableLayer extends AbstractLayer
         this.renderables.clear();
     }
 
+    /**
+     *
+     * @param dc
+     */
     protected void doPreRender(DrawContext dc)
     {
         this.doPreRender(dc, this.getActiveRenderables());
     }
 
+    /**
+     *
+     * @param dc
+     * @param pickPoint
+     */
     protected void doPick(DrawContext dc, java.awt.Point pickPoint)
     {
         this.doPick(dc, this.getActiveRenderables(), pickPoint);
     }
 
+    /**
+     *
+     * @param dc
+     */
     protected void doRender(DrawContext dc)
     {
         this.doRender(dc, this.getActiveRenderables());
     }
 
+    /**
+     *
+     * @param dc
+     * @param renderables
+     */
     protected void doPreRender(DrawContext dc, Iterable<? extends Renderable> renderables)
     {
         for (Renderable renderable : renderables)
@@ -443,6 +483,12 @@ public class RenderableLayer extends AbstractLayer
         }
     }
 
+    /**
+     *
+     * @param dc
+     * @param renderables
+     * @param pickPoint
+     */
     protected void doPick(DrawContext dc, Iterable<? extends Renderable> renderables, java.awt.Point pickPoint)
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
@@ -496,6 +542,11 @@ public class RenderableLayer extends AbstractLayer
         }
     }
 
+    /**
+     *
+     * @param dc
+     * @param renderables
+     */
     protected void doRender(DrawContext dc, Iterable<? extends Renderable> renderables)
     {
         for (Renderable renderable : renderables)

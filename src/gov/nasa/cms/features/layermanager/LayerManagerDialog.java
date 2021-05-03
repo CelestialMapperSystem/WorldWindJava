@@ -37,7 +37,7 @@ public class LayerManagerDialog
         // Add the layer panel to the dialog and set the location
         dialog.getContentPane().add(layerPanel, BorderLayout.CENTER);
         Rectangle bounds = component.getBounds();
-        dialog.setLocation(bounds.x + 860, bounds.y + 60); 
+        dialog.setLocation(bounds.x + 860, bounds.y + 300); 
         
         dialog.setResizable(false); // Set false to resizable until we can expand panels with dialog
         
@@ -50,6 +50,11 @@ public class LayerManagerDialog
     public void setVisible(boolean visible)
     {
         dialog.setVisible(visible);
+    }
+
+    public LayerPanel getLayerPanel()
+    {
+        return layerPanel;
     }
     
 }

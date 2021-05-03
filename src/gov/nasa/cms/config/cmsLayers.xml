@@ -19,8 +19,7 @@
     <Layer href="cms-data/layers/ClementineLunarOrbiterHybrid.xml" actuate="onRequest"/>
     <Layer href="cms-data/layers/LunarOrbiterGlobalMosaic.xml" actuate="onRequest"/>
     <Layer href="cms-data/layers/UnifiedGeologicMapOfTheMoon.xml" actuate="onRequest"/>
-    <Layer href="cms-data/lunar_illumination/lunar-illumination.xml" actuate="onRequest"/>
-              
+    
 <!-- Class Layers -->       
     <Layer className="gov.nasa.worldwind.layers.LatLonGraticuleLayer" actuate="onRequest">
         <Property name="Name" value="Lat-Lon Graticule"/>

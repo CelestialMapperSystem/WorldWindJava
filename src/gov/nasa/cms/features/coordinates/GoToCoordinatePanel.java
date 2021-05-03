@@ -186,7 +186,7 @@ public class GoToCoordinatePanel extends JPanel
      * @param globe the current <code>Globe</code>.
      * @return the corresponding <code>LatLon</code> or <code>null</code>.
      */
-    private static LatLon computeLatLonFromString(String coordString, Globe globe)
+    public static LatLon computeLatLonFromString(String coordString, Globe globe)
     {
         if (coordString == null)
         {
