@@ -41,7 +41,7 @@ public class LayerManagerDialog
         Rectangle bounds = celestialMapper.getBounds();
         dialog.setLocation(bounds.x + 860, bounds.y + 300); 
         
-        dialog.setResizable(false); // Set false to resizable until we can expand panels with dialog
+//        dialog.setResizable(false); // Set false to resizable until we can expand panels with dialog
         
         // Set dialog to be visible always
         dialog.setVisible(true);
