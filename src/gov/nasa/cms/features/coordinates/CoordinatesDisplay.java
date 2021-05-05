@@ -167,30 +167,38 @@ public class CoordinatesDisplay
                 this.dc = dc;
                 anno.setText(formatText(dc));
 
-                // Need to update the minimap's dimensions regardless of
-                // whether the mouse is over the map and "picking" a point.
-                // Otherwise the coordinates display won't update it's
-                // position to fit under the minimap until the user mouses
-                // over the map!
+                /*
+                 Need to update the minimap's dimensions regardless of
+                 whether the mouse is over the map and "picking" a point.
+                 Otherwise the coordinates display won't update it's
+                 position to fit under the minimap until the user mouses
+                 over the map!
+                */
                 cms.getWML().drawIcon(dc);
 
                 Dimension wwSize = cms.getWwjPanel().getSize();
                 ((ScreenAnnotation) anno).setScreenPoint(new Point(
-                    // Added a manual offset of 168px to better line up the
-                    // left aligned display to the edge of the minimap
+                    /*
+                     Added a manual offset of 168px to better line up the
+                     left aligned display to the edge of the minimap
+                    */
                     (int) cms.getWML().getLocationSW().getX() + 168,
 
-                    // Added a manual offset of the previously set annotation
-                    // height minus 15 px to create some more spacing between
-                    // the minimap and the coordinates display
+                    /*
+                     Added a manual offset of the previously set annotation
+                     height minus 15 px to create some more spacing between
+                     the minimap and the coordinates display
+                    */
                     (int) cms.getWML().getLocationSW().getY() - height - 15
                 ));
-//
-                // We don't need the offset anymore since the draw point is
-                // being created relative to the minimap instead of the window!!
-//                attrs.setDrawOffset(new Point(
-//                    0,0
-//                ));
+/*
+
+                 We don't need the offset anymore since the draw point is
+                 being created relative to the minimap instead of the window!!
+                    attrs.setDrawOffset(new Point(
+                        0,0
+                    ));
+                */
 
                 if(wwSize.getWidth() != previousWidth)
                 {

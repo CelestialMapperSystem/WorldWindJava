@@ -612,9 +612,10 @@ public class CelestialMapper extends AppFrame
 
     public void createNewWML(){
         this.wml = new WorldMapLayer();
-
-        // IMPORTANT - the constructor doesn't provide a name
-        // Which the layertree needs later to label the checkbox
+        /*
+         IMPORTANT - the constructor doesn't provide a name
+         Which the layertree needs later to label the checkbox
+        */
         this.wml.setName("Mini Map");
         this.wml.setIconFilePath("cms-data/icons/lunar_minimap_ldem_3_8bit.jpg");
         this.wml.setResizeBehavior(AVKey.RESIZE_STRETCH);

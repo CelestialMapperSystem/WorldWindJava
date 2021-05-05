@@ -452,6 +452,7 @@ public class PlacenamesSearchPanel extends JPanel
         for (int i = 0; i < tableModel.getColumnCount() - 1; i++)
         {
             String labelName = tableModel.getColumnName(i);
+//            System.out.println("tableModel.getColumnName(" + i + "): " + labelName);
 
             // location will be the column's current position in the table, where as
             // i is the column's position in the table's underlying model
@@ -460,6 +461,7 @@ public class PlacenamesSearchPanel extends JPanel
             {
                 // if the column is in the table already, it will have a value > 0
                 location = tableColumnModel.getColumnIndex(labelName);
+//                System.out.println("location: " + location);
             }
             catch (IllegalArgumentException e)
             {
@@ -470,7 +472,7 @@ public class PlacenamesSearchPanel extends JPanel
 
             if (location > -1)
             {
-                // This means the column is where it's supposed to be already
+                // This means the column isn't where it's supposed to be already
                 if (location != i)
                 {
                     tableColumnModel.moveColumn(location, i);
@@ -481,12 +483,20 @@ public class PlacenamesSearchPanel extends JPanel
                 // If the column doesn't exist in the table currently, add it and
                 // then move it to the correct position according to the model
                 table.addColumn(allColumnModels.get(searchColumnMap.get(labelName)));
+
+                // Double check that tableColumnModel reflects the table
+                // model which now has new columns in it.
+                // I thought it had a default listener to do this, but
+                // apparently this default tcm doesn't update with the table
+                // automatically.
+                tableColumnModel = table.getColumnModel();
+
                 location = tableColumnModel.getColumnIndex(labelName);
                 tableColumnModel.moveColumn(location, i);
             }
         }
 
-        // Hiding has to be done after all of the columns exist in the table, or else
+        // Hiding has to be done after all of the columns exist in the table
         Arrays.stream(columnsToHide).forEach(value -> tcm.hideColumn(value));
 
 
