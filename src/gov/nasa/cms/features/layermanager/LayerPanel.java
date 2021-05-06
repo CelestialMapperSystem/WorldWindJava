@@ -106,20 +106,22 @@ public class LayerPanel extends JPanel
                // LOLA Maps
                if (name.startsWith("LOLA") || name.startsWith("LRO"))
                {
-                    // GNorman - 02/26/2021
+                    /*
+                     GNorman - 02/26/2021
+                     Originally was thinking of extending the CheckBoxNode to manually add an ActionListener
+                     to the JCheckBox that gets shown in the tree...but as it turns out the JCheckBox is added
+                     later by the Renderer using the text stored in CheckBoxNode.
 
-                    // Originally was thinking of extending the CheckBoxNode to manually add an ActionListener
-                    // to the JCheckBox that gets shown in the tree...but as it turns out the JCheckBox is added
-                    // later by the Renderer using the text stored in CheckBoxNode.
+                     The easiest way to add an ActionListener then is in the CheckBoxNodeEditor, since the
+                     Renderer should only construct the checkboxes once and the tree needs to be set to "editable"
+                     in order for the user to even make a change to the checkboxes!
 
-                    // The easiest way to add an ActionListener then is in the CheckBoxNodeEditor, since the
-                    // Renderer should only construct the checkboxes once and the tree needs to be set to "editable"
-                    // in order for the user to even make a change to the checkboxes!
+                     SO instead of fighting how the Tree wants to operate in Java (with total and utter control)
+                     I updated the CheckBoxNodeEditor stub that Kaitlyn had made with an ActionListener and used
+                     the text stored here in the CheckBoxNode, stored in the Renderer, to look up and enable/disable
+                     the WorldWind layer.
+                    */
 
-                    // SO instead of fighting how the Tree wants to operate in Java (with total and utter control)
-                    // I updated the CheckBoxNodeEditor stub that Kaitlyn had made with an ActionListener and used
-                    // the text stored here in the CheckBoxNode, stored in the Renderer, to look up and enable/disable
-                    // the WorldWind layer.
                     lolaCategory.add(new CheckBoxNode("LOLA", name, layer.isEnabled()));
                     wwd.redraw();
                } 

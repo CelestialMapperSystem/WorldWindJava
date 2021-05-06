@@ -106,6 +106,7 @@ public class CMSPointPlacemarkPanel extends JPanel
     {
         placemark = new PointPlacemark(Position.fromDegrees(0, 0, 1e4));
         layer = new RenderableLayer();
+        layer.setName("User Added Placemarks");
         attrs = new PointPlacemarkAttributes();
         placemarkList = new ArrayList();
         pmPropertiesArrayList = new ArrayList();
