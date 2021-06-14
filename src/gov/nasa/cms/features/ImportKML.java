@@ -6,6 +6,9 @@
 package gov.nasa.cms.features;
 
 import gov.nasa.cms.AppFrame;
+import gov.nasa.cms.CelestialMapper;
+import gov.nasa.cms.features.layermanager.LayerManagerDialog;
+import gov.nasa.cms.features.layermanager.LayerPanel;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
@@ -13,7 +16,6 @@ import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.ogc.kml.KMLAbstractFeature;
 import gov.nasa.worldwind.ogc.kml.KMLRoot;
 import gov.nasa.worldwind.ogc.kml.impl.KMLController;
-import gov.nasa.worldwind.render.Offset;
 import gov.nasa.worldwind.retrieve.RetrievalService;
 import gov.nasa.worldwind.util.WWIO;
 import gov.nasa.worldwind.util.WWUtil;
@@ -23,9 +25,7 @@ import gov.nasa.worldwind.util.layertree.LayerTree;
 import gov.nasa.worldwindx.examples.kml.KMLApplicationController;
 import gov.nasa.worldwindx.examples.util.BalloonController;
 import gov.nasa.worldwindx.examples.util.HotSpotController;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -34,9 +34,7 @@ import java.net.URL;
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.stream.XMLStreamException;
@@ -51,16 +49,19 @@ public class ImportKML extends JMenuItem
     private WorldWindow wwd;
     protected LayerTree layerTree;
     protected RenderableLayer hiddenLayer;
-
     protected HotSpotController hotSpotController;
     protected KMLApplicationController kmlAppController;
     protected BalloonController balloonController;
+    private CelestialMapper cms;
+    private LayerPanel layerPanel;
+    private LayerManagerDialog layerManagerDialog;
 
     // Initializes an Import KML JMenuItem feature which is added to the passed in JMenu
     public ImportKML(AppFrame cms, WorldWindow wwd, JMenu menu)
     {
         super("KML");
         this.wwd = wwd;
+        this.cms = (CelestialMapper) cms;
         final JFileChooser fileChooser = new JFileChooser();
         fileChooser.setMultiSelectionEnabled(true);
         fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("KML/KMZ File", "kml", "kmz"));
@@ -144,6 +145,11 @@ public class ImportKML extends JMenuItem
         layer.setName((String) kmlRoot.getField(AVKey.DISPLAY_NAME));
         layer.addRenderable(kmlController);
         this.getWwd().getModel().getLayers().add(layer);
+        
+        // Refresh the layer panel to display the imported KML file
+        layerManagerDialog = cms.getLayerManager();
+        layerPanel = layerManagerDialog.getLayerPanel();
+        layerPanel.update(wwd);
 
         // Adds a new layer tree node for the KMLRoot to the on-screen layer tree, and makes the new node visible
         // in the tree. This also expands any tree paths that represent open KML containers or open KML network
