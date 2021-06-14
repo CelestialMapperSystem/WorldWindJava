@@ -5,8 +5,8 @@
  */
 package gov.nasa.cms.features;
 
+import gov.nasa.cms.CelestialMapper;
 import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwindx.examples.WMSLayersPanel;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -24,13 +24,12 @@ import javax.swing.event.ChangeListener;
  */
 public class WMSLayerManager
 {
-
-    Component comp;
+    private CelestialMapper cms;
     protected final Dimension wmsPanelSize = new Dimension(400, 600);
     protected JTabbedPane tabbedPane;
     protected int previousTabIndex;
-    WorldWindow wwd;
-    JFrame controlFrame;
+    private WorldWindow wwd;
+    private JFrame controlFrame;
     
     protected static final String[] servers = new String[]
     {
@@ -47,7 +46,7 @@ public class WMSLayerManager
 
     public WMSLayerManager(WorldWindow wwdObject, Component component)
     {
-        this.comp = component;
+        this.cms = (CelestialMapper) component;
         this.wwd = wwdObject;
         this.tabbedPane = new JTabbedPane();
 
@@ -100,7 +99,7 @@ public class WMSLayerManager
         // Add a server to the tabbed dialog.
         try
         {
-            WMSLayersPanel layersPanel = new WMSLayersPanel(wwd, server, wmsPanelSize);
+            WMSLayersPanel layersPanel = new WMSLayersPanel(wwd, server, wmsPanelSize, cms);
             this.tabbedPane.add(layersPanel, BorderLayout.CENTER);
             String title = layersPanel.getServerDisplayString();
             this.tabbedPane.setTitleAt(position, title != null && title.length() > 0 ? title : server);
