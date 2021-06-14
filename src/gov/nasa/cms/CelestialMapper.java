@@ -8,7 +8,8 @@ package gov.nasa.cms;
 import gov.nasa.cms.features.*;
 import gov.nasa.cms.features.coordinates.*;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
-import gov.nasa.cms.features.placemarks.*;
+import gov.nasa.cms.features.placemarks.SearchPlacenamesDialog;
+import gov.nasa.cms.features.placemarks.PointPlacemarkDialog;
 import gov.nasa.cms.layers.WorldMapLayer;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
@@ -33,7 +34,6 @@ import java.util.logging.*;
  */
 public class CelestialMapper extends AppFrame
 {
-//    protected ActionListener controller;
     private CMSPlaceNamesMenu cmsPlaceNamesMenu;
     private ApolloMenu apolloMenu;
     private CMSProfile profile;
@@ -84,12 +84,7 @@ public class CelestialMapper extends AppFrame
         getContentPane().remove(wwjPanel); //removing component's parent must be JPanel
         this.toolBar.restart();
         this.toolBar = null;
-
-
-//        this.setMenuBar(null);
         this.initialize();
-
-//        layerManager.update();
     }
 
 
@@ -266,15 +261,6 @@ public class CelestialMapper extends AppFrame
                     Configuration.setValue(AVKey.INITIAL_PITCH, 80);
                 } else if (stereo && flat)
                 {
-                    //without this else if loop, the canvas glitches
-//                    Configuration.setValue(AVKey.GLOBE_CLASS_NAME, MoonFlat.class.getName());
-//                    System.setProperty("gov.nasa.worldwind.stereo.mode", "redblue");
-//                    //  Configure the initial view parameters so that the balloons are immediately visible.
-//                    Configuration.setValue(AVKey.INITIAL_LATITUDE, 20);
-//                    Configuration.setValue(AVKey.INITIAL_LONGITUDE, 30);
-//                    Configuration.setValue(AVKey.INITIAL_ALTITUDE, 10e4);
-//                    Configuration.setValue(AVKey.INITIAL_HEADING, 500);
-//                    Configuration.setValue(AVKey.INITIAL_PITCH, 80);
                 } else {
                     System.setProperty("gov.nasa.worldwind.stereo.mode", "");
                     Configuration.setValue(AVKey.INITIAL_LATITUDE, 0);

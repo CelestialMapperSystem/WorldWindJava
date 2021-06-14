@@ -9,7 +9,8 @@ package gov.nasa.cms.features;
 import gov.nasa.cms.CelestialMapper;
 import gov.nasa.cms.features.coordinates.CoordinatesDialog;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
-import gov.nasa.cms.features.placemarks.*;
+import gov.nasa.cms.features.placemarks.SearchPlacenamesDialog;
+import gov.nasa.cms.features.placemarks.PointPlacemarkDialog;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
