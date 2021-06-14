@@ -35,7 +35,6 @@ import java.util.logging.*;
 public class CelestialMapper extends AppFrame
 {
     private CMSPlaceNamesMenu cmsPlaceNamesMenu;
-    private ApolloMenu apolloMenu;
     private CMSProfile profile;
     private MeasureDialog measureDialog;
     private MeasureTool measureTool;
@@ -394,16 +393,6 @@ public class CelestialMapper extends AppFrame
     public void setCmsPlaceNamesMenu(CMSPlaceNamesMenu cmsPlaceNamesMenu)
     {
         this.cmsPlaceNamesMenu = cmsPlaceNamesMenu;
-    }
-
-    public ApolloMenu getApolloMenu()
-    {
-        return apolloMenu;
-    }
-
-    public void setApolloMenu(ApolloMenu apolloMenu)
-    {
-        this.apolloMenu = apolloMenu;
     }
 
     public MoonElevationModel getElevationModel()
