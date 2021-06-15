@@ -19,8 +19,9 @@
               value="cms-data/layers/MoonElevationModel.xml"/> 
     <Property name="gov.nasa.worldwind.globes.GeographicProjectionClassName"
               value="gov.nasa.worldwind.globes.projections.ProjectionEquirectangular"/>
-    <Property name="gov.nasa.worldwind.avkey.InitialLatitude" value="38"/>
-    <Property name="gov.nasa.worldwind.avkey.InitialAltitude" value="19.07e6"/>
+    <Property name="gov.nasa.worldwind.avkey.InitialLatitude" value="30"/>
+    <Property name="gov.nasa.worldwind.avkey.InitialLongitude" value="-30"/>
+    <Property name="gov.nasa.worldwind.avkey.InitialAltitude" value="8.07e6"/>
     <Property name="gov.nasa.worldwind.avkey.ViewClassName" value="gov.nasa.worldwind.view.orbit.BasicOrbitView"/>
     <Property name="gov.nasa.worldwind.avkey.ViewInputHandlerClassName"
               value="gov.nasa.worldwind.view.orbit.OrbitViewInputHandler"/>
