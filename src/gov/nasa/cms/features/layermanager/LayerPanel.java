@@ -147,7 +147,7 @@ public class LayerPanel extends JPanel
                     toolsCategory.add(new CheckBoxNode("Tools", name, layer.isEnabled()));
                } 
                // Misc
-               else
+               else if(!name.startsWith("Logo"))
                {
                     miscOptions.add(new CheckBoxNode("Misc", name, layer.isEnabled()));
                }
