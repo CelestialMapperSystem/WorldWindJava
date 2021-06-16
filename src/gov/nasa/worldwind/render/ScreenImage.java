@@ -46,8 +46,8 @@ public class ScreenImage extends WWObjectImpl implements Renderable, Exportable
 
     // Values computed once per frame and reused during the frame as needed.
     protected long frameNumber = -1;         // Identifies frame used to calculate these values
-    protected int width;                     // Width of scaled image
-    protected int height;                    // Height of scaled image
+    protected int width = 50;                     // Width of scaled image
+    protected int height = 150;                    // Height of scaled image
     protected int originalImageWidth;        // Width of unscaled image
     protected int originalImageHeight;       // Height of unscaled image
     protected Point rotationPoint;

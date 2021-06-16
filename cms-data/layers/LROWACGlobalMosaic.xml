@@ -48,9 +48,6 @@
             <Time units="milliseconds" value="30000"/>
         </ReadTimeout>
     </RetrievalTimeouts>
-<!--    <ScreenCredit creditType="ScreenImage">
-        <FileName>gov/nasa/cms/images/cms-logo.png</FileName>
-    </ScreenCredit>-->
     <!-- The following lines are included just to show how to set the values to other than their defaults -->
     <MaxAbsentTileAttempts>2</MaxAbsentTileAttempts>
     <MinAbsentTileCheckInterval>1000</MinAbsentTileCheckInterval>

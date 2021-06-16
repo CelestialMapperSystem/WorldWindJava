@@ -74,13 +74,13 @@ public class ScreenCreditImage extends ScreenImage implements ScreenCredit
     @Override
     public int getImageWidth(DrawContext dc)
     {
-        return (int) this.getViewport().getWidth();
+        return (int) 50;
     }
 
     @Override
     public int getImageHeight(DrawContext dc)
     {
-        return (int) this.getViewport().getHeight();
+        return (int) 150;
     }
 
     @SuppressWarnings({"RedundantIfStatement"})
