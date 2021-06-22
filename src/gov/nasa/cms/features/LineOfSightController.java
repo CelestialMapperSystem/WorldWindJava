@@ -21,14 +21,14 @@ public class LineOfSightController {
     private CMSLineOfSightPanel lineOfSightPanel;
     private CMSLineOfSight lineOfSightObject;
     private final WorldWindow wwd;
-    private final CelestialMapper cms;
+    private final CelestialMapper celestialMapper;
 
-    public LineOfSightController(AppFrame cms, WorldWindow wwd) {
+    public LineOfSightController(AppFrame celestialMapper, WorldWindow wwd) {
         
         this.wwd = wwd;
-        this.cms = (CelestialMapper) cms;
+        this.celestialMapper = (CelestialMapper) celestialMapper;
         
-        this.lineOfSightObject = new CMSLineOfSight(this.cms, this.wwd, this);
+        this.lineOfSightObject = new CMSLineOfSight(this.celestialMapper, this.wwd, this);
         
         createAndShowGui();
         
@@ -46,8 +46,8 @@ public class LineOfSightController {
     public final void createAndShowGui(){
         this.lineOfSightPanel = new CMSLineOfSightPanel(this.wwd, this.lineOfSightObject, this);
         
-        dialog = new JDialog((Frame) this.cms);     
-        Rectangle bounds = this.cms.getBounds();
+        dialog = new JDialog(this.celestialMapper);
+        Rectangle bounds = this.celestialMapper.getBounds();
         dialog.getContentPane().setLayout(new BorderLayout());
         dialog.setTitle("Line of Sight Tool");
         dialog.getContentPane().add(lineOfSightPanel, BorderLayout.CENTER);
@@ -55,6 +55,15 @@ public class LineOfSightController {
         // Set the location and resizable to true
         dialog.setLocation(bounds.x, bounds.y + 60);
         dialog.setResizable(true);
+        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                celestialMapper.getLineOfSight().setVisible(false);
+                celestialMapper.setLineOfSightOpen(false);
+
+            }
+        });
+
         dialog.pack();
     }
 

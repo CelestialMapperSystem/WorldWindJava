@@ -1,6 +1,8 @@
 package gov.nasa.cms.features;
 
 import static gov.nasa.cms.AppFrame.insertBeforePlacenames;
+
+import gov.nasa.cms.CelestialMapper;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.layers.TerrainProfileLayer;
@@ -51,7 +53,8 @@ public class MeasureDialog
     private final PropertyChangeListener measureToolListener = new MeasureToolListener();
     private int lastTabIndex = -1;
 
-    public MeasureDialog(WorldWindow wwdObject, MeasureTool measureToolObject, Component component)
+    public MeasureDialog(WorldWindow wwdObject, MeasureTool measureToolObject
+        , CelestialMapper celestialMapper)
     {
         // Add terrain profile layer
         profile.setEventSource(wwdObject);
@@ -97,8 +100,8 @@ public class MeasureDialog
         switchMeasureTool();
 
         // Create the dialog from a Frame and set the bounds
-        dialog = new JDialog((Frame) component);
-        Rectangle bounds = component.getBounds();
+        dialog = new JDialog(celestialMapper);
+        Rectangle bounds = celestialMapper.getBounds();
         dialog.getContentPane().setLayout(new BorderLayout());
         dialog.setTitle("Measure Tool");
         // Set the location and resizable to false
@@ -106,6 +109,14 @@ public class MeasureDialog
         dialog.setResizable(false);
         // Add the tabbedPane to the dialog
         dialog.getContentPane().add(tabbedPane, BorderLayout.CENTER);
+
+        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                celestialMapper.getMeasureDialog().setVisible(false);
+                celestialMapper.setMeasureDialogOpen(false);
+            }
+        });
 
         dialog.pack();
     }

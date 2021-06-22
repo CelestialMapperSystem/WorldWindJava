@@ -19,6 +19,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.text.DecimalFormat;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
@@ -117,6 +118,7 @@ public class CMSLineOfSight extends JCheckBoxMenuItem
     private Vector<Future> threadPoolTasks;
     private AtomicBoolean running = new AtomicBoolean(false);
     private AtomicBoolean stopped = new AtomicBoolean(true);
+    private PointPlacemark originPlacemark;
 
     public CMSLineOfSight(CelestialMapper cms, WorldWindow wwd,
         LineOfSightController aThis)
@@ -347,7 +349,8 @@ public class CMSLineOfSight extends JCheckBoxMenuItem
         };
 //
         this.calculationDispatchThread.start();
-        System.out.println(calculationDispatchThread.toString());
+//        System.out.println(calculationDispatchThread.toString());
+
     }
 
     // This is a collection of synchronized accessors to the list updated during the calculations.
@@ -447,6 +450,11 @@ public class CMSLineOfSight extends JCheckBoxMenuItem
             this.lineOfSightController.updateProgressBar(null);
             showGrid();
             showCenterPoint();
+            System.out.println("Selected Origin: " + "lat: "
+                + originPlacemark.getPosition().getLatitude().toFormattedDMSString()
+                + " long: "
+                + originPlacemark.getPosition().getLongitude().toFormattedDMSString()
+                + "  at: " + ZonedDateTime.now());
             getWwd().redraw();
         }
         else
@@ -456,13 +464,21 @@ public class CMSLineOfSight extends JCheckBoxMenuItem
                 this.lineOfSightController.updateProgressBar(null);
                 showGrid();
                 showCenterPoint();
+                System.out.println("Selected Origin: " + "lat: "
+                    + originPlacemark.getPosition().getLatitude().toFormattedDMSString()
+                    + " long: "
+                    + originPlacemark.getPosition().getLongitude().toFormattedDMSString()
+                    + "  at: " + ZonedDateTime.now());
                 getWwd().redraw();
             });
         }
 
+
+
         this.startTime = System.currentTimeMillis();
         debugCounter.set(0);
         isDone.set(false);
+
 
         if (!stopped.get())
         {
@@ -638,6 +654,25 @@ public class CMSLineOfSight extends JCheckBoxMenuItem
     public boolean isLayersNotNull()
     {
         return layersNotNull;
+    }
+
+    public void resetAll()
+    {
+        if (calculationDispatchThread != null)
+        {
+            calculationDispatchThread.interrupt();
+        }
+
+        while (threadPool.getActiveCount() > 0)
+        {
+            threadPoolTasks.forEach(future -> future.cancel(true));
+            threadPool.purge();
+        }
+        deactivate();
+        clearPositionLists();
+        this.lineOfSightController.updateProgressBar(0);
+        this.lineOfSightController.updateProgressBar(null);
+        wwd.redraw();
     }
 
     /**
@@ -934,13 +969,15 @@ public class CMSLineOfSight extends JCheckBoxMenuItem
 
         Position p = this.terrain.getGlobe().computePositionFromPoint(
             this.referencePoint);
-        PointPlacemark pm = new PointPlacemark(exageratedReferencePosition);
-        pm.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
+        originPlacemark = new PointPlacemark(exageratedReferencePosition);
+        originPlacemark.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
 //        pm.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
-        pm.setAttributes(selectedLocationAttributes);
-        pm.setValue(AVKey.DISPLAY_NAME, p.toString());
-        pm.setLineEnabled(true);
-        this.gridOrigin.addRenderable(pm);
+        originPlacemark.setAttributes(selectedLocationAttributes);
+        originPlacemark.setValue(AVKey.DISPLAY_NAME, p.toString());
+        originPlacemark.setLineEnabled(true);
+        originPlacemark.setAlwaysOnTop(true);
+
+        this.gridOrigin.addRenderable(originPlacemark);
 //        System.out.println(pm.getAttributes());
     }
 

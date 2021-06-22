@@ -4,41 +4,29 @@
  * All Rights Reserved.
  */
 package gov.nasa.cms;
-        
+
 import gov.nasa.cms.features.*;
 import gov.nasa.cms.features.coordinates.*;
-import gov.nasa.cms.features.ApolloMenu;
-import gov.nasa.cms.features.ApolloDialog;
-import gov.nasa.cms.features.CMSProfile;
-import gov.nasa.cms.features.CMSToolBar;
-import gov.nasa.cms.features.ImportKML;
-import gov.nasa.cms.features.ImportedDataDialog;
-import gov.nasa.cms.features.MeasureDialog;
-import gov.nasa.cms.features.MoonElevationModel;
-import gov.nasa.cms.features.WMSLayerManager;
 import gov.nasa.cms.features.layermanager.LayerManagerDialog;
-import gov.nasa.cms.features.placemarks.PointPlacemarkDialog;
 import gov.nasa.cms.features.placemarks.SearchPlacenamesDialog;
+import gov.nasa.cms.features.placemarks.PointPlacemarkDialog;
 import gov.nasa.cms.layers.WorldMapLayer;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.measure.MeasureTool;
-import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.globes.MoonFlat;
+import gov.nasa.worldwind.layers.RenderableLayer;
+import gov.nasa.worldwind.render.ScreenImage;
 import gov.nasa.worldwind.util.Logging;
 import gov.nasa.cms.features.moonshading.MoonShadingDialog;
-
-import java.awt.*;
-import javax.swing.*;
-import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import javax.xml.stream.XMLStreamException;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.util.logging.*;
 
 /**
  * CelestialMapper.java
@@ -46,9 +34,7 @@ import javax.xml.stream.XMLStreamException;
  */
 public class CelestialMapper extends AppFrame
 {
-    protected ActionListener controller;
     private CMSPlaceNamesMenu cmsPlaceNamesMenu;
-    private ApolloMenu apolloMenu;
     private CMSProfile profile;
     private MeasureDialog measureDialog;
     private MeasureTool measureTool;
@@ -59,6 +45,15 @@ public class CelestialMapper extends AppFrame
     private ImportKML kmlImporter;
     private ImportedDataDialog importedDataDialog;
     private MoonShadingDialog moonShadingDialog;
+    private CMSToolBar toolBar;
+    private MouseListener mouseListener;
+    private CoordinatesDialog coordinatesDialog;
+    private ApolloDialog apolloDialog;
+    private WorldMapLayer wml;
+    private CoordinatesDisplay coordDisplay;
+    private CMSWWOUnitsFormat unitsFormat;
+    private PointPlacemarkDialog pointPlacemarkDialog;
+    private SearchPlacenamesDialog searchPlacenamesDialog;
     
     private boolean stereo;
     private boolean flat;
@@ -68,6 +63,11 @@ public class CelestialMapper extends AppFrame
     private boolean sight;
     private boolean isLayerManagerOpen;
     private boolean isImportedDataDialogOpen;
+    private boolean isCoordinatesDialogOpen;
+    private boolean isLineOfSightOpen;
+    private boolean isLandingSitesOpen;
+    private boolean isPointPlacemarkDialogOpen;
+    private boolean isSearchPlacenamesDialogOpen;
 
     private JCheckBoxMenuItem stereoCheckBox;
     private JCheckBoxMenuItem flatGlobe;
@@ -77,26 +77,14 @@ public class CelestialMapper extends AppFrame
     private JCheckBoxMenuItem importedDataCheckBox;
     private JMenuItem reset;
     private JMenuItem exportMeasureTool;
-    
-    private CMSToolBar toolBar;
-
-    private MouseListener mouseListener;
-    private CoordinatesDialog coordinatesDialog;
-    private ApolloDialog apolloDialog;
-    private WorldMapLayer wml;
-    private CoordinatesDisplay coordDisplay;
-    private CMSWWOUnitsFormat unitsFormat;
-    private PointPlacemarkDialog pointPlacemarkDialog;
-    private SearchPlacenamesDialog searchPlacenamesDialog;
 
     public void restart()
     {
         getWwd().shutdown();
         getContentPane().remove(wwjPanel); //removing component's parent must be JPanel
-//        this.toolBar.restart();
+        this.toolBar.restart();
         this.toolBar = null;
         this.initialize();
-//        layerManager.update();
     }
 
 
@@ -106,7 +94,7 @@ public class CelestialMapper extends AppFrame
         super.initialize();
 
         // Make the menu bar
-        makeMenuBar(this, this.controller);
+        makeMenuBar(this);
 
         // create minimap
         createNewWML();
@@ -128,7 +116,7 @@ public class CelestialMapper extends AppFrame
         this.renderLogo();
 
         // TODO - Decide whether to use pack or not, to accommodate the space that the cmsToolBar overlaps WorldWindow.
-        // this.pack();
+         this.pack();
 
     }
 
@@ -175,7 +163,7 @@ public class CelestialMapper extends AppFrame
     }
 
     // Menu bar creation
-    public void makeMenuBar(JFrame frame, final ActionListener controller)
+    public void makeMenuBar(JFrame frame)
     {
         JMenuBar menuBar = new JMenuBar();
 
@@ -273,7 +261,6 @@ public class CelestialMapper extends AppFrame
                     Configuration.setValue(AVKey.INITIAL_PITCH, 80);
                 } else if (stereo && flat)
                 {
-                    //without this else if loop, the canvas glitches               
                 } else {
                     System.setProperty("gov.nasa.worldwind.stereo.mode", "");
                     Configuration.setValue(AVKey.INITIAL_LATITUDE, 0);
@@ -281,6 +268,7 @@ public class CelestialMapper extends AppFrame
                     Configuration.setValue(AVKey.INITIAL_ALTITUDE, 8e6);
                     Configuration.setValue(AVKey.INITIAL_HEADING, 0);
                     Configuration.setValue(AVKey.INITIAL_PITCH, 0);
+                    Configuration.setValue(AVKey.GLOBE_CLASS_NAME, "gov.nasa.worldwind.globes.Moon");
                 }
                 restart();
             });
@@ -312,6 +300,8 @@ public class CelestialMapper extends AppFrame
                 if (resetWindow)
                 {
                     Configuration.setValue(AVKey.GLOBE_CLASS_NAME, "gov.nasa.worldwind.globes.Moon");
+                    stereo = false;
+                    flat = false;
                     restart(); //resets window to launch status
                 } 
             });
@@ -331,9 +321,7 @@ public class CelestialMapper extends AppFrame
         {
             cmsLogo.setImageSource(ImageIO.read(new File("cms-data/cms-logo.png")));
             Rectangle view = getWwd().getView().getViewport();
-            // Set the screen location to different points to offset the image size
             cmsLogo.setScreenLocation(new Point(view.x + 70, view.y + 70));
-//            cmsLogo.setScreenLocation(new Point(view.x + 1000, view.y + 800));
         } catch (IOException ex) 
         {
             Logger.getLogger(CelestialMapper.class.getName()).log(Level.SEVERE, null, ex);
@@ -404,16 +392,6 @@ public class CelestialMapper extends AppFrame
     public void setCmsPlaceNamesMenu(CMSPlaceNamesMenu cmsPlaceNamesMenu)
     {
         this.cmsPlaceNamesMenu = cmsPlaceNamesMenu;
-    }
-
-    public ApolloMenu getApolloMenu()
-    {
-        return apolloMenu;
-    }
-
-    public void setApolloMenu(ApolloMenu apolloMenu)
-    {
-        this.apolloMenu = apolloMenu;
     }
 
     public MoonElevationModel getElevationModel()
@@ -586,11 +564,6 @@ public class CelestialMapper extends AppFrame
         this.mouseListener = mouseListener;
     }
 
-    public void setLayerManagerisOpen(boolean b)
-    {
-        this.isLayerManagerOpen = b;
-    }
-
     public CoordinatesDialog getCoordinatesDialog()
     {
         return this.coordinatesDialog;
@@ -613,9 +586,10 @@ public class CelestialMapper extends AppFrame
 
     public void createNewWML(){
         this.wml = new WorldMapLayer();
-
-        // IMPORTANT - the constructor doesn't provide a name
-        // Which the layertree needs later to label the checkbox
+        /*
+         IMPORTANT - the constructor doesn't provide a name
+         Which the layertree needs later to label the checkbox
+        */
         this.wml.setName("Mini Map");
         this.wml.setIconFilePath("cms-data/icons/lunar_minimap_ldem_3_8bit.jpg");
         this.wml.setResizeBehavior(AVKey.RESIZE_STRETCH);
@@ -688,5 +662,57 @@ public class CelestialMapper extends AppFrame
     public void setMoonShadingDialog(MoonShadingDialog moonShadingDialog)
     {
         this.moonShadingDialog = moonShadingDialog;
+    }
+
+    public boolean isCoordinatesDialogOpen()
+    {
+
+        return isCoordinatesDialogOpen;
+    }
+
+    public void setCoordinatesDialogOpen(boolean coordinatesDialogOpen)
+    {
+        isCoordinatesDialogOpen = coordinatesDialogOpen;
+    }
+
+    public boolean isLineOfSightOpen()
+    {
+        return isLineOfSightOpen;
+    }
+
+    public void setLineOfSightOpen(boolean lineOfSightOpen)
+    {
+        isLineOfSightOpen = lineOfSightOpen;
+    }
+
+    public boolean isLandingSitesOpen()
+    {
+        return isLandingSitesOpen;
+    }
+
+    public void setLandingSitesOpen(boolean landingSitesOpen)
+    {
+        isLandingSitesOpen = landingSitesOpen;
+    }
+
+    public boolean isPointPlacemarkDialogOpen()
+    {
+        return isPointPlacemarkDialogOpen;
+    }
+
+    public void setPointPlacemarkDialogOpen(boolean pointPlacemarkDialogOpen)
+    {
+        isPointPlacemarkDialogOpen = pointPlacemarkDialogOpen;
+    }
+
+    public boolean isSearchPlacenamesDialogOpen()
+    {
+        return isSearchPlacenamesDialogOpen;
+    }
+
+    public void setSearchPlacenamesDialogOpen(
+        boolean searchPlacenamesDialogOpen)
+    {
+        isSearchPlacenamesDialogOpen = searchPlacenamesDialogOpen;
     }
 }

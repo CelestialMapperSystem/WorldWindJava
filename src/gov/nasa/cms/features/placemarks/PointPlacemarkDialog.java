@@ -20,14 +20,14 @@ public class PointPlacemarkDialog
 
     private JDialog dialog;
 
-    public PointPlacemarkDialog(WorldWindow wwdObject, CelestialMapper component)
+    public PointPlacemarkDialog(WorldWindow wwdObject, CelestialMapper celestialMapper)
     {
-        CMSPointPlacemarkPanel measurePanel = new CMSPointPlacemarkPanel(wwdObject, component);
+        CMSPointPlacemarkPanel measurePanel = new CMSPointPlacemarkPanel(wwdObject, celestialMapper);
 
         //dialog.setSize(new Dimension(200, 400));
         // Create the dialog from a Frame and set the bounds
-        dialog = new JDialog(component);
-        Rectangle bounds = component.getBounds();
+        dialog = new JDialog(celestialMapper);
+        Rectangle bounds = celestialMapper.getBounds();
         dialog.getContentPane().setLayout(new BorderLayout());
         dialog.setTitle("Point Placemarks");
         // Set the location and resizable to false
@@ -35,6 +35,14 @@ public class PointPlacemarkDialog
         dialog.setResizable(true);
         // Add the tabbedPane to the dialog
         dialog.getContentPane().add(measurePanel, BorderLayout.CENTER);
+        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                celestialMapper.getPointPlacemarkDialog().setVisible(false);
+                celestialMapper.setPointPlacemarkDialogOpen(false);
+
+            }
+        });
 
         dialog.pack();
     }

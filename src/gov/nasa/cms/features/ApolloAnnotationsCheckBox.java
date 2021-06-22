@@ -5,6 +5,9 @@
  */
 package gov.nasa.cms.features;
 
+import gov.nasa.cms.CelestialMapper;
+import gov.nasa.cms.features.layermanager.LayerManagerDialog;
+import gov.nasa.cms.features.layermanager.LayerPanel;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.event.*;
@@ -45,7 +48,10 @@ public class ApolloAnnotationsCheckBox extends JCheckBox
     private Color savedBorderColor;
     private BufferedImage savedImage;
     private Annotation lastPickedObject;
-
+    private CelestialMapper cms;
+    private LayerPanel layerPanel;
+    private LayerManagerDialog layerManagerDialog;
+    
     private final static PowerOfTwoPaddedImage APOLLO11
             = PowerOfTwoPaddedImage.fromPath("images/Apollo11.jpg");
     private final static PowerOfTwoPaddedImage APOLLO12
@@ -118,7 +124,6 @@ public class ApolloAnnotationsCheckBox extends JCheckBox
 
         //Create minimal Apollo annotations option
         this.layer = new AnnotationLayer();
-        //layerName = layer.getName();
         layerName = "Apollo Minimal";
         layer.setName(layerName);
 
@@ -144,6 +149,10 @@ public class ApolloAnnotationsCheckBox extends JCheckBox
 
         //Add Apollo Minimal to layer list panel
         insertBeforeCompass(this.getWwd(), layer);
+        
+        layerManagerDialog = cms.getLayerManager();
+        layerPanel = layerManagerDialog.getLayerPanel();
+        layerPanel.update(wwd);
     }
 
     public GlobeAnnotation makeTopImageBottomTextAnnotation(PowerOfTwoPaddedImage image, String text,
@@ -293,9 +302,10 @@ public class ApolloAnnotationsCheckBox extends JCheckBox
         }
     }
 
-    public ApolloAnnotationsCheckBox(WorldWindow Wwd)
+    public ApolloAnnotationsCheckBox(WorldWindow Wwd, CelestialMapper cms)
     {
         super("Annotations");
+        this.cms = cms;
 
         this.addActionListener(new ActionListener()
         {
@@ -310,6 +320,7 @@ public class ApolloAnnotationsCheckBox extends JCheckBox
                     setupAnnotations();
                     setupSelection();
                     
+                    
                 } else
                 {
                     String[] ApolloLayers =
@@ -320,10 +331,15 @@ public class ApolloAnnotationsCheckBox extends JCheckBox
                     {
                         Layer selectedLayer = Wwd.getModel().getLayers().getLayerByName(layer);
                         Wwd.getModel().getLayers().remove(selectedLayer); //removes Apollo layer from layer list
+                        // Refresh the layer panel
+                        layerManagerDialog = cms.getLayerManager();
+                        layerPanel = layerManagerDialog.getLayerPanel();
+                        layerPanel.update(wwd);
                     }                
 
                 }
             }
+
         });
     }
 

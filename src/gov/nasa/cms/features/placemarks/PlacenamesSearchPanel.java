@@ -452,6 +452,7 @@ public class PlacenamesSearchPanel extends JPanel
         for (int i = 0; i < tableModel.getColumnCount() - 1; i++)
         {
             String labelName = tableModel.getColumnName(i);
+//            System.out.println("tableModel.getColumnName(" + i + "): " + labelName);
 
             // location will be the column's current position in the table, where as
             // i is the column's position in the table's underlying model
@@ -460,6 +461,7 @@ public class PlacenamesSearchPanel extends JPanel
             {
                 // if the column is in the table already, it will have a value > 0
                 location = tableColumnModel.getColumnIndex(labelName);
+//                System.out.println("location: " + location);
             }
             catch (IllegalArgumentException e)
             {
@@ -470,7 +472,7 @@ public class PlacenamesSearchPanel extends JPanel
 
             if (location > -1)
             {
-                // This means the column is where it's supposed to be already
+                // This means the column isn't where it's supposed to be already
                 if (location != i)
                 {
                     tableColumnModel.moveColumn(location, i);
@@ -481,12 +483,20 @@ public class PlacenamesSearchPanel extends JPanel
                 // If the column doesn't exist in the table currently, add it and
                 // then move it to the correct position according to the model
                 table.addColumn(allColumnModels.get(searchColumnMap.get(labelName)));
+
+                // Double check that tableColumnModel reflects the table
+                // model which now has new columns in it.
+                // I thought it had a default listener to do this, but
+                // apparently this default tcm doesn't update with the table
+                // automatically.
+                tableColumnModel = table.getColumnModel();
+
                 location = tableColumnModel.getColumnIndex(labelName);
                 tableColumnModel.moveColumn(location, i);
             }
         }
 
-        // Hiding has to be done after all of the columns exist in the table, or else
+        // Hiding has to be done after all of the columns exist in the table
         Arrays.stream(columnsToHide).forEach(value -> tcm.hideColumn(value));
 
 
@@ -860,7 +870,7 @@ public class PlacenamesSearchPanel extends JPanel
                             // times and the else condition will always be reached.
                             if(System.currentTimeMillis() - timeSinceLastPick > 1)
                             {
-                                System.out.println("Event hasObjects, invoking placeMarkEvent(HOVER)");
+//                                System.out.println("Event hasObjects, invoking placeMarkEvent(HOVER)");
                                 placemarkEvent(event, "HOVER");
                                 event.consume();
                             }
@@ -869,20 +879,20 @@ public class PlacenamesSearchPanel extends JPanel
                         {
                             if (SwingUtilities.isEventDispatchThread())
                             {
-                                System.out.println("Event does not have Objects, hiding Annotations");
+//                                System.out.println("Event does not have Objects, hiding Annotations");
                                 selectedPPMap.forEach((key, value) -> {
                                     ScreenAnnotation sc = (ScreenAnnotation) value.get("annotation");
                                     if (sc.getAttributes().isVisible())
                                     {
-                                        System.out.println(key + ": Is no longer Hovered!");
+//                                        System.out.println(key + ": Is no longer Hovered!");
                                         if (!(boolean) value.get("clicked"))
                                         {
-                                            System.out.println(
-                                                key + ": has not been clicked, hiding annotation!");
+//                                            System.out.println(
+//                                                key + ": has not been clicked, hiding annotation!");
                                             sc.getAttributes().setVisible(false);
                                             wwd.redraw();
                                         } else {
-                                            System.out.println(key + ": has been CLICKED and Annotation should be visible");
+//                                            System.out.println(key + ": has been CLICKED and Annotation should be visible");
                                         }
                                     }
                                 });
@@ -897,7 +907,7 @@ public class PlacenamesSearchPanel extends JPanel
                             // Have to make sure that the click event action isn't fired twice by adding even
                             // a small delay of 1ms
                             if(System.currentTimeMillis() - timeSinceLastPick > 1){
-                                System.out.println("Event hasObjects, invoking placeMarkEvent(CLICKED)");
+//                                System.out.println("Event hasObjects, invoking placeMarkEvent(CLICKED)");
                                 placemarkEvent(event, "CLICKED");
                                 event.consume();
                             }
@@ -909,7 +919,7 @@ public class PlacenamesSearchPanel extends JPanel
 
                 if (positions.size() > 0)
                 {
-                    System.out.println("Current num of positions: " + positions.size());
+//                    System.out.println("Current num of positions: " + positions.size());
                     wwd.getView().goTo(positions.entrySet().iterator().next().getValue(),
                         wwd.getView().getCurrentEyePosition().getElevation());
                 }
@@ -1031,7 +1041,7 @@ public class PlacenamesSearchPanel extends JPanel
                 PointPlacemark pp = (PointPlacemark) event.getTopObject();
                 var selected = selectedPPMap.get(pp.getLabelText());
                 ScreenAnnotation annotation = (ScreenAnnotation) selected.get("annotation");
-                System.out.println("Current Hovered Placemark: " + pp.getLabelText() + " " + pp);
+//                System.out.println("Current Hovered Placemark: " + pp.getLabelText() + " " + pp);
 
                 if (!annotation.getAttributes().isVisible())
                 {
@@ -1047,11 +1057,11 @@ public class PlacenamesSearchPanel extends JPanel
                 var selected = selectedPPMap.get(pp.getLabelText());
                 ScreenAnnotation annotation = (ScreenAnnotation) selected.get("annotation");
 
-                System.out.println("Current clicked Placemark: " + pp.getLabelText() + " " + pp);
+//                System.out.println("Current clicked Placemark: " + pp.getLabelText() + " " + pp);
 
                 boolean clicked = (boolean) selected.get("clicked");
 
-                System.out.println("isClicked before update?: " + clicked);
+//                System.out.println("isClicked before update?: " + clicked);
 
                 if (!clicked)
                 {

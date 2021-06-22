@@ -661,14 +661,14 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
     public boolean buildVerts(DrawContext dc, RectTile tile, boolean makeSkirts)
     {
         int density = tile.density;
-        int numVertices = (density + 3) * (density + 3);
+        int numVertices = (density + 6) * (density + 6);
 
         FloatBuffer verts;
 
         //Re-use the RenderInfo vertices buffer. If it has not been set or the density has changed, create a new buffer
         if (tile.ri == null || tile.ri.vertices == null || density != tile.ri.density)
         {
-            verts = Buffers.newDirectFloatBuffer(numVertices * 3);
+            verts = Buffers.newDirectFloatBuffer(numVertices * 6);
         }
         else
         {

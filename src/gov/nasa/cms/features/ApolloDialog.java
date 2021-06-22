@@ -1,6 +1,8 @@
 package gov.nasa.cms.features;
 
 import gov.nasa.cms.CelestialMapper;
+import gov.nasa.cms.features.layermanager.LayerManagerDialog;
+import gov.nasa.cms.features.layermanager.LayerPanel;
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
@@ -28,9 +30,9 @@ public class ApolloDialog
 {
 
     private WorldWindow wwd;
+    private CelestialMapper cms;
     private boolean isItemEnabled;
     private LayerList layerList;
-    private ApolloAnnotations apollo;
     private Layer apollo11;
     private Layer apollo12;
     private Layer apollo14;
@@ -42,20 +44,23 @@ public class ApolloDialog
     private JPanel panel;
     private Border titledBorder;
     private ApolloAnnotationsCheckBox apolloAnnotations;
+    private LayerPanel layerPanel;
+    private LayerManagerDialog layerManagerDialog;
 
-    public ApolloDialog(WorldWindow wwd, CelestialMapper cms)
+    public ApolloDialog(WorldWindow wwd, CelestialMapper celestialMapper)
     {
+        this.cms = celestialMapper;
         this.panel = new JPanel(new GridLayout(0, 1, 0, 0));
         this.titledBorder = new TitledBorder("Show Apollo Locations");
 //        super("Apollo");
-        dialog = new JDialog((Frame) cms);
+        dialog = new JDialog((Frame) celestialMapper);
         this.dialog.setPreferredSize(new Dimension(200, 250));
         this.dialog.getContentPane().setLayout(new BorderLayout());
         this.dialog.setResizable(true);
         this.dialog.setModal(false);
         this.dialog.setTitle("Apollo Landing Sites");
         dialog.getContentPane().add(panel, BorderLayout.CENTER);
-        Rectangle bounds = cms.getBounds();
+        Rectangle bounds = celestialMapper.getBounds();
         dialog.setLocation(bounds.x + 860, bounds.y + 60);
         dialog.setResizable(true); // Set false to resizable until we can expand panels with dialog
 
@@ -63,6 +68,15 @@ public class ApolloDialog
         this.setWwd(wwd);
         setupApolloMenu();
         colladaViewer = new CMSColladaViewer(this.getWwd());
+
+        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                celestialMapper.getLandingSites().setVisible(false);
+                celestialMapper.setLandingSitesOpen(false);
+
+            }
+        });
 
         // Set dialog to be visible always
         dialog.setVisible(true);
@@ -78,7 +92,7 @@ public class ApolloDialog
         Factory factory = (Factory) WorldWind.createConfigurationComponent(AVKey.LAYER_FACTORY);
 
         //======== Annotations ========   
-        this.apolloAnnotations = new ApolloAnnotationsCheckBox(this.getWwd());
+        this.apolloAnnotations = new ApolloAnnotationsCheckBox(this.getWwd(), cms);
         panel.add(apolloAnnotations);
 
         //======== Apollo 11 ========   
@@ -99,7 +113,6 @@ public class ApolloDialog
 
                     colladaViewer.createObjects("Apollo 11");
                     // Zoom to a close up view of the Apollo landing site
-//                    zoomTo(LatLon.fromDegrees(172.93, 23.97), Angle.fromDegrees(0), Angle.fromDegrees(0), 2100);
                     zoomTo(LatLon.fromDegrees(0.6687, 23.4943), Angle.fromDegrees(20), Angle.fromDegrees(75), 2000);
                 } else
                 {
@@ -108,7 +121,10 @@ public class ApolloDialog
                     // Return to a global view of the moon
                     zoomTo(LatLon.fromDegrees(0, 0), Angle.fromDegrees(0), Angle.fromDegrees(0), 8e6);
                 }
-
+                // Refresh the layer panel
+                layerManagerDialog = cms.getLayerManager();
+                layerPanel = layerManagerDialog.getLayerPanel();
+                layerPanel.update(wwd);
             }
         });
         panel.add(apolloMenuItem);
@@ -134,7 +150,9 @@ public class ApolloDialog
                     colladaViewer.removeColladaObjects();
                     zoomTo(LatLon.fromDegrees(0, 0), Angle.fromDegrees(0), Angle.fromDegrees(0), 8e6);
                 }
-
+                layerManagerDialog = cms.getLayerManager();
+                layerPanel = layerManagerDialog.getLayerPanel();
+                layerPanel.update(wwd);
             }
         });
         panel.add(apolloMenuItem);
@@ -162,7 +180,9 @@ public class ApolloDialog
                     colladaViewer.removeColladaObjects();
                     zoomTo(LatLon.fromDegrees(0, 0), Angle.fromDegrees(0), Angle.fromDegrees(0), 8e6);
                 }
-
+                layerManagerDialog = cms.getLayerManager();
+                layerPanel = layerManagerDialog.getLayerPanel();
+                layerPanel.update(wwd);
             }
         });
         panel.add(apolloMenuItem);
@@ -190,7 +210,9 @@ public class ApolloDialog
                     colladaViewer.removeColladaObjects();
                     zoomTo(LatLon.fromDegrees(0, 0), Angle.fromDegrees(20), Angle.fromDegrees(0), 8e6);
                 }
-
+                layerManagerDialog = cms.getLayerManager();
+                layerPanel = layerManagerDialog.getLayerPanel();
+                layerPanel.update(wwd);
             }
         });
         panel.add(apolloMenuItem);
@@ -219,7 +241,9 @@ public class ApolloDialog
                     colladaViewer.removeColladaObjects();
                     zoomTo(LatLon.fromDegrees(0, 0), Angle.fromDegrees(0), Angle.fromDegrees(0), 8e6);
                 }
-
+                layerManagerDialog = cms.getLayerManager();
+                layerPanel = layerManagerDialog.getLayerPanel();
+                layerPanel.update(wwd);
             }
         });
         panel.add(apolloMenuItem);
@@ -247,7 +271,9 @@ public class ApolloDialog
                     colladaViewer.removeColladaObjects();
                     zoomTo(LatLon.fromDegrees(0, 0), Angle.fromDegrees(0), Angle.fromDegrees(0), 8e6);
                 }
-
+                layerManagerDialog = cms.getLayerManager();
+                layerPanel = layerManagerDialog.getLayerPanel();
+                layerPanel.update(wwd);
             }
         });
         panel.add(apolloMenuItem);

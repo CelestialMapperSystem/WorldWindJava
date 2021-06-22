@@ -22,5 +22,10 @@ https://icons8.com/license
 
 Source 002
 
+The MiniMap Icon came from NASA’s Scientific Visualization Studio ( SVS: CGI
+Moon
+Kit (nasa.gov) ), and can be found here in the repo:
+•	cms-data/icons/ lunar_minimap*
+
 
 Source 003

@@ -38,6 +38,13 @@ public class SearchPlacenamesDialog{
 
         // Add JPanel to JDialog
         dialog.getContentPane().add(searchPanel, BorderLayout.CENTER);
+        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                celestialMapper.getSearchPlacenamesDialog().setVisible(false);
+                celestialMapper.setSearchPlacenamesDialogOpen(false);
+            }
+        });
 
         // Size all of the elements within the dialog
         dialog.pack();
