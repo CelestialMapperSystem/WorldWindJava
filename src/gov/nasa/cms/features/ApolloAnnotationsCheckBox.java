@@ -53,17 +53,17 @@ public class ApolloAnnotationsCheckBox extends JCheckBox
     private LayerManagerDialog layerManagerDialog;
     
     private final static PowerOfTwoPaddedImage APOLLO11
-            = PowerOfTwoPaddedImage.fromPath("images/Apollo11.jpg");
+            = PowerOfTwoPaddedImage.fromPath("cms-data/images/Apollo11.jpg");
     private final static PowerOfTwoPaddedImage APOLLO12
-            = PowerOfTwoPaddedImage.fromPath("images/Apollo12.jpg");
+            = PowerOfTwoPaddedImage.fromPath("cms-data/images/Apollo12.jpg");
     private final static PowerOfTwoPaddedImage APOLLO14
-            = PowerOfTwoPaddedImage.fromPath("images/Apollo14.jpg");
+            = PowerOfTwoPaddedImage.fromPath("cms-data/images/Apollo14.jpg");
     private final static PowerOfTwoPaddedImage APOLLO15
-            = PowerOfTwoPaddedImage.fromPath("images/Apollo15.jpg");
+            = PowerOfTwoPaddedImage.fromPath("cms-data/images/Apollo15.jpg");
     private final static PowerOfTwoPaddedImage APOLLO16
-            = PowerOfTwoPaddedImage.fromPath("images/Apollo16.jpg");
+            = PowerOfTwoPaddedImage.fromPath("cms-data/images/Apollo16.jpg");
     private final static PowerOfTwoPaddedImage APOLLO17
-            = PowerOfTwoPaddedImage.fromPath("images/Apollo17.jpg");
+            = PowerOfTwoPaddedImage.fromPath("cms-data/images/Apollo17.jpg");
 
     private boolean isItemEnabled;
 
