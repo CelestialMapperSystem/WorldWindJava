@@ -25,7 +25,7 @@ public class CelestialMappingSystem
                 "com.apple.mrj.application.apple.menu.about.name", APP_NAME);
         }
 
-        Path path = Paths.get("C:\\Users\\gknorman\\cms-main\\security\\cacerts"); // Or wherever you created your local cacerts file
+        Path path = Paths.get("C:\\Users\\kjdickin\\Documents\\WorldWind\\CelestialMappingSystem\\security\\cacerts");
         System.setProperty ("javax.net.ssl.trustStore", String.valueOf(path));
         System.setProperty ("javax.net.ssl.trustStorePassword", "changeit");
 

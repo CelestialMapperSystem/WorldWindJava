@@ -115,6 +115,7 @@ public class CelestialMapper extends AppFrame
         // Display the ScreenImage CMS logo as a RenderableLayer
         this.renderLogo();
 
+        LunarPitsShapefile lunarpits = new LunarPitsShapefile(this.getWwd());
         // TODO - Decide whether to use pack or not, to accommodate the space that the cmsToolBar overlaps WorldWindow.
          this.pack();
 
