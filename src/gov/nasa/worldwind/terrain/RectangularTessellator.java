@@ -18,18 +18,27 @@ import gov.nasa.worldwind.util.*;
 
 import com.jogamp.opengl.*;
 import java.awt.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.nio.*;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * @author tag
- * @version $Id: RectangularTessellator.java 2922 2015-03-24 23:56:58Z tgaskins $
+ * @version $Id: RectangularTessellator.java 2922 2015-03-24 23:56:58Z tgaskins
+ * $
  */
 public class RectangularTessellator extends WWObjectImpl implements Tessellator
 {
+
     protected static class RenderInfo
     {
+
         protected final int density;
         protected final Vec4 referenceCenter;
         protected final FloatBuffer vertices;
@@ -56,7 +65,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             this.time = System.currentTimeMillis();
 
             if (dc.getGLRuntimeCapabilities().isUseVertexBufferObject())
+            {
                 this.fillVerticesVBO(dc);
+            }
         }
 
         public int getDensity()
@@ -100,7 +111,8 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         }
 
         /**
-         * Resets this instance's update time to now and refills its VBO if VBOs should be used.
+         * Resets this instance's update time to now and refills its VBO if VBOs
+         * should be used.
          *
          * @param dc the current draw context.
          */
@@ -109,7 +121,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             this.time = System.currentTimeMillis();
 
             if (dc.getGLRuntimeCapabilities().isUseVertexBufferObject())
+            {
                 this.fillVerticesVBO(dc);
+            }
         }
 
         protected long getSizeInBytes()
@@ -137,8 +151,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
                 FloatBuffer vb = this.vertices;
                 gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
                 gl.glBufferData(GL.GL_ARRAY_BUFFER, vb.limit() * 4, vb.rewind(), GL.GL_STATIC_DRAW);
-            }
-            finally
+            } finally
             {
                 gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
             }
@@ -147,6 +160,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
     protected static class RectTile implements SectorGeometry
     {
+
         protected final RectangularTessellator tessellator; // not needed if not a static class
         protected final int level;
         protected final Sector sector;
@@ -219,7 +233,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             if (dc.getGLRuntimeCapabilities().isUseVertexBufferObject())
             {
                 if (this.tessellator.bindVbos(dc, this, numTextureUnits))
+                {
                     this.ri.isVboBound = true;
+                }
             }
         }
 
@@ -243,8 +259,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             if (beginRenderingCalled)
             {
                 this.tessellator.renderMultiTexture(dc, this, numTextureUnits);
-            }
-            else
+            } else
             {
                 this.beginRendering(dc, numTextureUnits);
                 this.tessellator.renderMultiTexture(dc, this, numTextureUnits);
@@ -264,8 +279,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             if (beginRenderingCalled)
             {
                 this.tessellator.render(dc, this);
-            }
-            else
+            } else
             {
                 this.beginRendering(dc, 1);
                 this.tessellator.render(dc, this);
@@ -326,6 +340,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
     protected static class CacheKey
     {
+
         protected final Sector sector;
         protected final int density;
         protected final Object globeStateKey;
@@ -337,21 +352,32 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             this.globeStateKey = dc.getGlobe().getStateKey(dc);
         }
 
-        @SuppressWarnings({"EqualsWhichDoesntCheckParameterClass"})
+        @SuppressWarnings(
+        {
+            "EqualsWhichDoesntCheckParameterClass"
+        })
         public boolean equals(Object o)
         {
             if (this == o)
+            {
                 return true;
+            }
 
             CacheKey cacheKey = (CacheKey) o; // Note: no check of class type equivalence, for performance
 
             if (density != cacheKey.density)
+            {
                 return false;
+            }
             if (globeStateKey != null ? !globeStateKey.equals(cacheKey.globeStateKey) : cacheKey.globeStateKey != null)
+            {
                 return false;
+            }
             //noinspection RedundantIfStatement
             if (sector != null ? !sector.equals(cacheKey.sector) : cacheKey.sector != null)
+            {
                 return false;
+            }
 
             return true;
         }
@@ -368,6 +394,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
     protected static class TopLevelTiles
     {
+
         protected ArrayList<RectTile> topLevels;
 
         public TopLevelTiles(ArrayList<RectTile> topLevels)
@@ -437,7 +464,13 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         TopLevelTiles topLevels = (TopLevelTiles) this.topLevelTilesCache.get(dc.getGlobe().getStateKey(dc));
         if (topLevels == null)
         {
-            topLevels = new TopLevelTiles(this.createTopLevelTiles(dc));
+            try
+            {
+                topLevels = new TopLevelTiles(this.createTopLevelTiles(dc));
+            } catch (FileNotFoundException ex)
+            {
+                Logger.getLogger(RectangularTessellator.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            }
             this.topLevelTilesCache.put(dc.getGlobe().getStateKey(dc), topLevels);
         }
 
@@ -465,29 +498,39 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         return sgl;
     }
 
-    protected ArrayList<RectTile> createTopLevelTiles(DrawContext dc)
+    protected ArrayList<RectTile> createTopLevelTiles(DrawContext dc) throws FileNotFoundException
     {
-        ArrayList<RectTile> tops =
-            new ArrayList<RectTile>(this.numLevel0LatSubdivisions * this.numLevel0LonSubdivisions);
+        ArrayList<RectTile> tops
+                = new ArrayList<RectTile>(this.numLevel0LatSubdivisions * this.numLevel0LonSubdivisions);
 
         this.globe = dc.getGlobe();
         double deltaLat = 180d / this.numLevel0LatSubdivisions;
         double deltaLon = 360d / this.numLevel0LonSubdivisions;
         Angle lastLat = Angle.NEG90;
 
+        // For each row < 3 (latitude subdivisions)
         for (int row = 0; row < this.numLevel0LatSubdivisions; row++)
         {
+            // Add deltaLat to lastLat
+            // First iteration: -90 + 60 = -30
             Angle lat = lastLat.addDegrees(deltaLat);
-            if (lat.getDegrees() + 1d > 90d)
+
+            if (lat.getDegrees() >= 80d)
+            {
                 lat = Angle.POS90;
+                //Sector tileSector = new Sector(lastLat, lat, lastLon, lon);
+            }
 
             Angle lastLon = Angle.NEG180;
 
+            // For each column < 6 (longitude subdivisions)
             for (int col = 0; col < this.numLevel0LonSubdivisions; col++)
             {
                 Angle lon = lastLon.addDegrees(deltaLon);
                 if (lon.getDegrees() + 1d > 180d)
+                {
                     lon = Angle.POS180;
+                }
 
                 Sector tileSector = new Sector(lastLat, lat, lastLon, lon);
                 boolean skipTile = dc.is2DGlobe() && this.skipTile(dc, tileSector);
@@ -502,24 +545,66 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             lastLat = lat;
         }
 
+        csvOutput(tops);
         return tops;
+    }
+
+    // Outputs all top level tile sectors to a CSV file (min/max longitude for each sector)
+    protected void csvOutput(ArrayList<RectTile> tops) throws FileNotFoundException
+    {
+
+        if (tops.size() < 1)
+        {
+            return;
+        }
+
+       File fileToSave = new File("tile_output");
+            try ( PrintWriter writer = new PrintWriter(fileToSave))
+            {
+                StringBuilder sb = new StringBuilder();
+
+                for(int i = 0; i < tops.size(); i++)
+                {
+                    sb.append(i).append(":");
+                    sb.append("\n");
+                    sb.append("Lat min: ").append(tops.get(i).sector.getMinLatitude()).append(" Lat max: ").append(tops.get(i).sector.getMaxLatitude());
+                    sb.append("\n");
+                    sb.append("Lon min: ").append(tops.get(i).sector.getMinLongitude()).append(" Lon max: ").append(tops.get(i).sector.getMaxLongitude());
+                    sb.append("\n");
+                    sb.append("\n");
+                }
+
+                writer.write(sb.toString());
+
+                System.out.println("File has been exported");
+        }
+    }
+
+    protected RectTile tessellatePoles(DrawContext dc, Sector tileSector, int level)
+    {
+        Extent extent = Sector.computeBoundingBox(dc.getGlobe(), dc.getVerticalExaggeration(), tileSector);
+
+        return new RectTile(this, extent, level, this.density, tileSector);
     }
 
     /**
      * Determines whether a tile is within a 2D globe's projection limits.
      *
-     * @param dc     the current draw context. The globe contained in the context must be a {@link
+     * @param dc the current draw context. The globe contained in the context
+     * must be a {@link
      *               gov.nasa.worldwind.globes.Globe2D}.
      * @param sector the tile's sector.
      *
-     * @return <code>true</code> if the tile should be skipped -- it's outside the globe's projection limits --
-     * otherwise <code>false</code>.
+     * @return <code>true</code> if the tile should be skipped -- it's outside
+     * the globe's projection limits -- otherwise <code>false</code>.
      */
     protected boolean skipTile(DrawContext dc, Sector sector)
     {
         Sector limits = ((Globe2D) dc.getGlobe()).getProjection().getProjectionLimits();
         if (limits == null || limits.equals(Sector.FULL_SPHERE))
+        {
             return false;
+        }
 
         return !sector.intersectsInterior(limits);
     }
@@ -554,11 +639,15 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
     protected void selectVisibleTiles(DrawContext dc, RectTile tile)
     {
         if (dc.is2DGlobe() && this.skipTile(dc, tile.getSector()))
+        {
             return;
+        }
 
         Extent extent = tile.getExtent();
         if (extent != null && !extent.intersects(this.currentFrustum))
+        {
             return;
+        }
 
         if (this.currentLevel < this.maxLevel - 1 && !this.atBestResolution(dc, tile) && this.needToSplit(dc, tile))
         {
@@ -599,7 +688,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         // The detail hint is reduced by 50% for tiles above 75 degrees north and below 75 degrees south.
         double s = this.computeTileResolutionTarget(dc, tile);
         if (tile.getSector().getMinLatitude().degrees >= 75 || tile.getSector().getMaxLatitude().degrees <= -75)
+        {
             s *= 0.5;
+        }
         double detailScale = Math.pow(10, -s);
         double fieldOfViewScale = dc.getView().getFieldOfView().tanHalfAngle() / Angle.fromDegrees(45).tanHalfAngle();
         fieldOfViewScale = WWMath.clamp(fieldOfViewScale, 0, 1);
@@ -652,10 +743,14 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         CacheKey cacheKey = this.createCacheKey(dc, tile);
         tile.ri = (RenderInfo) cache.getObject(cacheKey);
         if (tile.ri != null && tile.ri.time >= System.currentTimeMillis() - this.getUpdateFrequency())
+        {
             return;
+        }
 
         if (this.buildVerts(dc, tile, this.makeTileSkirts))
+        {
             cache.add(cacheKey, tile.ri, tile.ri.getSizeInBytes());
+        }
     }
 
     public boolean buildVerts(DrawContext dc, RectTile tile, boolean makeSkirts)
@@ -669,8 +764,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         if (tile.ri == null || tile.ri.vertices == null || density != tile.ri.density)
         {
             verts = Buffers.newDirectFloatBuffer(numVertices * 3);
-        }
-        else
+        } else
         {
             verts = tile.ri.vertices;
             verts.rewind();
@@ -692,7 +786,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         // workaround for that bug. See WWJINT-435.
         Double exaggeratedMinElevation = makeSkirts ? globe.getMinElevation() : null;
         if (exaggeratedMinElevation != null && (exaggeratedMinElevation < 0 || verticalExaggeration <= 0))
+        {
             exaggeratedMinElevation *= verticalExaggeration;
+        }
 
         LatLon centroid = tile.sector.getCentroid();
         Vec4 refCenter = globe.computePointFromPosition(centroid.getLatitude(), centroid.getLongitude(), 0d);
@@ -708,9 +804,11 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
                 double elevation = verticalExaggeration * elevations[ie++];
 
                 // Tile edges use min elevation to draw the skirts
-                if (exaggeratedMinElevation != null &&
-                    (j == 0 || j >= tile.density + 2 || i == 0 || i >= tile.density + 2))
+                if (exaggeratedMinElevation != null
+                        && (j == 0 || j >= tile.density + 2 || i == 0 || i >= tile.density + 2))
+                {
                     elevation = exaggeratedMinElevation;
+                }
 
                 Vec4 p = globe.computePointFromPosition(latlon.getLatitude(), latlon.getLongitude(), elevation);
                 verts.put(iv++, (float) (p.x - refCenter.x));
@@ -753,20 +851,29 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
                 latlons.add(new LatLon(lat, lon));
 
                 if (i > density)
+                {
                     lon = lonMax;
-                else if (i != 0)
+                } else if (i != 0)
+                {
                     lon = lon.add(dLon);
+                }
 
                 if (lon.degrees < -180)
+                {
                     lon = Angle.NEG180;
-                else if (lon.degrees > 180)
+                } else if (lon.degrees > 180)
+                {
                     lon = Angle.POS180;
+                }
             }
 
             if (j > density)
+            {
                 lat = latMax;
-            else if (j != 0)
+            } else if (j != 0)
+            {
                 lat = lat.add(dLat);
+            }
         }
 
         return latlons;
@@ -842,8 +949,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
                 dc.getGL().glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0);
                 this.renderVA(dc, tile, numTextureUnits);
             }
-        }
-        else
+        } else
         {
             this.renderVA(dc, tile, numTextureUnits);
         }
@@ -863,9 +969,12 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
             Object texCoords = dc.getValue(AVKey.TEXTURE_COORDINATES);
             if (texCoords != null && texCoords instanceof DoubleBuffer)
+            {
                 gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, ((DoubleBuffer) texCoords).rewind());
-            else
+            } else
+            {
                 gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, tile.ri.texCoords.rewind());
+            }
         }
 
         gl.glDrawElements(GL.GL_TRIANGLE_STRIP, tile.ri.indices.limit(), GL.GL_UNSIGNED_INT, tile.ri.indices.rewind());
@@ -878,8 +987,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             // Render the tile
             dc.getGL().glDrawElements(GL.GL_TRIANGLE_STRIP, tile.ri.indices.limit(), GL.GL_UNSIGNED_INT, 0);
             return true;
-        }
-        else
+        } else
         {
             return false;
         }
@@ -893,7 +1001,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             tile.ri.fillVerticesVBO(dc);
             verticesVboId = (int[]) dc.getGpuResourceCache().get(tile.ri.vboCacheKey);
             if (verticesVboId == null)
+            {
                 return false;
+            }
         }
 
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
@@ -906,10 +1016,11 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         if (numTextureUnits > 0)
         {
             Object texCoordsVboCacheKey = textureCoordVboCacheKeys.get(tile.density);
-            int[] texCoordsVboId = (int[])
-                (texCoordsVboCacheKey != null ? dc.getGpuResourceCache().get(texCoordsVboCacheKey) : null);
+            int[] texCoordsVboId = (int[]) (texCoordsVboCacheKey != null ? dc.getGpuResourceCache().get(texCoordsVboCacheKey) : null);
             if (texCoordsVboId == null)
+            {
                 texCoordsVboId = this.fillTextureCoordsVbo(dc, tile.density, tile.ri.texCoords);
+            }
             for (int i = 0; i < numTextureUnits; i++)
             {
                 gl.glClientActiveTexture(GL2.GL_TEXTURE0 + i);
@@ -922,12 +1033,15 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
         // Bind index list
         Object indexListVboCacheKey = indexListsVboCacheKeys.get(tile.density);
-        int[] indexListVboId = (int[])
-            (indexListVboCacheKey != null ? dc.getGpuResourceCache().get(indexListVboCacheKey) : null);
+        int[] indexListVboId = (int[]) (indexListVboCacheKey != null ? dc.getGpuResourceCache().get(indexListVboCacheKey) : null);
         if (indexListVboId == null)
+        {
             indexListVboId = this.fillIndexListVbo(dc, tile.density, tile.ri.indices);
+        }
         if (indexListVboId != null)
+        {
             gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, indexListVboId[0]);
+        }
 
         return indexListVboId != null;
     }
@@ -937,8 +1051,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         GL gl = dc.getGL();
 
         Object indexListVboCacheKey = indexListsVboCacheKeys.get(density);
-        int[] indexListVboId = (int[])
-            (indexListVboCacheKey != null ? dc.getGpuResourceCache().get(indexListVboCacheKey) : null);
+        int[] indexListVboId = (int[]) (indexListVboCacheKey != null ? dc.getGpuResourceCache().get(indexListVboCacheKey) : null);
         if (indexListVboId == null)
         {
             indexListVboId = new int[1];
@@ -958,8 +1071,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         {
             gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, indexListVboId[0]);
             gl.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, indices.limit() * 4, indices.rewind(), GL.GL_STATIC_DRAW);
-        }
-        finally
+        } finally
         {
             gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0);
         }
@@ -972,8 +1084,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         GL gl = dc.getGL();
 
         Object texCoordVboCacheKey = textureCoordVboCacheKeys.get(density);
-        int[] texCoordVboId = (int[])
-            (texCoordVboCacheKey != null ? dc.getGpuResourceCache().get(texCoordVboCacheKey) : null);
+        int[] texCoordVboId = (int[]) (texCoordVboCacheKey != null ? dc.getGpuResourceCache().get(texCoordVboCacheKey) : null);
         if (texCoordVboId == null)
         {
             texCoordVboId = new int[1];
@@ -993,8 +1104,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         {
             gl.glBindBuffer(GL.GL_ARRAY_BUFFER, texCoordVboId[0]);
             gl.glBufferData(GL.GL_ARRAY_BUFFER, texCoords.limit() * 4, texCoords.rewind(), GL.GL_STATIC_DRAW);
-        }
-        finally
+        } finally
         {
             gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
         }
@@ -1022,7 +1132,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         gl.glPushAttrib(
-            GL2.GL_DEPTH_BUFFER_BIT | GL2.GL_POLYGON_BIT | GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT);
+                GL2.GL_DEPTH_BUFFER_BIT | GL2.GL_POLYGON_BIT | GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT);
         gl.glEnable(GL.GL_BLEND);
         gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);
         gl.glDisable(GL.GL_DEPTH_TEST);
@@ -1043,9 +1153,8 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
                 gl.glVertexPointer(3, GL.GL_FLOAT, 0, tile.ri.vertices.rewind());
                 gl.glDrawElements(GL.GL_TRIANGLE_STRIP, tile.ri.indices.limit(),
-                    GL.GL_UNSIGNED_INT, tile.ri.indices.rewind());
-            }
-            finally
+                        GL.GL_UNSIGNED_INT, tile.ri.indices.rewind());
+            } finally
             {
                 ogsh.pop(gl);
             }
@@ -1056,7 +1165,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         gl.glPopAttrib();
 
         if (showTileBoundary)
+        {
             this.renderPatchBoundary(dc, tile);
+        }
     }
 
     protected void renderPatchBoundary(DrawContext dc, RectTile tile)
@@ -1070,7 +1181,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             gl.glDisable(GL.GL_BLEND);
 
             // Don't perform depth clipping but turn on backface culling
-            gl.glDisable(GL.GL_DEPTH_TEST);
+            // gl.glDisable(GL.GL_DEPTH_TEST);
             gl.glEnable(GL.GL_CULL_FACE);
             gl.glCullFace(GL.GL_BACK);
             gl.glPolygonMode(GL2.GL_FRONT, GL2.GL_LINE);
@@ -1084,8 +1195,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             gl.glVertex3d(corners[2].x, corners[2].y, corners[2].z);
             gl.glVertex3d(corners[3].x, corners[3].y, corners[3].z);
             gl.glEnd();
-        }
-        finally
+        } finally
         {
             ogsh.pop(gl);
         }
@@ -1095,17 +1205,21 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
     {
         Extent extent = tile.getExtent();
         if (extent == null)
+        {
             return;
+        }
 
         if (extent instanceof Renderable)
+        {
             ((Renderable) extent).render(dc);
+        }
     }
 
     protected void renderTileID(DrawContext dc, RectTile tile)
     {
         java.awt.Rectangle viewport = dc.getView().getViewport();
         TextRenderer textRenderer = OGLTextRenderer.getOrCreateTextRenderer(dc.getTextRendererCache(),
-            java.awt.Font.decode("Arial-Plain-15"));
+                java.awt.Font.decode("Arial-Plain-15"));
 
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
         OGLStackHandler ogsh = new OGLStackHandler();
@@ -1122,17 +1236,18 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             String tileLabel = Integer.toString(tile.level);
             double[] elevs = this.globe.getMinAndMaxElevations(tile.getSector());
             if (elevs != null)
+            {
                 tileLabel += ", " + (int) elevs[0] + "/" + (int) elevs[1];
+            }
 
             LatLon ll = tile.getSector().getCentroid();
             Vec4 pt = dc.getGlobe().computePointFromPosition(ll.getLatitude(), ll.getLongitude(),
-                dc.getGlobe().getElevation(ll.getLatitude(), ll.getLongitude()));
+                    dc.getGlobe().getElevation(ll.getLatitude(), ll.getLongitude()));
             pt = dc.getView().project(pt);
             textRenderer.draw(tileLabel, (int) pt.x, (int) pt.y);
             textRenderer.setColor(Color.WHITE);
             textRenderer.endRendering();
-        }
-        finally
+        } finally
         {
             ogsh.pop(gl);
         }
@@ -1155,10 +1270,14 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         }
 
         if (pickPoints.size() == 0)
+        {
             return null;
+        }
 
         if (tile.ri == null || tile.ri.vertices == null)
+        {
             return null;
+        }
 
         PickedObject[] pos = new PickedObject[pickPoints.size()];
         this.renderTrianglesWithUniqueColors(dc, tile);
@@ -1180,21 +1299,28 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         }
 
         if (tile.ri == null || tile.ri.vertices == null)
+        {
             return;
+        }
 
         renderTrianglesWithUniqueColors(dc, tile);
         PickedObject po = this.resolvePick(dc, tile, pickPoint);
         if (po != null)
+        {
             dc.addPickedObject(po);
+        }
     }
 
     /**
-     * Render each triangle of a tile in a unique color. Used during picking to identify triangles at the pick points.
+     * Render each triangle of a tile in a unique color. Used during picking to
+     * identify triangles at the pick points.
      * <p>
-     * Note: This method modifies the GL_VERTEX_ARRAY and GL_COLOR_ARRAY state and does not restore it. Callers should
-     * ensure that GL_CLIENT_VERTEX_ARRAY_BIT has been pushed, and eventually pop it when done using this method.
+     * Note: This method modifies the GL_VERTEX_ARRAY and GL_COLOR_ARRAY state
+     * and does not restore it. Callers should ensure that
+     * GL_CLIENT_VERTEX_ARRAY_BIT has been pushed, and eventually pop it when
+     * done using this method.
      *
-     * @param dc   the current draw context.
+     * @param dc the current draw context.
      * @param tile the tile to render.
      */
     protected void renderTrianglesWithUniqueColors(DrawContext dc, RectTile tile)
@@ -1215,8 +1341,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         {
             colorsOdd = oddRowColorList.get(density);
             colorsEven = evenRowColorList.get(density);
-        }
-        else
+        } else
         {
             //Otherwise create new buffers
             colorsOdd = Buffers.newDirectByteBuffer(verticesSize);
@@ -1245,8 +1370,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             {
                 colorsOdd.position(pos);
                 colorsOdd.put((byte) color.getRed()).put((byte) color.getGreen()).put((byte) color.getBlue());
-            }
-            else if (pos < prevPos)
+            } else if (pos < prevPos)
             {
                 colorsEven.position(pos);
                 colorsEven.put((byte) color.getRed()).put((byte) color.getGreen()).put((byte) color.getBlue());
@@ -1262,7 +1386,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         try
         {
             if (null != tile.ri.referenceCenter)
+            {
                 dc.getView().pushReferenceCenter(dc, tile.ri.referenceCenter);
+            }
 
             gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
             gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
@@ -1278,7 +1404,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
                 for (int i = 0; i < sideSize; i += 2)
                 {
                     gl.glDrawElements(GL.GL_TRIANGLE_STRIP, trianglesPerRow,
-                        GL.GL_UNSIGNED_INT, trianglesPerRow * i * 4);
+                            GL.GL_UNSIGNED_INT, trianglesPerRow * i * 4);
                 }
 
                 //Draw the even rows
@@ -1286,10 +1412,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
                 for (int i = 1; i < sideSize - 1; i += 2)
                 {
                     gl.glDrawElements(GL.GL_TRIANGLE_STRIP, trianglesPerRow,
-                        GL.GL_UNSIGNED_INT, trianglesPerRow * i * 4);
+                            GL.GL_UNSIGNED_INT, trianglesPerRow * i * 4);
                 }
-            }
-            else
+            } else
             {
                 gl.glVertexPointer(3, GL.GL_FLOAT, 0, tile.ri.vertices.rewind());
 
@@ -1298,7 +1423,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
                 for (int i = 0; i < sideSize; i += 2)
                 {
                     gl.glDrawElements(GL.GL_TRIANGLE_STRIP, trianglesPerRow,
-                        GL.GL_UNSIGNED_INT, tile.ri.indices.position(trianglesPerRow * i));
+                            GL.GL_UNSIGNED_INT, tile.ri.indices.position(trianglesPerRow * i));
                 }
 
                 //Draw the even rows
@@ -1306,14 +1431,15 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
                 for (int i = 1; i < sideSize - 1; i += 2)
                 {
                     gl.glDrawElements(GL.GL_TRIANGLE_STRIP, trianglesPerRow,
-                        GL.GL_UNSIGNED_INT, tile.ri.indices.position(trianglesPerRow * i));
+                            GL.GL_UNSIGNED_INT, tile.ri.indices.position(trianglesPerRow * i));
                 }
             }
-        }
-        finally
+        } finally
         {
             if (null != tile.ri.referenceCenter)
+            {
                 dc.getView().popReferenceCenter(dc);
+            }
         }
     }
 
@@ -1321,14 +1447,18 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
     {
         int colorCode = this.pickSupport.getTopColor(dc, pickPoint);
         if (colorCode < tile.minColorCode || colorCode > tile.maxColorCode)
+        {
             return null;
+        }
 
         double EPSILON = (double) 0.00001f;
 
         int triangleIndex = colorCode - tile.minColorCode - 1;
 
         if (tile.ri.indices == null || triangleIndex >= (tile.ri.indices.capacity() - 2))
+        {
             return null;
+        }
 
         double centerX = tile.ri.referenceCenter.x;
         double centerY = tile.ri.referenceCenter.y;
@@ -1362,7 +1492,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         double a = -N.dot3(w0);
         double b = N.dot3(ray.getDirection());
         if (java.lang.Math.abs(b) < EPSILON) // ray is parallel to triangle plane
+        {
             return null;                    // if a == 0 , ray lies in triangle plane
+        }
         double r = a / b;
 
         Vec4 intersect = ray.getOrigin().add3(ray.getDirection().multiply3(r));
@@ -1377,13 +1509,15 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
     }
 
     /**
-     * Determines if and where a ray intersects a <code>RectTile</code> geometry.
+     * Determines if and where a ray intersects a <code>RectTile</code>
+     * geometry.
      *
-     * @param tile the <Code>RectTile</code> which geometry is to be tested for intersection.
+     * @param tile the <Code>RectTile</code> which geometry is to be tested for
+     * intersection.
      * @param line the ray for which an intersection is to be found.
      *
-     * @return an array of <code>Intersection</code> sorted by increasing distance from the line origin, or null if no
-     * intersection was found.
+     * @return an array of <code>Intersection</code> sorted by increasing
+     * distance from the line origin, or null if no intersection was found.
      */
     protected Intersection[] intersect(RectTile tile, Line line)
     {
@@ -1395,7 +1529,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         }
 
         if (tile.ri.vertices == null)
+        {
             return null;
+        }
 
         // Compute 'vertical' plane perpendicular to the ground, that contains the ray
         Plane verticalPlane = null;
@@ -1408,13 +1544,17 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             Vec4 normalV = line.getDirection().cross3(globe.computeSurfaceNormalAtPoint(line.getOrigin()));
             verticalPlane = new Plane(normalV.x(), normalV.y(), normalV.z(), -line.getOrigin().dot3(normalV));
             if (!tile.getExtent().intersects(verticalPlane))
+            {
                 return null;
+            }
 
             // Compute 'horizontal' plane perpendicular to the vertical plane, that contains the ray
             Vec4 normalH = line.getDirection().cross3(normalV);
             horizontalPlane = new Plane(normalH.x(), normalH.y(), normalH.z(), -line.getOrigin().dot3(normalH));
             if (!tile.getExtent().intersects(horizontalPlane))
+            {
                 return null;
+            }
 
             // Compute maximum cell size based on tile delta lat, density and globe radius
             effectiveRadiusVertical = tile.extent.getEffectiveRadius(verticalPlane);
@@ -1447,20 +1587,22 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             // Skip skirts and degenerate triangle cells - based on index sequence.
             k = k == density - 1 ? -4 : k + 1; // density x terrain cells interleaved with 4 skirt and degenerate cells.
             if (k < 0)
+            {
                 continue;
+            }
 
             // Triangle pair diagonal - v1 & v2
             int vIndex = 3 * indices[i + 1];
             Vec4 v1 = new Vec4(
-                coords[vIndex++] + centerX,
-                coords[vIndex++] + centerY,
-                coords[vIndex] + centerZ);
+                    coords[vIndex++] + centerX,
+                    coords[vIndex++] + centerY,
+                    coords[vIndex] + centerZ);
 
             vIndex = 3 * indices[i + 2];
             Vec4 v2 = new Vec4(
-                coords[vIndex++] + centerX,
-                coords[vIndex++] + centerY,
-                coords[vIndex] + centerZ);
+                    coords[vIndex++] + centerX,
+                    coords[vIndex++] + centerY,
+                    coords[vIndex] + centerZ);
 
             Vec4 cellCenter = Vec4.mix3(.5, v1, v2);
 
@@ -1468,26 +1610,30 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             if (verticalPlane != null)
             {
                 if (Math.abs(verticalPlane.distanceTo(cellCenter)) > effectiveRadiusVertical)
+                {
                     continue;
+                }
 
                 // Test cell center distance to horizontal plane
                 if (Math.abs(horizontalPlane.distanceTo(cellCenter)) > effectiveRadiusHorizontal)
+                {
                     continue;
+                }
             }
 
             // Prepare to test triangles - get other two vertices v0 & v3
             Vec4 p;
             vIndex = 3 * indices[i];
             Vec4 v0 = new Vec4(
-                coords[vIndex++] + centerX,
-                coords[vIndex++] + centerY,
-                coords[vIndex] + centerZ);
+                    coords[vIndex++] + centerX,
+                    coords[vIndex++] + centerY,
+                    coords[vIndex] + centerZ);
 
             vIndex = 3 * indices[i + 3];
             Vec4 v3 = new Vec4(
-                coords[vIndex++] + centerX,
-                coords[vIndex++] + centerY,
-                coords[vIndex] + centerZ);
+                    coords[vIndex++] + centerX,
+                    coords[vIndex++] + centerY,
+                    coords[vIndex] + centerZ);
 
             // Test triangle 1 intersection w ray
             Triangle t = new Triangle(v0, v1, v2);
@@ -1506,7 +1652,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
         int numHits = list.size();
         if (numHits == 0)
+        {
             return null;
+        }
 
         hits = new Intersection[numHits];
         list.toArray(hits);
@@ -1517,11 +1665,17 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             public int compare(Intersection i1, Intersection i2)
             {
                 if (i1 == null && i2 == null)
+                {
                     return 0;
+                }
                 if (i2 == null)
+                {
                     return -1;
+                }
                 if (i1 == null)
+                {
                     return 1;
+                }
 
                 Vec4 v1 = i1.getIntersectionPoint();
                 Vec4 v2 = i2.getIntersectionPoint();
@@ -1537,7 +1691,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
     protected Intersection[] intersect(RectTile tile, double elevation)
     {
         if (tile.ri.vertices == null)
+        {
             return null;
+        }
 
         // Check whether the tile includes the intersection elevation - assume cylinder as Extent
         // TODO: replace this test with a generic test against Extent
@@ -1545,8 +1701,10 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         {
             Cylinder cylinder = ((Cylinder) tile.getExtent());
             if (!(globe.isPointAboveElevation(cylinder.getBottomCenter(), elevation)
-                ^ globe.isPointAboveElevation(cylinder.getTopCenter(), elevation)))
+                    ^ globe.isPointAboveElevation(cylinder.getTopCenter(), elevation)))
+            {
                 return null;
+            }
         }
 
         Intersection[] hits;
@@ -1575,32 +1733,34 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             // Skip skirts and degenerate triangle cells - based on indice sequence.
             k = k == density - 1 ? -4 : k + 1; // density x terrain cells interleaved with 4 skirt and degenerate cells.
             if (k < 0)
+            {
                 continue;
+            }
 
             // Get the four cell corners
             int vIndex = 3 * indices[i];
             Vec4 v0 = new Vec4(
-                coords[vIndex++] + centerX,
-                coords[vIndex++] + centerY,
-                coords[vIndex] + centerZ);
+                    coords[vIndex++] + centerX,
+                    coords[vIndex++] + centerY,
+                    coords[vIndex] + centerZ);
 
             vIndex = 3 * indices[i + 1];
             Vec4 v1 = new Vec4(
-                coords[vIndex++] + centerX,
-                coords[vIndex++] + centerY,
-                coords[vIndex] + centerZ);
+                    coords[vIndex++] + centerX,
+                    coords[vIndex++] + centerY,
+                    coords[vIndex] + centerZ);
 
             vIndex = 3 * indices[i + 2];
             Vec4 v2 = new Vec4(
-                coords[vIndex++] + centerX,
-                coords[vIndex++] + centerY,
-                coords[vIndex] + centerZ);
+                    coords[vIndex++] + centerX,
+                    coords[vIndex++] + centerY,
+                    coords[vIndex] + centerZ);
 
             vIndex = 3 * indices[i + 3];
             Vec4 v3 = new Vec4(
-                coords[vIndex++] + centerX,
-                coords[vIndex++] + centerY,
-                coords[vIndex] + centerZ);
+                    coords[vIndex++] + centerX,
+                    coords[vIndex++] + centerY,
+                    coords[vIndex] + centerZ);
 
             Intersection[] inter;
             // Test triangle 1 intersection
@@ -1620,7 +1780,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
         int numHits = list.size();
         if (numHits == 0)
+        {
             return null;
+        }
 
         hits = new Intersection[numHits];
         list.toArray(hits);
@@ -1632,7 +1794,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
     {
         Vec4 result = this.getSurfacePoint(tile, latitude, longitude);
         if (metersOffset != 0 && result != null)
+        {
             result = applyOffset(this.globe, result, metersOffset);
+        }
 
         return result;
     }
@@ -1640,11 +1804,12 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
     /**
      * Offsets <code>point</code> by <code>metersOffset</code> meters.
      *
-     * @param globe        the <code>Globe</code> from which to offset
-     * @param point        the <code>Vec4</code> to offset
+     * @param globe the <code>Globe</code> from which to offset
+     * @param point the <code>Vec4</code> to offset
      * @param metersOffset the magnitude of the offset
      *
-     * @return <code>point</code> offset along its surface normal as if it were on <code>globe</code>
+     * @return <code>point</code> offset along its surface normal as if it were
+     * on <code>globe</code>
      */
     protected static Vec4 applyOffset(Globe globe, Vec4 point, double metersOffset)
     {
@@ -1669,7 +1834,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         }
 
         if (tile.ri == null)
+        {
             return null;
+        }
 
         double lat = latitude.getDegrees();
         double lon = longitude.getDegrees();
@@ -1695,16 +1862,19 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
     }
 
     /**
-     * Computes from a column (or row) number, and a given offset ranged [0,1] corresponding to the distance along the
-     * edge of this sector, where between this column and the next column the corresponding position will fall, in the
-     * range [0,1].
+     * Computes from a column (or row) number, and a given offset ranged [0,1]
+     * corresponding to the distance along the edge of this sector, where
+     * between this column and the next column the corresponding position will
+     * fall, in the range [0,1].
      *
-     * @param start   the number of the column or row to the left, below or on this position
-     * @param decimal the distance from the left or bottom of the current sector that this position falls
+     * @param start the number of the column or row to the left, below or on
+     * this position
+     * @param decimal the distance from the left or bottom of the current sector
+     * that this position falls
      * @param density the number of intervals along the sector's side
      *
-     * @return a decimal ranged [0,1] representing the position between two columns or rows, rather than between two
-     * edges of the sector
+     * @return a decimal ranged [0,1] representing the position between two
+     * columns or rows, rather than between two edges of the sector
      */
     protected static double createPosition(int start, double decimal, int density)
     {
@@ -1715,18 +1885,22 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
     }
 
     /**
-     * Calculates a <code>Point</code> that sits at <code>xDec</code> offset from <code>column</code> to <code>column +
-     * 1</code> and at <code>yDec</code> offset from <code>row</code> to <code>row + 1</code>. Accounts for the
-     * diagonals.
+     * Calculates a <code>Point</code> that sits at <code>xDec</code> offset
+     * from <code>column</code> to <code>column +
+     * 1</code> and at <code>yDec</code> offset from <code>row</code> to
+     * <code>row + 1</code>. Accounts for the diagonals.
      *
-     * @param row    represents the row which corresponds to a <code>yDec</code> value of 0
-     * @param column represents the column which corresponds to an <code>xDec</code> value of 0
-     * @param xDec   constrained to [0,1]
-     * @param yDec   constrained to [0,1]
-     * @param ri     the render info holding the vertices, etc.
+     * @param row represents the row which corresponds to a <code>yDec</code>
+     * value of 0
+     * @param column represents the column which corresponds to an
+     * <code>xDec</code> value of 0
+     * @param xDec constrained to [0,1]
+     * @param yDec constrained to [0,1]
+     * @param ri the render info holding the vertices, etc.
      *
-     * @return a <code>Point</code> geometrically within or on the boundary of the quadrilateral whose bottom left
-     * corner is indexed by (<code>row</code>, <code>column</code>)
+     * @return a <code>Point</code> geometrically within or on the boundary of
+     * the quadrilateral whose bottom left corner is indexed by
+     * (<code>row</code>, <code>column</code>)
      */
     protected static Vec4 interpolate(int row, int column, double xDec, double yDec, RenderInfo ri)
     {
@@ -1762,17 +1936,19 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
     }
 
     /**
-     * Calculates the point at (xDec, yDec) in the two triangles defined by {bL, bR, tL} and {bR, tR, tL}. If thought of
-     * as a quadrilateral, the diagonal runs from tL to bR. Of course, this isn't a quad, it's two triangles.
+     * Calculates the point at (xDec, yDec) in the two triangles defined by {bL,
+     * bR, tL} and {bR, tR, tL}. If thought of as a quadrilateral, the diagonal
+     * runs from tL to bR. Of course, this isn't a quad, it's two triangles.
      *
-     * @param bL   the bottom left corner
-     * @param bR   the bottom right corner
-     * @param tR   the top right corner
-     * @param tL   the top left corner
+     * @param bL the bottom left corner
+     * @param bR the bottom right corner
+     * @param tR the top right corner
+     * @param tL the top left corner
      * @param xDec how far along, [0,1] 0 = left edge, 1 = right edge
      * @param yDec how far along, [0,1] 0 = bottom edge, 1 = top edge
      *
-     * @return the point xDec, yDec in the co-ordinate system defined by bL, bR, tR, tL
+     * @return the point xDec, yDec in the co-ordinate system defined by bL, bR,
+     * tR, tL
      */
     protected static Vec4 interpolate(Vec4 bL, Vec4 bR, Vec4 tR, Vec4 tL, double xDec, double yDec)
     {
@@ -1781,11 +1957,10 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         {
             // on the diagonal - what's more, we don't need to do any "oneMinusT" calculation
             return new Vec4(
-                tL.x * yDec + bR.x * xDec,
-                tL.y * yDec + bR.y * xDec,
-                tL.z * yDec + bR.z * xDec);
-        }
-        else if (pos > 1)
+                    tL.x * yDec + bR.x * xDec,
+                    tL.y * yDec + bR.y * xDec,
+                    tL.z * yDec + bR.z * xDec);
+        } else if (pos > 1)
         {
             // in the "top right" half
 
@@ -1794,8 +1969,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             Vec4 verticalVector = (bR.subtract3(tR)).multiply3(1 - yDec);
 
             return tR.add3(horizontalVector).add3(verticalVector);
-        }
-        else
+        } else
         {
             // pos < 1 - in the "bottom left" half
 
@@ -1815,37 +1989,52 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         // b0:
         final double tol = 1.0e-4;
         double[] b0b1b2 = new double[3];
-        double triangleHeight =
-            distanceFromLine(V[0], V[1], V[2].subtract3(V[1]));
-        double heightFromPoint =
-            distanceFromLine(pnt, V[1], V[2].subtract3(V[1]));
+        double triangleHeight
+                = distanceFromLine(V[0], V[1], V[2].subtract3(V[1]));
+        double heightFromPoint
+                = distanceFromLine(pnt, V[1], V[2].subtract3(V[1]));
         b0b1b2[0] = heightFromPoint / triangleHeight;
         if (Math.abs(b0b1b2[0]) < tol)
+        {
             b0b1b2[0] = 0.0;
-        else if (Math.abs(1.0 - b0b1b2[0]) < tol)
+        } else if (Math.abs(1.0 - b0b1b2[0]) < tol)
+        {
             b0b1b2[0] = 1.0;
+        }
         if (b0b1b2[0] < 0.0 || b0b1b2[0] > 1.0)
+        {
             return null;
+        }
 
         // b1:
         triangleHeight = distanceFromLine(V[1], V[0], V[2].subtract3(V[0]));
         heightFromPoint = distanceFromLine(pnt, V[0], V[2].subtract3(V[0]));
         b0b1b2[1] = heightFromPoint / triangleHeight;
         if (Math.abs(b0b1b2[1]) < tol)
+        {
             b0b1b2[1] = 0.0;
-        else if (Math.abs(1.0 - b0b1b2[1]) < tol)
+        } else if (Math.abs(1.0 - b0b1b2[1]) < tol)
+        {
             b0b1b2[1] = 1.0;
+        }
         if (b0b1b2[1] < 0.0 || b0b1b2[1] > 1.0)
+        {
             return null;
+        }
 
         // b2:
         b0b1b2[2] = 1.0 - b0b1b2[0] - b0b1b2[1];
         if (Math.abs(b0b1b2[2]) < tol)
+        {
             b0b1b2[2] = 0.0;
-        else if (Math.abs(1.0 - b0b1b2[2]) < tol)
+        } else if (Math.abs(1.0 - b0b1b2[2]) < tol)
+        {
             b0b1b2[2] = 1.0;
+        }
         if (b0b1b2[2] < 0.0)
+        {
             return null;
+        }
         return b0b1b2;
     }
 
@@ -1860,13 +2049,15 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         aSquared *= aSquared;
         double distSquared = cSquared - aSquared;
         if (distSquared < 0.0)
-            // must be a tiny number that really ought to be 0.0
+        // must be a tiny number that really ought to be 0.0
+        {
             return 0.0;
+        }
         return Math.sqrt(distSquared);
     }
 
     protected DoubleBuffer makeGeographicTexCoords(SectorGeometry sg,
-        SectorGeometry.GeographicTextureCoordinateComputer computer)
+            SectorGeometry.GeographicTextureCoordinateComputer computer)
     {
         if (sg == null)
         {
@@ -1886,7 +2077,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
         int density = rt.density;
         if (density < 1)
+        {
             density = 1;
+        }
 
         int coordCount = (density + 3) * (density + 3);
         DoubleBuffer p = Buffers.newDirectDoubleBuffer(2 * coordCount);
@@ -1963,10 +2156,14 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
     protected static void createTextureCoordinates(int density)
     {
         if (density < 1)
+        {
             density = 1;
+        }
 
         if (textureCoords.containsKey(density))
+        {
             return;
+        }
 
         // Approximate 1 to avoid shearing off of right and top skirts in SurfaceTileRenderer.
         // TODO: dig into this more: why are the skirts being sheared off?
@@ -2040,10 +2237,14 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
     protected static void createIndices(int density)
     {
         if (density < 1)
+        {
             density = 1;
+        }
 
         if (indexLists.containsKey(density))
+        {
             return;
+        }
 
         int sideSize = density + 2;
 
@@ -2068,8 +2269,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
                     buffer.put(k);
                     buffer.put(++k);
                 }
-            }
-            else // odd
+            } else // odd
             {
                 buffer.put(--k);
                 for (int j = 0; j < sideSize; j++)
