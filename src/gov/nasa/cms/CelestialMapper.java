@@ -109,7 +109,7 @@ public class CelestialMapper extends AppFrame
         this.coordDisplay = new CoordinatesDisplay(this);
 
         // Import the lunar elevation data
-        //elevationModel = new MoonElevationModel(this.getWwd());
+        elevationModel = new MoonElevationModel(this.getWwd());
         
         // Display the ScreenImage CMS logo as a RenderableLayer
         this.renderLogo();
