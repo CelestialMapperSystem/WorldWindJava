@@ -624,22 +624,22 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         tops.add(this.createTile(dc, tile12, 0));
         
         // Section 3
-        Sector tile13 = new Sector(Angle.fromDegrees(30), Angle.POS90, Angle.fromDegrees(-180), Angle.fromDegrees(-120));
+        Sector tile13 = new Sector(southPoleEndLat, Angle.POS90, Angle.fromDegrees(-180), Angle.fromDegrees(-120));
         tops.add(this.createTile(dc, tile13, 0));
         
-        Sector tile14 = new Sector(Angle.fromDegrees(30), southPoleEndLat, Angle.fromDegrees(-120), Angle.fromDegrees(-60));
+        Sector tile14 = new Sector(Angle.fromDegrees(30), Angle.POS90, Angle.fromDegrees(-120), Angle.fromDegrees(-60));
         tops.add(this.createTile(dc, tile14, 0));
         
-        Sector tile15 = new Sector(southPoleEndLat, Angle.POS90, Angle.fromDegrees(-60), Angle.fromDegrees(0));
+        Sector tile15 = new Sector(Angle.fromDegrees(30), Angle.POS90, Angle.fromDegrees(-60), Angle.fromDegrees(0));
         tops.add(this.createTile(dc, tile15, 0));
         
-        Sector tile16 = new Sector(southPoleEndLat, Angle.POS90, Angle.fromDegrees(0), Angle.fromDegrees(60));
+        Sector tile16 = new Sector(Angle.fromDegrees(30), Angle.POS90, Angle.fromDegrees(0), Angle.fromDegrees(60));
         tops.add(this.createTile(dc, tile16, 0));
         
-        Sector tile17 = new Sector(southPoleEndLat, Angle.POS90, Angle.fromDegrees(60), Angle.fromDegrees(120));
+        Sector tile17 = new Sector(Angle.fromDegrees(30), Angle.POS90, Angle.fromDegrees(60), Angle.fromDegrees(120));
         tops.add(this.createTile(dc, tile17, 0));
         
-        Sector tile18 = new Sector(southPoleEndLat, Angle.POS90, Angle.fromDegrees(120), Angle.fromDegrees(180));
+        Sector tile18 = new Sector(Angle.fromDegrees(30), Angle.POS90, Angle.fromDegrees(120), Angle.fromDegrees(180));
         tops.add(this.createTile(dc, tile18, 0));
         
     }
