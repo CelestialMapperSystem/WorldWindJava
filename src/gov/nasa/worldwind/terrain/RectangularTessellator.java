@@ -544,7 +544,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 //            }
 //            lastLat = lat;
 //        }
-         this.tessellateTops(tops, dc);
+         this.generateEquatorialRegion(tops, dc);
 
         csvOutput(tops);
         return tops;
@@ -581,6 +581,66 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         }
     }
 
+    protected void generateEquatorialRegion(ArrayList<RectTile> tops, DrawContext dc)
+    {
+        // Section 1
+        Sector tile1 = new Sector(Angle.fromDegrees(-80), Angle.fromDegrees(-30), Angle.fromDegrees(-180), Angle.fromDegrees(-120));
+        tops.add(this.createTile(dc, tile1, 0));
+        
+        Sector tile2 = new Sector(Angle.fromDegrees(-80), Angle.fromDegrees(-30),  Angle.fromDegrees(-120), Angle.fromDegrees(-60));
+        tops.add(this.createTile(dc, tile2, 0));
+        
+        Sector tile3 = new Sector(Angle.fromDegrees(-80), Angle.fromDegrees(-30),  Angle.fromDegrees(-60), Angle.fromDegrees(0));
+        tops.add(this.createTile(dc, tile3, 0));
+        
+        Sector tile4 = new Sector(Angle.fromDegrees(-80), Angle.fromDegrees(-30),  Angle.fromDegrees(0), Angle.fromDegrees(60));
+        tops.add(this.createTile(dc, tile4, 0));
+        
+        Sector tile5 = new Sector(Angle.fromDegrees(-80), Angle.fromDegrees(-30),  Angle.fromDegrees(60), Angle.fromDegrees(120));
+        tops.add(this.createTile(dc, tile5, 0));
+        
+        Sector tile6 = new Sector(Angle.fromDegrees(-80), Angle.fromDegrees(-30),  Angle.fromDegrees(120), Angle.fromDegrees(180));
+        tops.add(this.createTile(dc, tile6, 0));
+        
+        // Section 2
+        Sector tile7 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(-180), Angle.fromDegrees(-120));
+        tops.add(this.createTile(dc, tile7, 0));
+        
+        Sector tile8 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(-120), Angle.fromDegrees(-60));
+        tops.add(this.createTile(dc, tile8, 0));
+        
+        Sector tile9 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(-60), Angle.fromDegrees(0));
+        tops.add(this.createTile(dc, tile9, 0));
+        
+        Sector tile10 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(0), Angle.fromDegrees(60));
+        tops.add(this.createTile(dc, tile10, 0));
+        
+        Sector tile11 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(60), Angle.fromDegrees(120));
+        tops.add(this.createTile(dc, tile11, 0));
+        
+        Sector tile12 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(120), Angle.fromDegrees(180));
+        tops.add(this.createTile(dc, tile12, 0));
+        
+        // Section 3
+        Sector tile13 = new Sector(Angle.fromDegrees(30), Angle.fromDegrees(80), Angle.fromDegrees(-180), Angle.fromDegrees(-120));
+        tops.add(this.createTile(dc, tile13, 0));
+        
+        Sector tile14 = new Sector(Angle.fromDegrees(30), Angle.fromDegrees(80), Angle.fromDegrees(-120), Angle.fromDegrees(-60));
+        tops.add(this.createTile(dc, tile14, 0));
+        
+        Sector tile15 = new Sector(Angle.fromDegrees(30), Angle.fromDegrees(80), Angle.fromDegrees(-60), Angle.fromDegrees(0));
+        tops.add(this.createTile(dc, tile15, 0));
+        
+        Sector tile16 = new Sector(Angle.fromDegrees(30), Angle.fromDegrees(80), Angle.fromDegrees(0), Angle.fromDegrees(60));
+        tops.add(this.createTile(dc, tile16, 0));
+        
+        Sector tile17 = new Sector(Angle.fromDegrees(30), Angle.fromDegrees(80), Angle.fromDegrees(60), Angle.fromDegrees(120));
+        tops.add(this.createTile(dc, tile17, 0));
+        
+        Sector tile18 = new Sector(Angle.fromDegrees(30), Angle.fromDegrees(80), Angle.fromDegrees(120), Angle.fromDegrees(180));
+        tops.add(this.createTile(dc, tile18, 0));   
+    }
+                
     protected Angle southPoleStartLat = Angle.fromDegrees(-89);
     protected Angle southPoleEndLat = Angle.fromDegrees(89);
     protected void tessellateTops(ArrayList<RectTile> tops, DrawContext dc)
