@@ -97,7 +97,7 @@ public class TimeFrame extends JDialog
         //======== Dialog ========  
         this.setBackground(new Color(51, 51, 51));
         Rectangle bounds = component.getBounds();
-        this.setLocation(bounds.x + 40, bounds.y + 700);
+        this.setLocation(bounds.x + 400, bounds.y + 900);
         this.setAlwaysOnTop(true);
         this.setUndecorated(true);
         this.setOpacity((float) .70);

@@ -20,10 +20,11 @@ import javax.swing.JDialog;
  */
 public class LayerManagerDialog
 {
+
     private final WorldWindow wwd;
     private JDialog dialog;
     private LayerPanel layerPanel;
-    
+
     public LayerManagerDialog(WorldWindow wwd, CelestialMapper celestialMapper)
     {
         layerPanel = new LayerPanel(wwd, celestialMapper);
@@ -35,27 +36,28 @@ public class LayerManagerDialog
         this.dialog.setResizable(true);
         this.dialog.setModal(false);
         this.dialog.setTitle("Layer Manager");
-        
+
         // Add the layer panel to the dialog and set the location
         dialog.getContentPane().add(layerPanel, BorderLayout.CENTER);
         Rectangle bounds = celestialMapper.getBounds();
-        dialog.setLocation(bounds.x + 860, bounds.y + 300); 
-        
+        dialog.setLocation(bounds.x + 60, bounds.y + 300);
+
 //        dialog.setResizable(false); // Set false to resizable until we can expand panels with dialog
-        
         // Set dialog to be visible always
         dialog.setVisible(true);
-        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+        dialog.addWindowListener(new java.awt.event.WindowAdapter()
+        {
             @Override
-            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+            public void windowClosing(java.awt.event.WindowEvent windowEvent)
+            {
                 celestialMapper.getLayerManager().setVisible(false);
                 celestialMapper.setLayerManagerOpen(false);
             }
         });
-        
+
         dialog.pack();
     }
-    
+
     public void setVisible(boolean visible)
     {
         dialog.setVisible(visible);
@@ -65,7 +67,7 @@ public class LayerManagerDialog
     {
         return layerPanel;
     }
-    
+
     public void update()
     {
         layerPanel.update(wwd);

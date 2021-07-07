@@ -60,7 +60,7 @@ public class MoonShadingDialog
         dialog.setTitle("Moon Shading");
         
         // Set the location and resizable to false
-        dialog.setLocation(bounds.x + 910, bounds.y + 290);
+        dialog.setLocation(bounds.x + 1600, bounds.y + 550);
         dialog.setResizable(false);
         dialog.getContentPane().add(moonShadingPanel, BorderLayout.CENTER);
         dialog.pack();
