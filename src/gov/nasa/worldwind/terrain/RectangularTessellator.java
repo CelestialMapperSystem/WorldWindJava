@@ -47,6 +47,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         protected long time;
         protected Object vboCacheKey = new Object();
         protected boolean isVboBound = false;
+        int count = 0;
 
         protected RenderInfo(DrawContext dc, int density, FloatBuffer vertices, Vec4 refCenter)
         {
@@ -353,9 +354,9 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         }
 
         @SuppressWarnings(
-        {
-            "EqualsWhichDoesntCheckParameterClass"
-        })
+                {
+                    "EqualsWhichDoesntCheckParameterClass"
+                })
         public boolean equals(Object o)
         {
             if (this == o)
@@ -464,13 +465,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         TopLevelTiles topLevels = (TopLevelTiles) this.topLevelTilesCache.get(dc.getGlobe().getStateKey(dc));
         if (topLevels == null)
         {
-            try
-            {
-                topLevels = new TopLevelTiles(this.createTopLevelTiles(dc));
-            } catch (FileNotFoundException ex)
-            {
-                Logger.getLogger(RectangularTessellator.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-            }
+            topLevels = new TopLevelTiles(this.createCubeMap(dc));
             this.topLevelTilesCache.put(dc.getGlobe().getStateKey(dc), topLevels);
         }
 
@@ -488,7 +483,13 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
 
         for (SectorGeometry tile : this.currentTiles)
         {
-            this.makeVerts(dc, (RectTile) tile);
+            try
+            {
+                this.makeVerts(dc, (RectTile) tile);
+            } catch (FileNotFoundException ex)
+            {
+                Logger.getLogger(RectangularTessellator.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            }
         }
 
         // Make a copy of the SGL because the tessellator may be called multiple times per frame with a different globe.
@@ -498,6 +499,55 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         return sgl;
     }
 
+    protected ArrayList<RectTile> createCubeMap(DrawContext dc)
+    {
+        this.globe = dc.getGlobe();
+        
+        ArrayList<RectTile> tops  = new ArrayList<RectTile>(3 * 4);
+        
+        Angle lastLat = Angle.NEG90;
+        Angle lastLon = Angle.NEG180;
+        
+        double deltaLon = 90;
+        
+        Angle lat = Angle.ZERO;
+        Angle lon = Angle.ZERO;
+        
+        for(int row = 0; row < 3; row++)
+        {
+            lastLon = Angle.NEG180; // reset
+            if(row == 0)
+            {
+                lastLat = Angle.fromDegrees(-90);
+                lat = Angle.fromDegrees(-40);
+            }
+            else if(row == 1)
+            {
+                lastLat = Angle.fromDegrees(-40);
+                lat = Angle.fromDegrees(40);
+            }
+            else if(row == 2)
+            {
+                lastLat = Angle.fromDegrees(40);
+                lat = Angle.fromDegrees(90);
+            }
+            for(int col = 0; col < 4; col++)
+            {
+                lon = lastLon.addDegrees(deltaLon);
+                
+                Sector tileSector = new Sector(lastLat, lat, lastLon, lon);
+                boolean skipTile = dc.is2DGlobe() && this.skipTile(dc, tileSector);
+
+                if (!skipTile)
+                {
+                    tops.add(this.createTile(dc, tileSector, 0));
+                }
+                lastLon = lon;
+            }
+        }
+        return tops;
+    }
+    
     protected ArrayList<RectTile> createTopLevelTiles(DrawContext dc) throws FileNotFoundException
     {
         ArrayList<RectTile> tops
@@ -509,42 +559,42 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         Angle lastLat = Angle.NEG90;
 
         // For each row < 3 (latitude subdivisions)
-//        for (int row = 0; row < this.numLevel0LatSubdivisions; row++)
-//        {
-//            // Add deltaLat to lastLat
-//            // First iteration: -90 + 60 = -30
-//            Angle lat = lastLat.addDegrees(deltaLat);
-//
-//            if (lat.getDegrees() >= 80d)
-//            {
-//                //lat = Angle.POS90;
-//                //Sector tileSector = new Sector(lastLat, lat, lastLon, lon);
-//            }
-//
-//            Angle lastLon = Angle.NEG180;
-//
-//            // For each column < 6 (longitude subdivisions)
-//            for (int col = 0; col < this.numLevel0LonSubdivisions; col++)
-//            {
-//                Angle lon = lastLon.addDegrees(deltaLon);
-//                if (lon.getDegrees() >= 180d)
-//                {
-//                    lon = Angle.POS180;
-//                }
-//
-//                Sector tileSector = new Sector(lastLat, lat, lastLon, lon);
-//                boolean skipTile = dc.is2DGlobe() && this.skipTile(dc, tileSector);
-//
-//                if (!skipTile)
-//                {
-//                    tops.add(this.createTile(dc, tileSector, 0));
-//                }
-//
-//                lastLon = lon;
-//            }
-//            lastLat = lat;
-//        }
-         this.generateEquatorialRegion(tops, dc);
+        for (int row = 0; row < this.numLevel0LatSubdivisions; row++)
+        {
+            // Add deltaLat to lastLat
+            // First iteration: -90 + 60 = -30
+            Angle lat = lastLat.addDegrees(deltaLat);
+
+            if (lat.getDegrees() >= 80d)
+            {
+                lat = Angle.POS90;
+                //Sector tileSector = new Sector(lastLat, lat, lastLon, lon);
+            }
+
+            Angle lastLon = Angle.NEG180;
+
+            // For each column < 6 (longitude subdivisions)
+            for (int col = 0; col < this.numLevel0LonSubdivisions; col++)
+            {
+                Angle lon = lastLon.addDegrees(deltaLon);
+                if (lon.getDegrees() >= 180d)
+                {
+                    lon = Angle.POS180;
+                }
+
+                Sector tileSector = new Sector(lastLat, lat, lastLon, lon);
+                boolean skipTile = dc.is2DGlobe() && this.skipTile(dc, tileSector);
+
+                if (!skipTile)
+                {
+                    tops.add(this.createTile(dc, tileSector, 0));
+                }
+
+                lastLon = lon;
+            }
+            lastLat = lat;
+        }
+        //this.generateEquatorialRegion(tops, dc);
 
         csvOutput(tops);
         return tops;
@@ -559,25 +609,25 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             return;
         }
 
-       File fileToSave = new File("tile_output");
-            try ( PrintWriter writer = new PrintWriter(fileToSave))
+        File fileToSave = new File("tile_output");
+        try ( PrintWriter writer = new PrintWriter(fileToSave))
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < tops.size(); i++)
             {
-                StringBuilder sb = new StringBuilder();
+                sb.append(i).append(":");
+                sb.append("\n");
+                sb.append("Lat min: ").append(tops.get(i).sector.getMinLatitude()).append(" Lat max: ").append(tops.get(i).sector.getMaxLatitude());
+                sb.append("\n");
+                sb.append("Lon min: ").append(tops.get(i).sector.getMinLongitude()).append(" Lon max: ").append(tops.get(i).sector.getMaxLongitude());
+                sb.append("\n");
+                sb.append("\n");
+            }
 
-                for(int i = 0; i < tops.size(); i++)
-                {
-                    sb.append(i).append(":");
-                    sb.append("\n");
-                    sb.append("Lat min: ").append(tops.get(i).sector.getMinLatitude()).append(" Lat max: ").append(tops.get(i).sector.getMaxLatitude());
-                    sb.append("\n");
-                    sb.append("Lon min: ").append(tops.get(i).sector.getMinLongitude()).append(" Lon max: ").append(tops.get(i).sector.getMaxLongitude());
-                    sb.append("\n");
-                    sb.append("\n");
-                }
+            writer.write(sb.toString());
 
-                writer.write(sb.toString());
-
-                System.out.println("File has been exported");
+            System.out.println("File has been exported");
         }
     }
 
@@ -586,122 +636,123 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         // Section 1
         Sector tile1 = new Sector(Angle.fromDegrees(-80), Angle.fromDegrees(-30), Angle.fromDegrees(-180), Angle.fromDegrees(-120));
         tops.add(this.createTile(dc, tile1, 0));
-        
-        Sector tile2 = new Sector(Angle.fromDegrees(-80), Angle.fromDegrees(-30),  Angle.fromDegrees(-120), Angle.fromDegrees(-60));
+
+        Sector tile2 = new Sector(Angle.fromDegrees(-80), Angle.fromDegrees(-30), Angle.fromDegrees(-120), Angle.fromDegrees(-60));
         tops.add(this.createTile(dc, tile2, 0));
-        
-        Sector tile3 = new Sector(Angle.fromDegrees(-80), Angle.fromDegrees(-30),  Angle.fromDegrees(-60), Angle.fromDegrees(0));
+
+        Sector tile3 = new Sector(Angle.fromDegrees(-80), Angle.fromDegrees(-30), Angle.fromDegrees(-60), Angle.fromDegrees(0));
         tops.add(this.createTile(dc, tile3, 0));
-        
-        Sector tile4 = new Sector(Angle.fromDegrees(-80), Angle.fromDegrees(-30),  Angle.fromDegrees(0), Angle.fromDegrees(60));
+
+        Sector tile4 = new Sector(Angle.fromDegrees(-80), Angle.fromDegrees(-30), Angle.fromDegrees(0), Angle.fromDegrees(60));
         tops.add(this.createTile(dc, tile4, 0));
-        
-        Sector tile5 = new Sector(Angle.fromDegrees(-80), Angle.fromDegrees(-30),  Angle.fromDegrees(60), Angle.fromDegrees(120));
+
+        Sector tile5 = new Sector(Angle.fromDegrees(-80), Angle.fromDegrees(-30), Angle.fromDegrees(60), Angle.fromDegrees(120));
         tops.add(this.createTile(dc, tile5, 0));
-        
-        Sector tile6 = new Sector(Angle.fromDegrees(-80), Angle.fromDegrees(-30),  Angle.fromDegrees(120), Angle.fromDegrees(180));
+
+        Sector tile6 = new Sector(Angle.fromDegrees(-80), Angle.fromDegrees(-30), Angle.fromDegrees(120), Angle.fromDegrees(180));
         tops.add(this.createTile(dc, tile6, 0));
-        
+
         // Section 2
         Sector tile7 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(-180), Angle.fromDegrees(-120));
         tops.add(this.createTile(dc, tile7, 0));
-        
+
         Sector tile8 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(-120), Angle.fromDegrees(-60));
         tops.add(this.createTile(dc, tile8, 0));
-        
+
         Sector tile9 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(-60), Angle.fromDegrees(0));
         tops.add(this.createTile(dc, tile9, 0));
-        
+
         Sector tile10 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(0), Angle.fromDegrees(60));
         tops.add(this.createTile(dc, tile10, 0));
-        
+
         Sector tile11 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(60), Angle.fromDegrees(120));
         tops.add(this.createTile(dc, tile11, 0));
-        
+
         Sector tile12 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(120), Angle.fromDegrees(180));
         tops.add(this.createTile(dc, tile12, 0));
-        
+
         // Section 3
         Sector tile13 = new Sector(Angle.fromDegrees(30), Angle.fromDegrees(80), Angle.fromDegrees(-180), Angle.fromDegrees(-120));
         tops.add(this.createTile(dc, tile13, 0));
-        
+
         Sector tile14 = new Sector(Angle.fromDegrees(30), Angle.fromDegrees(80), Angle.fromDegrees(-120), Angle.fromDegrees(-60));
         tops.add(this.createTile(dc, tile14, 0));
-        
+
         Sector tile15 = new Sector(Angle.fromDegrees(30), Angle.fromDegrees(80), Angle.fromDegrees(-60), Angle.fromDegrees(0));
         tops.add(this.createTile(dc, tile15, 0));
-        
+
         Sector tile16 = new Sector(Angle.fromDegrees(30), Angle.fromDegrees(80), Angle.fromDegrees(0), Angle.fromDegrees(60));
         tops.add(this.createTile(dc, tile16, 0));
-        
+
         Sector tile17 = new Sector(Angle.fromDegrees(30), Angle.fromDegrees(80), Angle.fromDegrees(60), Angle.fromDegrees(120));
         tops.add(this.createTile(dc, tile17, 0));
-        
+
         Sector tile18 = new Sector(Angle.fromDegrees(30), Angle.fromDegrees(80), Angle.fromDegrees(120), Angle.fromDegrees(180));
-        tops.add(this.createTile(dc, tile18, 0));   
+        tops.add(this.createTile(dc, tile18, 0));
     }
-                
+
     protected Angle southPoleStartLat = Angle.fromDegrees(-89);
     protected Angle southPoleEndLat = Angle.fromDegrees(89);
+
     protected void tessellateTops(ArrayList<RectTile> tops, DrawContext dc)
     {
         // Section 1
         Sector tile1 = new Sector(Angle.NEG90, southPoleStartLat, Angle.fromDegrees(-180), Angle.fromDegrees(-120));
         tops.add(this.createTile(dc, tile1, 0));
-        
+
         Sector tile2 = new Sector(southPoleStartLat, Angle.fromDegrees(-30), Angle.fromDegrees(-120), Angle.fromDegrees(-60));
         tops.add(this.createTile(dc, tile2, 0));
-        
+
         Sector tile3 = new Sector(southPoleStartLat, Angle.fromDegrees(-30), Angle.fromDegrees(-60), Angle.fromDegrees(0));
         tops.add(this.createTile(dc, tile3, 0));
-        
+
         Sector tile4 = new Sector(southPoleStartLat, Angle.fromDegrees(-30), Angle.fromDegrees(0), Angle.fromDegrees(60));
         tops.add(this.createTile(dc, tile4, 0));
-        
+
         Sector tile5 = new Sector(southPoleStartLat, Angle.fromDegrees(-30), Angle.fromDegrees(60), Angle.fromDegrees(120));
         tops.add(this.createTile(dc, tile5, 0));
-        
+
         Sector tile6 = new Sector(southPoleStartLat, Angle.fromDegrees(-30), Angle.fromDegrees(120), Angle.fromDegrees(180));
         tops.add(this.createTile(dc, tile6, 0));
-        
+
         // Section 2
         Sector tile7 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(-180), Angle.fromDegrees(-120));
         tops.add(this.createTile(dc, tile7, 0));
-        
+
         Sector tile8 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(-120), Angle.fromDegrees(-60));
         tops.add(this.createTile(dc, tile8, 0));
-        
+
         Sector tile9 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(-60), Angle.fromDegrees(0));
         tops.add(this.createTile(dc, tile9, 0));
-        
+
         Sector tile10 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(0), Angle.fromDegrees(60));
         tops.add(this.createTile(dc, tile10, 0));
-        
+
         Sector tile11 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(60), Angle.fromDegrees(120));
         tops.add(this.createTile(dc, tile11, 0));
-        
+
         Sector tile12 = new Sector(Angle.fromDegrees(-30), Angle.fromDegrees(30), Angle.fromDegrees(120), Angle.fromDegrees(180));
         tops.add(this.createTile(dc, tile12, 0));
-        
+
         // Section 3
         Sector tile13 = new Sector(southPoleEndLat, Angle.POS90, Angle.fromDegrees(-180), Angle.fromDegrees(-120));
         tops.add(this.createTile(dc, tile13, 0));
-        
+
         Sector tile14 = new Sector(Angle.fromDegrees(30), Angle.POS90, Angle.fromDegrees(-120), Angle.fromDegrees(-60));
         tops.add(this.createTile(dc, tile14, 0));
-        
+
         Sector tile15 = new Sector(Angle.fromDegrees(30), Angle.POS90, Angle.fromDegrees(-60), Angle.fromDegrees(0));
         tops.add(this.createTile(dc, tile15, 0));
-        
+
         Sector tile16 = new Sector(Angle.fromDegrees(30), Angle.POS90, Angle.fromDegrees(0), Angle.fromDegrees(60));
         tops.add(this.createTile(dc, tile16, 0));
-        
+
         Sector tile17 = new Sector(Angle.fromDegrees(30), Angle.POS90, Angle.fromDegrees(60), Angle.fromDegrees(120));
         tops.add(this.createTile(dc, tile17, 0));
-        
+
         Sector tile18 = new Sector(Angle.fromDegrees(30), Angle.POS90, Angle.fromDegrees(120), Angle.fromDegrees(180));
         tops.add(this.createTile(dc, tile18, 0));
-        
+
     }
 
     /**
@@ -852,7 +903,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         return new CacheKey(dc, tile.sector, tile.density);
     }
 
-    protected void makeVerts(DrawContext dc, RectTile tile)
+    protected void makeVerts(DrawContext dc, RectTile tile) throws FileNotFoundException
     {
         // First see if the vertices have been previously computed and are in the cache. Since the elevation model
         // contents can change between frames, regenerate and re-cache vertices every second.
@@ -870,7 +921,7 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         }
     }
 
-    public boolean buildVerts(DrawContext dc, RectTile tile, boolean makeSkirts)
+    public boolean buildVerts(DrawContext dc, RectTile tile, boolean makeSkirts) throws FileNotFoundException
     {
         int density = tile.density;
         int numVertices = (density + 3) * (density + 3);
@@ -943,10 +994,26 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
         }
 
         tile.ri = new RenderInfo(dc, density, verts, refCenter);
+
+        File fileToSave = new File("verts_output");
+        try ( PrintWriter writer = new PrintWriter(fileToSave))
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < latlons.size(); i++)
+            {
+                sb.append("Lat: ").append(latlons.get(i).latitude).append(" Lon: ").append(latlons.get(i).longitude);
+                sb.append("\n");
+            }
+
+            writer.write(sb.toString());
+
+            System.out.println("verts csv");
+        }
         return true;
     }
 
-    protected ArrayList<LatLon> computeLocations(RectTile tile)
+    protected ArrayList<LatLon> computeLocations(RectTile tile) throws FileNotFoundException
     {
         int density = tile.density;
         int numVertices = (density + 3) * (density + 3);
@@ -993,6 +1060,21 @@ public class RectangularTessellator extends WWObjectImpl implements Tessellator
             }
         }
 
+        File fileToSave = new File("locations_output");
+        try ( PrintWriter writer = new PrintWriter(fileToSave))
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < latlons.size(); i++)
+            {
+                sb.append("Lat: ").append(latlons.get(i).latitude).append(" Lon: ").append(latlons.get(i).longitude);
+                sb.append("\n");
+            }
+
+            writer.write(sb.toString());
+
+            System.out.println("locations csv");
+        }
         return latlons;
     }
 

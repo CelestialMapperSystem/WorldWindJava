@@ -1,25 +1,25 @@
 0:
-Lat min: -80.0° Lat max: -30.0°
+Lat min: -90.0° Lat max: -30.0°
 Lon min: -180.0° Lon max: -120.0°
 
 1:
-Lat min: -80.0° Lat max: -30.0°
+Lat min: -90.0° Lat max: -30.0°
 Lon min: -120.0° Lon max: -60.0°
 
 2:
-Lat min: -80.0° Lat max: -30.0°
+Lat min: -90.0° Lat max: -30.0°
 Lon min: -60.0° Lon max: 0.0°
 
 3:
-Lat min: -80.0° Lat max: -30.0°
+Lat min: -90.0° Lat max: -30.0°
 Lon min: 0.0° Lon max: 60.0°
 
 4:
-Lat min: -80.0° Lat max: -30.0°
+Lat min: -90.0° Lat max: -30.0°
 Lon min: 60.0° Lon max: 120.0°
 
 5:
-Lat min: -80.0° Lat max: -30.0°
+Lat min: -90.0° Lat max: -30.0°
 Lon min: 120.0° Lon max: 180.0°
 
 6:
@@ -47,26 +47,26 @@ Lat min: -30.0° Lat max: 30.0°
 Lon min: 120.0° Lon max: 180.0°
 
 12:
-Lat min: 30.0° Lat max: 80.0°
+Lat min: 30.0° Lat max: 90.0°
 Lon min: -180.0° Lon max: -120.0°
 
 13:
-Lat min: 30.0° Lat max: 80.0°
+Lat min: 30.0° Lat max: 90.0°
 Lon min: -120.0° Lon max: -60.0°
 
 14:
-Lat min: 30.0° Lat max: 80.0°
+Lat min: 30.0° Lat max: 90.0°
 Lon min: -60.0° Lon max: 0.0°
 
 15:
-Lat min: 30.0° Lat max: 80.0°
+Lat min: 30.0° Lat max: 90.0°
 Lon min: 0.0° Lon max: 60.0°
 
 16:
-Lat min: 30.0° Lat max: 80.0°
+Lat min: 30.0° Lat max: 90.0°
 Lon min: 60.0° Lon max: 120.0°
 
 17:
-Lat min: 30.0° Lat max: 80.0°
+Lat min: 30.0° Lat max: 90.0°
 Lon min: 120.0° Lon max: 180.0°
 
