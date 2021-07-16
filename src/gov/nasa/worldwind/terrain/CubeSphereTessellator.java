@@ -32,10 +32,9 @@ import java.util.logging.Logger;
 
 /**
  * @author tag
- * @version $Id: CubeMapTessellator.java 2922 2015-03-24 23:56:58Z tgaskins
- * $
+ * @version $Id: CubeMapTessellator.java 2922 2015-03-24 23:56:58Z tgaskins $
  */
-public class CubeMapTessellator extends WWObjectImpl implements Tessellator
+public class CubeSphereTessellator extends WWObjectImpl implements Tessellator
 {
 
     int subdivisions = 4;
@@ -45,9 +44,10 @@ public class CubeMapTessellator extends WWObjectImpl implements Tessellator
 
         protected final int density;
         protected final Vec4 referenceCenter;
-        protected final FloatBuffer vertices;
+        public final FloatBuffer vertices;
         protected final FloatBuffer texCoords;
         protected final IntBuffer indices;
+        protected final IntBuffer lineIndices;
         protected long time;
         protected Object vboCacheKey = new Object();
         protected boolean isVboBound = false;
@@ -56,8 +56,8 @@ public class CubeMapTessellator extends WWObjectImpl implements Tessellator
         protected RenderInfo(DrawContext dc, int density, FloatBuffer vertices, Vec4 refCenter)
         {
             //Fill in the buffers and buffer IDs and store them in hash maps by density
-            createIndices(density);
-            createTextureCoordinates(density);
+//            createIndices(density);
+//            createTextureCoordinates(density);
 
             //Fill in the member variables from the parameters
             this.density = density;
@@ -66,6 +66,7 @@ public class CubeMapTessellator extends WWObjectImpl implements Tessellator
 
             //Fill in the remaining variables from the stored buffers and buffer IDs for easier access
             this.indices = indexLists.get(this.density);
+            this.lineIndices = indexLists.get(this.density);
             this.texCoords = textureCoords.get(this.density);
             this.time = System.currentTimeMillis();
 
@@ -166,7 +167,7 @@ public class CubeMapTessellator extends WWObjectImpl implements Tessellator
     protected static class RectTile implements SectorGeometry
     {
 
-        protected final CubeMapTessellator tessellator; // not needed if not a static class
+        protected final CubeSphereTessellator tessellator; // not needed if not a static class
         protected final int level;
         protected final Sector sector;
         protected final int density;
@@ -177,7 +178,7 @@ public class CubeMapTessellator extends WWObjectImpl implements Tessellator
         protected int minColorCode = 0;
         protected int maxColorCode = 0;
 
-        public RectTile(CubeMapTessellator tessellator, Extent extent, int level, int density, Sector sector)
+        public RectTile(CubeSphereTessellator tessellator, Extent extent, int level, int density, Sector sector)
         {
             this.tessellator = tessellator;
             this.level = level;
@@ -197,7 +198,7 @@ public class CubeMapTessellator extends WWObjectImpl implements Tessellator
             return this.extent;
         }
 
-        public CubeMapTessellator getTessellator()
+        public CubeSphereTessellator getTessellator()
         {
             return tessellator;
         }
@@ -415,7 +416,7 @@ public class CubeMapTessellator extends WWObjectImpl implements Tessellator
     protected static final int DEFAULT_NUM_LON_SUBDIVISIONS = 6;
     protected static final int DEFAULT_DENSITY = 20;
     protected static final String CACHE_NAME = "Terrain";
-    protected static final String CACHE_ID = CubeMapTessellator.class.getName();
+    protected static final String CACHE_ID = CubeSphereTessellator.class.getName();
 
     // Tri-strip indices and texture coordinates. These depend only on density and can therefore be statically cached.
     protected static final HashMap<Integer, FloatBuffer> textureCoords = new HashMap<Integer, FloatBuffer>();
@@ -469,7 +470,13 @@ public class CubeMapTessellator extends WWObjectImpl implements Tessellator
         TopLevelTiles topLevels = (TopLevelTiles) this.topLevelTilesCache.get(dc.getGlobe().getStateKey(dc));
         if (topLevels == null)
         {
-            topLevels = new TopLevelTiles(this.createCubeMap(dc));
+            try
+            {
+                topLevels = new TopLevelTiles(this.createTopLevelTiles(dc));
+            } catch (FileNotFoundException ex)
+            {
+                Logger.getLogger(CubeSphereTessellator.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            }
             this.topLevelTilesCache.put(dc.getGlobe().getStateKey(dc), topLevels);
         }
 
@@ -492,7 +499,7 @@ public class CubeMapTessellator extends WWObjectImpl implements Tessellator
                 this.makeVerts(dc, (RectTile) tile);
             } catch (FileNotFoundException ex)
             {
-                Logger.getLogger(CubeMapTessellator.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                Logger.getLogger(CubeSphereTessellator.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
             }
         }
 
@@ -776,7 +783,7 @@ public class CubeMapTessellator extends WWObjectImpl implements Tessellator
         return subTiles;
     }
 
-    protected CubeMapTessellator.CacheKey createCacheKey(DrawContext dc, RectTile tile)
+    protected CubeSphereTessellator.CacheKey createCacheKey(DrawContext dc, RectTile tile)
     {
         return new CacheKey(dc, tile.sector, tile.density);
     }
@@ -801,60 +808,19 @@ public class CubeMapTessellator extends WWObjectImpl implements Tessellator
 
     public boolean buildVerts(DrawContext dc, RectTile tile, boolean makeSkirts) throws FileNotFoundException
     {
-        int density = tile.density;
-        int numVertices = (density + 3) * (density + 3);
-        float x, y, z, s, t;
-        int k = 0, k1, k2;
         int vertexCountPerRow = (subdivisions * subdivisions) + 1; // subdivisions^2 + 1
         int vertexCountPerFace;
-        Vector<Float> unitVertices = getUnitPositiveX(vertexCountPerRow);
 
-        // +X face
-        for(int i = 0; i < vertexCountPerRow; ++i)
-        {
-            k1 = i * vertexCountPerRow;     // index for curr row
-            k2 = k1 + vertexCountPerRow;    // index for next row
-            t = (float)i / (vertexCountPerRow - 1);
+        // generate unit-length verties in +X face
+        Vector<Float> verts = getUnitPositiveX(vertexCountPerRow);
+        float x = 0, y = 0, z = 0, s = 0, t = 0;
+        int k = 0, k1 = 0, k2 = 0;
 
-            for(int j = 0; j < vertexCountPerRow; ++j, k += 3, ++k1, ++k2)
-            {
-                unitVertices.set(k, unitVertices.get(k));
-                unitVertices.set(k+1, unitVertices.get(k+1));
-                unitVertices.set(k+2, unitVertices.get(k+2));
-                s = (float)j / (vertexCountPerRow - 1);
-//                addVertex(x*radius, y*radius, z*radius);
-//                addNormal(x, y, z);
-//                addTexCoord(s, t);
-
-                // add indices
-                if(i < (vertexCountPerRow-1) && j < (vertexCountPerRow-1))
-                {
-//                    addIndices(k1, k2, k1+1);
-//                    addIndices(k1+1, k2, k2+1);
-//                    // lines: left and top
-//                    lineIndices.push_back(k1);  // left
-//                    lineIndices.push_back(k2);
-//                    lineIndices.push_back(k1);  // top
-//                    lineIndices.push_back(k1+1);
-                }
-            }
-        }
-        FloatBuffer verts;
-
-        //Re-use the RenderInfo vertices buffer. If it has not been set or the density has changed, create a new buffer
-        if (tile.ri == null || tile.ri.vertices == null || density != tile.ri.density)
-        {
-            verts = Buffers.newDirectFloatBuffer(numVertices * 3);
-        } else
-        {
-            verts = tile.ri.vertices;
-            verts.rewind();
-        }
-
+        // From RectangularTessellator
         ArrayList<LatLon> latlons = this.computeLocations(tile);
+        Iterator<LatLon> latLonIter = latlons.iterator();
         double[] elevations = new double[latlons.size()];
         dc.getGlobe().getElevations(tile.sector, latlons, tile.getResolution(), elevations);
-
         double verticalExaggeration = dc.getVerticalExaggeration();
 
         // When making skirts, apply vertical exaggeration to the skirt depth only if the exaggeration is 0 or less. If
@@ -873,57 +839,193 @@ public class CubeMapTessellator extends WWObjectImpl implements Tessellator
 
         LatLon centroid = tile.sector.getCentroid();
         Vec4 refCenter = globe.computePointFromPosition(centroid.getLatitude(), centroid.getLongitude(), 0d);
-
         int ie = 0;
         int iv = 0;
-        Iterator<LatLon> latLonIter = latlons.iterator();
-        for (int j = 0; j <= density + 2; j++)
+
+        // Build +X face
+        for (int i = 0; i < vertexCountPerRow; ++i)
         {
-            for (int i = 0; i <= density + 2; i++)
+
+            k1 = i * vertexCountPerRow;     // index for current row
+            k2 = k1 + vertexCountPerRow;    // index for next row
+            
+            // For each pixel that is to be painted, its texture coordinates (s, t) are determined (interpolated) based on the corners’ texture coordinates
+            t = (float) i / (vertexCountPerRow - 1);
+
+            for (int j = 0; j < vertexCountPerRow; ++j, k += 3, ++k1, ++k2)
             {
                 LatLon latlon = latLonIter.next();
                 double elevation = verticalExaggeration * elevations[ie++];
 
-                Vec4 p = globe.computePointFromPosition(latlon.getLatitude(), latlon.getLongitude(), elevation);
-                verts.put(iv++, (float) (p.x - refCenter.x));
-                verts.put(iv++, (float) (p.y - refCenter.y));
-                verts.put(iv++, (float) (p.z - refCenter.z));
+                // Tile edges use min elevation to draw the skirts
+                if (exaggeratedMinElevation != null
+                        && (j == 0 || j >= tile.density + 2 || i == 0 || i >= tile.density + 2))
+                {
+                    elevation = exaggeratedMinElevation;
+                }
+
+                verts.add(k, x); // index, element
+                verts.add(k + 1, y);
+                verts.add(k + 2, z);
+                s = (float) j / (vertexCountPerRow - 1);
+
+                float xCoord = (float) (x * globe.getRadius());
+                float yCoord = (float) (y * globe.getRadius());
+                float zCoord = (float) (z * globe.getRadius());
+                addVertex(xCoord, yCoord, zCoord, tile);
+//                addNormal(x, y, z);
+                addTexCoord(s, t, tile);
+
+                // add indices
+                if (i < (vertexCountPerRow - 1) && j < (vertexCountPerRow - 1))
+                {
+                    addIndices(k1, k2, k1 + 1, tile);
+                    addIndices(k1 + 1, k2, k2 + 1, tile);
+//                    // lines: left and top
+                    tile.ri.lineIndices.put(k1);  // left
+                    tile.ri.lineIndices.put(k2);
+                    tile.ri.lineIndices.put(k1);  // top
+                    tile.ri.lineIndices.put(k1 + 1);
+                }
             }
         }
+        // array size and index for building next face
+        int startIndex;                    // starting index for next face
+        int vertexSize = (int) verts.size();      // vertex array size of +X face
+        int indexSize = (int) tile.ri.indices.capacity();        // index array size of +X face
+        int lineIndexSize = (int) tile.ri.lineIndices.capacity(); // line index size of +X face
 
-        verts.rewind();
-
-        if (tile.ri != null)
+        // build -X face by negating x and z
+        startIndex = verts.size() / 3;
+        for (int i = 0, j = 0; i < vertexSize; i += 3, j += 2)
         {
-            tile.ri.update(dc);
-            return false;
+            addVertex(-verts.get(i), verts.get(i + 1), -verts.get(i + 2), tile);
+            addTexCoord(tile.ri.texCoords.get(j), tile.ri.texCoords.get(j + 1), tile);
+            //addNormal(-normals[i], normals[i + 1], -normals[i + 2]);
+        }
+        for (int i = 0; i < indexSize; ++i)
+        {
+            tile.ri.indices.put(startIndex + tile.ri.indices.get(i));
+        }
+        for (int i = 0; i < lineIndexSize; i += 4)
+        {
+            // left and bottom lines
+            tile.ri.lineIndices.put(startIndex + tile.ri.lineIndices.get(i));     // left
+            tile.ri.lineIndices.put(startIndex + tile.ri.lineIndices.get(i + 1));
+            tile.ri.lineIndices.put(startIndex + tile.ri.lineIndices.get(i + 1));  // bottom
+            tile.ri.lineIndices.put(startIndex + tile.ri.lineIndices.get(i + 1) + 1);
         }
 
-        tile.ri = new RenderInfo(dc, density, verts, refCenter);
-
-        File fileToSave = new File("verts_output");
-        try ( PrintWriter writer = new PrintWriter(fileToSave))
+        // build +Y face by swapping x=>y, y=>-z, z=>-x
+        startIndex = verts.size() / 3;
+        for (int i = 0, j = 0; i < vertexSize; i += 3, j += 2)
         {
-            StringBuilder sb = new StringBuilder();
-
-            for (int i = 0; i < latlons.size(); i++)
-            {
-                sb.append("Lat: ").append(latlons.get(i).latitude).append(" Lon: ").append(latlons.get(i).longitude);
-                sb.append("\n");
-            }
-
-            writer.write(sb.toString());
-
-            System.out.println("verts csv");
+            addVertex(-verts.indexOf(i + 2), verts.indexOf(i), -verts.indexOf(i + 1), tile);
+            addTexCoord(tile.ri.texCoords.get(j), tile.ri.texCoords.get(j + 1), tile);
+            //addNormal(-normals[i + 2], normals[i], -normals[i + 1]);
         }
+        for (int i = 0; i < indexSize; ++i)
+        {
+            tile.ri.indices.put(startIndex + tile.ri.indices.get(i));
+        }
+        for (int i = 0; i < lineIndexSize; ++i)
+        {
+            // top and left lines (same as +X)
+            tile.ri.lineIndices.put(startIndex + tile.ri.lineIndices.get(i));
+        }
+
+        // build -Y face by swapping x=>-y, y=>z, z=>-x
+        startIndex = verts.size() / 3;
+        for (int i = 0, j = 0; i < vertexSize; i += 3, j += 2)
+        {
+            addVertex(-verts.indexOf(i + 2), -verts.indexOf(i), verts.indexOf(i + 1), tile);
+            addTexCoord(tile.ri.texCoords.get(j), tile.ri.texCoords.get(j + 1), tile);
+           // addNormal(-normals[i + 2], -normals[i], normals[i + 1]);
+        }
+        for (int i = 0; i < indexSize; ++i)
+        {
+             tile.ri.indices.put(startIndex + tile.ri.indices.get(i));
+        }
+        for (int i = 0; i < lineIndexSize; i += 4)
+        {
+            // top and right lines
+            tile.ri.lineIndices.put(startIndex + tile.ri.lineIndices.get(i));     // top
+            tile.ri.lineIndices.put(startIndex + tile.ri.lineIndices.get(i + 3));
+            tile.ri.lineIndices.put(startIndex + tile.ri.lineIndices.get(i) + 1);  // right
+            tile.ri.lineIndices.put(startIndex + tile.ri.lineIndices.get(i + 1) + 1);
+        }
+
+        // build +Z face by swapping x=>z, z=>-x
+        startIndex = verts.size() / 3;
+        for (int i = 0, j = 0; i < vertexSize; i += 3, j += 2)
+        {
+            addVertex(verts.indexOf(i + 2), verts.indexOf(i), -verts.indexOf(i), tile);
+            addTexCoord(tile.ri.texCoords.get(j), tile.ri.texCoords.get(j + 1), tile);
+            //addNormal(-normals[i + 2], normals[i + 1], normals[i]);
+        }
+        for (int i = 0; i < indexSize; ++i)
+        {
+            tile.ri.indices.put(startIndex + tile.ri.indices.get(i));
+        }
+        for (int i = 0; i < lineIndexSize; ++i)
+        {
+            // top and left lines (same as +X)
+            tile.ri.lineIndices.put(startIndex + tile.ri.lineIndices.get(i)); 
+        }
+
+        // build -Z face by swapping x=>-z, z=>x
+        startIndex = verts.size() / 3;
+        for (int i = 0, j = 0; i < vertexSize; i += 3, j += 2)
+        {
+            addVertex(verts.indexOf(i + 2), verts.indexOf(i + 1), -verts.indexOf(i), tile);
+            addTexCoord(tile.ri.texCoords.get(j), tile.ri.texCoords.get(j + 1), tile);
+            //addNormal(normals[i + 2], normals[i + 1], -normals[i]);
+        }
+        for (int i = 0; i < indexSize; ++i)
+        {
+            tile.ri.indices.put(startIndex + tile.ri.indices.get(i));
+        }
+        for (int i = 0; i < lineIndexSize; i += 4)
+        {
+            // left and bottom lines
+            tile.ri.lineIndices.put(startIndex + tile.ri.lineIndices.get(i));     // left
+            tile.ri.lineIndices.put(startIndex + tile.ri.lineIndices.get(i + 1));
+            tile.ri.lineIndices.put(startIndex + tile.ri.lineIndices.get(i + 1));  // bottom
+            tile.ri.lineIndices.put(startIndex + tile.ri.lineIndices.get(i + 1) + 1);
+        }
+
         return true;
+    }
+
+    void addIndices(int i1, int i2, int i3, RectTile tile)
+    {
+        tile.ri.indices.put(i1);
+        tile.ri.indices.put(i2);
+        tile.ri.indices.put(i3);
+    }
+
+    void addTexCoord(float s, float t, RectTile tile)
+    {
+        tile.ri.texCoords.put(s);
+        tile.ri.texCoords.put(t);
+    }
+
+    // Add single vertex to the array
+    void addVertex(float x, float y, float z, RectTile tile)
+    {
+        tile.ri.vertices.put(x);
+        tile.ri.vertices.put(y);
+        tile.ri.vertices.put(z);
+//        vertices.push_back(x);
+//        vertices.push_back(y);
+//        vertices.push_back(z);
     }
 
     ///////////////////////////////////////////////////////////////////////////////
     // generate vertices for +X face only by intersecting 2 circular planes
     // (longitudinal and latitudinal) at the longitude/latitude angles
     ///////////////////////////////////////////////////////////////////////////////
-    Vector<Float> getUnitPositiveX(int pointsPerRow)
+    protected Vector<Float> getUnitPositiveX(int pointsPerRow)
     {
         float DEG2RAD = (float) (acos(-1) / 180.0f);
 
@@ -983,7 +1085,7 @@ public class CubeMapTessellator extends WWObjectImpl implements Tessellator
     protected float computeScaleForLength(float v[], float length)
     {
         v = new float[3];
-        float res =  (float) (length / sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]));
+        float res = (float) (length / sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]));
         return res;
     }
 
